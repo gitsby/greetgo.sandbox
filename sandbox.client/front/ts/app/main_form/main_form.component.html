@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <h2>Main Form Component</h2>
+
+    <button (click)="exit.emit()">Выход</button>
+
+    <div *ngIf="!userInfo">
+        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+            Загрузить данные пользователя
+        </button>
+        <div *ngIf="loadUserInfoError">
+            {{loadUserInfoError}}
+        </div>
+    </div>
+    <div *ngIf="userInfo">
+
+        <table>
+            <tbody>
+
+            <tr>
+                <td>ID</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.id}}</b></td>
+            </tr>
+            <tr>
+                <td>Account name</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.accountName}}</b></td>
+            </tr>
+            <tr>
+                <td>Surname</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.surname}}</b></td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.name}}</b></td>
+            </tr>
+            <tr>
+                <td>Patronymic</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.patronymic}}</b></td>
+            </tr>
+            <tr>
+                <td>Phone type</td>
+                <td>&nbsp;:&nbsp;</td>
+                <td><b>{{userInfo.phoneType}}</b></td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+    <div>
+        <table>
+            <tbody>
+            <tr>
+                <td>Surname Name Middle Name</td>
+                <td>Character</td>
+                <td>Age</td>
+                <td>Load</td>
+                <td>max</td>
+                <td>min</td>
+            </tr>
+            <tr *ngFor="let client of clients; let i = index">
+                <td>{{client.npmn}}</td>
+                <td>{{client.character}}</td>
+                <td>{{client.age}}</td>
+                <td>{{client.accBalance}}</td>
+                <td>{{client.maxBalance}}</td>
+                <td>{{client.minBalance}}</td>
+                <td>
+                    <button (click)="plusClick(i)">+</button>
+                </td>
+                <td>
+                    <button>...</button>
+                </td>
+                <td>
+                    <button (click)="deleteClient(i)">-</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <dialog>
+        <button>SAdasd</button>
+    </dialog>
+</div>
+</body>
+</html>
