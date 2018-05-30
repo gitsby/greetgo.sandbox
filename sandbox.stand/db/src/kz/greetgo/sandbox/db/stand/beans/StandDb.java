@@ -31,9 +31,6 @@ public class StandDb implements HasAfterInject {
             int lineNo = 0;
 
             while (true) {
-                for (Client client : clientDotList) {
-                    System.out.println(client.accBalance);
-                }
                 System.out.println("Check logs");
                 String line = br.readLine();
                 if (line == null) break;
@@ -92,7 +89,7 @@ public class StandDb implements HasAfterInject {
     }
 
     public List<Client> getClientSlice(String paginationPage) {
-        List<Client> clients = new ArrayList<>();
+        List<Client> clients;
         int currentPagination = Integer.parseInt(paginationPage);
         int startSlice = currentPagination * sliceNum;
         int endSlice = sliceNum * currentPagination;
@@ -106,12 +103,23 @@ public class StandDb implements HasAfterInject {
     }
 
     public boolean deleteClient(String clientId) {
-        System.out.println("Size:" + clientDotList.size());
         clientDotList.remove(Integer.parseInt(clientId));
-        System.out.println("Size:" + clientDotList.size());
         return true;
     }
 
+    public List<Client> searchClient(String name) {
+        List<Client> searchClients = new ArrayList<>();
+        System.out.println("ToSearch:" + name);
+        if (name == null) {
+            return getClientSlice("0");
+        }
+        for (Client client : clientDotList) {
+            if (client.snmn.substring(0, name.length()).equals(name)) {
+                searchClients.add(client);
+            }
+        }
+        return searchClients;
+    }
 
     @SuppressWarnings("unused")
     private void appendPerson(String[] splitLine, String line, int lineNo) {

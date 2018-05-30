@@ -57,6 +57,12 @@ public class AuthController implements Controller {
     }
 
     @ToJson
+    @Mapping("/search")
+    public List<Client> searchClient(@Par("searchName") String searchName) {
+        return authRegister.get().searchClient(searchName);
+    }
+
+    @ToJson
     @Mapping("/pagination_page_num")
     public int getPaginationNum() {
         return authRegister.get().getPaginationNum();

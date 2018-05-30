@@ -147,4 +147,9 @@ public class AuthRegisterStand implements AuthRegister {
         System.out.println("Slice" + db.get().getClientSlice(paginationPage));
         return db.get().getClientSlice(paginationPage);
     }
+
+    @Override
+    public List<Client> searchClient(String searchName) {
+        return db.get().searchClient(searchName);
+    }
 }

@@ -1,12 +1,12 @@
 table {
     border-spacing: 0;
-    width: 100%;
+    width: 90%;
     border: 1px solid #ddd;
 }
 
 th, td {
     text-align: left;
-    padding: 16px;
+    padding: 12px;
 }
 
 tr:nth-child(even) {
@@ -49,4 +49,15 @@ tr:nth-child(even) {
 .pagination a:hover:not(.active) {
     color: #1a7cd7;
     background-color: #ddd;
+}
+
+.field__input {
+    position: relative;
+    margin-bottom: 2px;
+    width: 360px;
+    background: #fff;
+    color: #595959;
+    font: inherit;
+    border: 1px solid #adadad;
+    padding: 10px 10px;
 }

@@ -9,14 +9,21 @@
 
     <h2>Main Form Component</h2>
 
-    <button class="button" (click)="exit.emit()">Выход</button>
 
-    <div *ngIf="!userInfo">
-        <button class="button" [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+    <div class="pagination">
+        <button class="button" (click)="exit.emit()">Выход</button>
+        <button *ngIf="!userInfo" class="button" [disabled]="!loadUserInfoButtonEnabled"
+                (click)="loadUserInfoButtonClicked()">
             Загрузить данные пользователя
         </button>
-        <div *ngIf="loadUserInfoError">
-            {{loadUserInfoError}}
+
+        <input id="input" type="text" class="field__input" placeholder="Enter FIO">
+        <button (click)="searchFromInput()" class="button">Search</button>
+        <div *ngIf="!userInfo">
+
+            <div *ngIf="loadUserInfoError">
+                {{loadUserInfoError}}
+            </div>
         </div>
     </div>
     <div *ngIf="userInfo">
@@ -64,11 +71,14 @@
             <tbody>
             <tr class="headers">
                 <td (click)="sortBy(1)">Surname Name Middle Name</td>
-                <td (click)="sortBy(1)">Character</td>
-                <td (click)="sortBy(1)">Age</td>
-                <td (click)="sortBy(1)">Load</td>
-                <td (click)="sortBy(1)">max</td>
-                <td (click)="sortBy(1)">min</td>
+                <td (click)="sortBy(2)">Character</td>
+                <td (click)="sortBy(3)">Age</td>
+                <td (click)="sortBy(4)">Load</td>
+                <td (click)="sortBy(5)">max</td>
+                <td (click)="sortBy(6)">min</td>
+                <td>Add</td>
+                <td>Edit</td>
+                <td>Delete</td>
             </tr>
             <tr *ngFor="let client of clients; let i = index">
                 <td>{{client.npmn}}</td>

@@ -4,7 +4,7 @@ import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {Client} from "../../model/Client";
 
-const STRINGS: {
+const CLIENTS: {
     npmn: string,
     character: string,
     age: number,
@@ -25,7 +25,7 @@ export class MainFormComponent {
     @Output() exit = new EventEmitter<void>();
     currentPagination = 0;
     paginationNum = 10;
-    clients = STRINGS;
+    clients = CLIENTS;
     userInfo: UserInfo | null = null;
     loadUserInfoButtonEnabled: boolean = true;
     loadUserInfoError: string | null;
@@ -53,25 +53,75 @@ export class MainFormComponent {
             for (let res of result.json()) {
                 clients.push(res);
             }
-            while (STRINGS.length > 0) {
-                STRINGS.pop();
-            }
-            for (let arr of clients) {
-                STRINGS.push({
-                    "npmn": arr.snmn,
-                    "character": arr.character,
-                    "age": arr.age,
-                    "accBalance": arr.accBalance + 10,
-                    "maxBalance": arr.maxBalance + 10,
-                    "minBalance": arr.minBalance + 10
-                });
-            }
+            this.clearClientsList();
+            this.pushToClientsList(clients);
             this.loadTotalNumberOfPaginationPage();
 
         }, error => {
             alert("Error   " + error.toString())
         });
     }
+
+    clearClientsList() {
+        while (CLIENTS.length > 0) {
+            CLIENTS.pop();
+        }
+    }
+
+    pushToClientsList(clients: Client[]) {
+        for (let arr of clients) {
+            CLIENTS.push({
+                "npmn": arr.snmn,
+                "character": arr.character,
+                "age": arr.age,
+                "accBalance": arr.accBalance + 10,
+                "maxBalance": arr.maxBalance + 10,
+                "minBalance": arr.minBalance + 10
+            });
+        }
+    }
+
+    loadClientSlice(index: number) {
+        this.currentPagination = index;
+        this.loadClients();
+    }
+
+    plusClick(index: number) {
+        alert(index);
+    }
+
+    sortBy(column: number) {
+        alert(column);
+    }
+
+    searchFromInput() {
+        let stringToSearch = (document.getElementById("input") as HTMLInputElement).value;
+
+        this.httpService.get("/auth/search", {searchName: stringToSearch + ""})
+            .toPromise().then(result => {
+            alert((result.json() as Client).snmn)
+            let clients: Client[] = [];
+            for (let client of result.json()) {
+                clients.push(client);
+            }
+            this.clearClientsList();
+            this.pushToClientsList(clients);
+        }, error => {
+            alert("Error " + error)
+        });
+    }
+
+    deleteClient(deleteIndex: any) {
+        this.httpService.get("/auth/delete", {
+            index: deleteIndex + "",
+            paginationPage: this.currentPagination as any
+        }).toPromise().then(result => {
+            this.loadClients();
+        }, error => {
+            alert(error)
+        });
+    }
+
 
     loadUserInfoButtonClicked() {
         this.loadUserInfoButtonEnabled = false;
@@ -88,30 +138,6 @@ export class MainFormComponent {
             this.loadUserInfoButtonEnabled = true;
             this.loadUserInfoError = error;
             this.userInfo = null;
-        });
-    }
-
-    loadClientSlice(index: number) {
-        this.currentPagination = index;
-        this.loadClients();
-    }
-
-    plusClick(index: number) {
-        alert(index)
-    }
-
-    sortBy(column: number) {
-        alert(column)
-    }
-
-    deleteClient(deleteIndex: any) {
-        this.httpService.get("/auth/delete", {
-            index: deleteIndex + "",
-            paginationPage: this.currentPagination as any
-        }).toPromise().then(result => {
-            this.loadClients();
-        }, error => {
-            alert(error)
         });
     }
 }

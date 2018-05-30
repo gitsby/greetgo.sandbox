@@ -76,6 +76,8 @@ public interface AuthRegister {
 
     List<Client> getClients(String paginationPage);
 
+    List<Client> searchClient(String searchName);
+
     boolean deleteClient(String clientId);
 
     int getPaginationNum();
