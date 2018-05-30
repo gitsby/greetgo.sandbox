@@ -6,17 +6,18 @@ import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
+import {EditFormComponent} from "./edit_form/edit_form.component";
 
 @NgModule({
-  imports: [
-    BrowserModule, HttpModule, JsonpModule, FormsModule
-  ],
-  declarations: [
-    RootComponent, LoginComponent, MainFormComponent
-  ],
-  bootstrap: [RootComponent],
-  providers: [HttpService],
-  entryComponents: [],
+    imports: [
+        BrowserModule, HttpModule, JsonpModule, FormsModule
+    ],
+    declarations: [
+        RootComponent, LoginComponent, MainFormComponent, EditFormComponent,
+    ],
+    bootstrap: [RootComponent],
+    providers: [HttpService],
+    entryComponents: [],
 })
 export class AppModule {
 }

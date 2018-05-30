@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
@@ -9,6 +10,10 @@
 
     <h2>Main Form Component</h2>
 
+
+    <div class="">
+
+    </div>
 
     <div class="pagination">
         <button class="button" (click)="exit.emit()">Выход</button>
@@ -25,6 +30,7 @@
                 {{loadUserInfoError}}
             </div>
         </div>
+        <a class="button" (click)="plusClick()">+</a>
     </div>
     <div *ngIf="userInfo">
 
@@ -76,7 +82,6 @@
                 <td (click)="sortBy(4)">Load</td>
                 <td (click)="sortBy(5)">max</td>
                 <td (click)="sortBy(6)">min</td>
-                <td>Add</td>
                 <td>Edit</td>
                 <td>Delete</td>
             </tr>
@@ -87,9 +92,6 @@
                 <td>{{client.accBalance}}</td>
                 <td>{{client.maxBalance}}</td>
                 <td>{{client.minBalance}}</td>
-                <td>
-                    <a class="button" (click)="plusClick(i)">+</a>
-                </td>
                 <td>
                     <a class="button">...</a>
                 </td>
@@ -103,9 +105,8 @@
     <div class="pagination" *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index">
         <a (click)="loadClientSlice(ind)">{{ind}}</a>
     </div>
-    <dialog>
-        <button>SAdasd</button>
-    </dialog>
+
+    <edit-form-component *ngIf="currentClient" [client]="currentClient"></edit-form-component>
 </div>
 </body>
 </html>

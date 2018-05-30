@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+</head>
+<body>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span (click)="closeModalForm()" class="close">&times;</span>
+        <h2><b>Add new Client</b></h2><br>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="check">
+                        <h4>Basic data</h4>
+                        <p>Surname:</p>
+                        <input id="surnameInput" type="text" placeholder="Required">
+                        <p>Name:</p>
+                        <input id="nameInput" type="text" placeholder="Required">
+                        <p>Middle Name:</p>
+                        <input id="patronymicInput" type="text" placeholder="Required">
+                        <p>Date of birth</p>
+                        <input id="dateInput" type="date">
+                        <p>Character:(Required)</p>
+                        <select>
+                        </select>
+                        <p>Gender</p>
+                        <input id="genderInput" type="text" placeholder="Required">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="check">
+                        <h4>Living address (fact)</h4>
+                        <p>Street</p>
+                        <input id="factStreetInput" type="text">
+
+                        <p>House</p>
+                        <input id="factHouseInput" type="text">
+
+                        <p>Flat</p>
+                        <input id="factFlatInput" type="text">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="check">
+                        <h4>Registration address(Required)</h4>
+                        <p>Street</p>
+                        <input id="streetInput" type="text">
+
+                        <p>House</p>
+                        <input id="houseInput" type="text">
+
+                        <p>Flat</p>
+                        <input id="flatInput" type="text">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="check">
+                        <h4>Phones(At least one mobile)</h4>
+                        <p>Home</p>
+                        <input id="homePhoneInput" type="text">
+
+                        <p>Working</p>
+                        <input id="workingPhoneInput" type="text">
+
+                        <p>Mobile 1</p>
+                        <input id="mobilePhone1Input" type="text">
+
+                        <p>Mobile 2</p>
+                        <input id="mobilePhone2Input" type="text">
+
+                        <p>Mobile 3</p>
+                        <input id="mobilePhone3Input" type="text">
+                    </div>
+                </div>
+
+            </div>
+            <div class="row bottom-btns">
+                <div class="col-sm-3">
+                    <a (click)="saveClient()" class="btn btn-md btn-primary btn-block">Save</a>
+                </div>
+
+                <div class="col-sm-3">
+                    <a (click)="closeModalForm()" class="btn btn-md btn-block">Cancel</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="bootstrap/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+</body>
+</html>

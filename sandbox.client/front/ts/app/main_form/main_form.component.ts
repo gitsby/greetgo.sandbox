@@ -3,6 +3,7 @@ import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {Client} from "../../model/Client";
+import {RecordClient} from "../../model/RecordClient";
 
 const CLIENTS: {
     npmn: string,
@@ -22,17 +23,27 @@ const sliceNum: number = 10;
 })
 
 export class MainFormComponent {
+    public mvar = 10;
     @Output() exit = new EventEmitter<void>();
+    currentClient: Client = null;
     currentPagination = 0;
     paginationNum = 10;
     clients = CLIENTS;
     userInfo: UserInfo | null = null;
     loadUserInfoButtonEnabled: boolean = true;
     loadUserInfoError: string | null;
+    modalFormVisible: boolean = false;
 
     constructor(private httpService: HttpService) {
         this.loadClients();
+        let modal = document.getElementById("myModal");
         this.loadTotalNumberOfPaginationPage();
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                document.getElementById("myModal").style.display = "none";
+            }
+        }
     }
 
     loadTotalNumberOfPaginationPage() {
@@ -49,7 +60,7 @@ export class MainFormComponent {
         this.httpService.get("/auth/clients",
             {paginationPage: this.currentPagination + ""})
             .toPromise().then(result => {
-            let clients: Client[] = [];
+            let clients: RecordClient[] = [];
             for (let res of result.json()) {
                 clients.push(res);
             }
@@ -68,11 +79,11 @@ export class MainFormComponent {
         }
     }
 
-    pushToClientsList(clients: Client[]) {
+    pushToClientsList(clients: RecordClient[]) {
         for (let arr of clients) {
             CLIENTS.push({
-                "npmn": arr.snmn,
-                "character": arr.character,
+                "npmn": arr.surname + " " + arr.name + " " + arr.patronymic,
+                "character": arr.name,
                 "age": arr.age,
                 "accBalance": arr.accBalance + 10,
                 "maxBalance": arr.maxBalance + 10,
@@ -86,8 +97,10 @@ export class MainFormComponent {
         this.loadClients();
     }
 
-    plusClick(index: number) {
-        alert(index);
+    plusClick() {
+        this.currentClient = new Client();
+        this.modalFormVisible = true;
+        document.getElementById("myModal").style.display = "block";
     }
 
     sortBy(column: number) {
@@ -99,8 +112,7 @@ export class MainFormComponent {
 
         this.httpService.get("/auth/search", {searchName: stringToSearch + ""})
             .toPromise().then(result => {
-            alert((result.json() as Client).snmn)
-            let clients: Client[] = [];
+            let clients: RecordClient[] = [];
             for (let client of result.json()) {
                 clients.push(client);
             }

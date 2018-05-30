@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.controller.register;
 
 import kz.greetgo.sandbox.controller.model.AuthInfo;
 import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
@@ -74,9 +75,9 @@ public interface AuthRegister {
      */
     UserInfo getUserInfo(String personId);
 
-    List<Client> getClients(String paginationPage);
+    List<RecordClient> getClients(String paginationPage);
 
-    List<Client> searchClient(String searchName);
+    List<RecordClient> searchClient(String searchName);
 
     boolean deleteClient(String clientId);
 

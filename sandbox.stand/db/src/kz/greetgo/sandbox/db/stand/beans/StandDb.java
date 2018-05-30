@@ -2,7 +2,8 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Character;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.util.RND;
 
@@ -17,12 +18,21 @@ public class StandDb implements HasAfterInject {
     public final Map<String, PersonDot> personStorage = new HashMap<>();
     public final List<Client> clientDotList = new ArrayList<>();
 
+    public final Character[] characters = {
+            new Character(),
+            new Character(),
+            new Character(),
+            new Character(),
+            new Character()};
+
     private final int sliceNum = 10;
+
 
     @Override
     public void afterInject() throws Exception {
         random = new Random();
 
+        initCharacters();
         initClientList();
 
         try (BufferedReader br = new BufferedReader(
@@ -53,6 +63,14 @@ public class StandDb implements HasAfterInject {
         }
     }
 
+    private void initCharacters() {
+        characters[0].name = "Angry";
+        characters[1].name = "Scrappy";
+        characters[2].name = "Cold-blooded";
+        characters[3].name = "Careful";
+        characters[4].name = "Relaxed";
+    }
+
     public int getPaginationNum() {
         return clientDotList.size() / sliceNum;
     }
@@ -61,35 +79,59 @@ public class StandDb implements HasAfterInject {
         for (int i = 0; i < 100; i++) {
             Client d = new Client();
 
+            d.id = i;
+            d.name = RND.str(10);
+            d.surname = RND.str(10);
+            d.patronymic = RND.str(10);
+
+            d.snmn = d.name + " " + d.surname + " " + d.patronymic;
+
             d.snmn = RND.str(50);
             d.age = random.nextInt(50) + 18;
-            d.character = giveRandomCharacter();
-            System.out.println(d.accBalance);
+            d.charm = giveRandomCharacter();
+
+            d.addresses = createRandomAddresses();
+            d.phones = createRandomPhoneNumbers();
+
             clientDotList.add(d);
         }
     }
 
-    private String giveRandomCharacter() {
-        int randNum = random.nextInt(5);
-        switch (randNum) {
-            case 0:
-                return "Angry";
-            case 1:
-                return "Scrappy";
-            case 2:
-                return "Cold-blooded";
-            case 3:
-                return "Careful";
-            case 4:
-                return "Relaxed";
-            default:
-                return "Empty";
+    private Address[] createRandomAddresses() {
+        Address[] addresses = new Address[2];
+        addresses[0] = new Address();
+        addresses[0].street = RND.str(10);
+        addresses[0].flat = RND.str(10);
 
-        }
+        addresses[1] = new Address();
+        addresses[1].street = RND.str(10);
+        addresses[1].flat = RND.str(10);
+
+        return addresses;
     }
 
-    public List<Client> getClientSlice(String paginationPage) {
-        List<Client> clients;
+    private Phone[] createRandomPhoneNumbers() {
+        Phone[] phones = new Phone[3];
+        phones[0] = new Phone();
+        phones[0].number = RND.str(10);
+
+        phones[1] = new Phone();
+        phones[1].number = RND.str(10);
+
+        phones[2] = new Phone();
+        phones[2].number = RND.str(10);
+
+
+        return phones;
+    }
+
+    private Character giveRandomCharacter() {
+        int randNum = random.nextInt(characters.length);
+        return characters[randNum];
+    }
+
+    public List<RecordClient> getClientSlice(String paginationPage) {
+        List<RecordClient> clients = new ArrayList<>();
         int currentPagination = Integer.parseInt(paginationPage);
         int startSlice = currentPagination * sliceNum;
         int endSlice = sliceNum * currentPagination;
@@ -98,7 +140,17 @@ public class StandDb implements HasAfterInject {
         if (endSlice > clientDotList.size()) {
             endSlice = clientDotList.size();
         }
-        clients = clientDotList.subList(startSlice, endSlice);
+        for (int i = startSlice; i < endSlice; i++) {
+            RecordClient client = new RecordClient();
+            client.id = clientDotList.get(i).id;
+            client.name = clientDotList.get(i).name;
+            client.surname = clientDotList.get(i).surname;
+            client.patronymic = clientDotList.get(i).patronymic;
+
+            client.accBalance = clientDotList.get(i).accBalance;
+            client.maxBalance = clientDotList.get(i).maxBalance;
+            clients.add(client);
+        }
         return clients;
     }
 
@@ -107,15 +159,29 @@ public class StandDb implements HasAfterInject {
         return true;
     }
 
-    public List<Client> searchClient(String name) {
-        List<Client> searchClients = new ArrayList<>();
+    public List<RecordClient> searchClient(String name) {
+        List<RecordClient> searchClients = new ArrayList<>();
         System.out.println("ToSearch:" + name);
         if (name == null) {
             return getClientSlice("0");
         }
         for (Client client : clientDotList) {
-            if (client.snmn.substring(0, name.length()).equals(name)) {
-                searchClients.add(client);
+            for (int i = 0; i < client.surname.length(); i++) {
+                if (client.surname.charAt(i) == name.charAt(0)) {
+                    System.out.println("Surname " + client.surname + " Search is" + name.charAt(0));
+                }
+            }
+            if (client.surname.contains(name)) {
+                RecordClient foundClient = new RecordClient();
+                foundClient.id = client.id;
+                foundClient.name = client.name;
+                foundClient.surname = client.surname;
+                foundClient.patronymic = client.patronymic;
+
+                foundClient.accBalance = client.accBalance;
+                foundClient.maxBalance = client.maxBalance;
+                searchClients.add(foundClient);
+                System.out.println("Index is " + client.surname.indexOf(name.charAt(0)) + " " + client.name);
             }
         }
         return searchClients;

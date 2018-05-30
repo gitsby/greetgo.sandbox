@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
 import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
@@ -43,7 +44,7 @@ public class AuthController implements Controller {
 
     @ToJson
     @Mapping("/clients")
-    public List<Client> getClients(@Par("paginationPage") String paginationPage) {
+    public List<RecordClient> getClients(@Par("paginationPage") String paginationPage) {
         return authRegister.get().getClients(paginationPage);
     }
 
@@ -58,7 +59,7 @@ public class AuthController implements Controller {
 
     @ToJson
     @Mapping("/search")
-    public List<Client> searchClient(@Par("searchName") String searchName) {
+    public List<RecordClient> searchClient(@Par("searchName") String searchName) {
         return authRegister.get().searchClient(searchName);
     }
 

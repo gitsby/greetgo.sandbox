@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
 import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
@@ -143,13 +144,13 @@ public class AuthRegisterStand implements AuthRegister {
     }
 
     @Override
-    public List<Client> getClients(String paginationPage) {
+    public List<RecordClient> getClients(String paginationPage) {
         System.out.println("Slice" + db.get().getClientSlice(paginationPage));
         return db.get().getClientSlice(paginationPage);
     }
 
     @Override
-    public List<Client> searchClient(String searchName) {
+    public List<RecordClient> searchClient(String searchName) {
         return db.get().searchClient(searchName);
     }
 }

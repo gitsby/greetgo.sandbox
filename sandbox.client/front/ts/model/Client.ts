@@ -1,21 +1,27 @@
-export class Client {
+import {Character} from "./Character";
+import {Address} from "./Address";
+import {Phone} from "./Phone";
 
-    public snmn: string;
-    public character: string;
-    public age: number;
+export class Client {
+    public id:number;
+    public name: string = "";
+    public surname: string = "";
+    public patronymic: string = "";
+    public gender: string = "";
+    public birthDate: string = "";
+
+
+    public snmn: string = "";
+    public age: number = 0;
     public accBalance: number = 10;
     public maxBalance: number = 10;
     public minBalance: number = 10;
 
-    public assign(o: any): Client {
-        this.snmn = o.surname;
-        return this;
-    }
+    public charm: Character = null;
 
+    // Addresses
+    public addresses: Address[] = null;
 
-    public static copy(a: any): Client {
-        let ret = new Client();
-        ret.assign(a);
-        return ret;
-    }
+    // Phone numbers
+    public phones: Phone[] = null;
 }
