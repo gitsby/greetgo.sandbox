@@ -10,7 +10,6 @@ import {PhoneType} from "../../model/PhoneType";
       <h2>Main Form Component</h2>
 
       <button (click)="exit.emit()">Выход</button>
-
       <div *ngIf="!userInfo">
         <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
           Загрузить данные пользователя
@@ -61,6 +60,7 @@ import {PhoneType} from "../../model/PhoneType";
       </div>
     </div>`,
 })
+
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 

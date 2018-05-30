@@ -2,16 +2,15 @@ package kz.greetgo.sandbox.controller.controller;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.annotations.AsIs;
-import kz.greetgo.mvc.annotations.Mapping;
-import kz.greetgo.mvc.annotations.Par;
-import kz.greetgo.mvc.annotations.ParSession;
-import kz.greetgo.mvc.annotations.ToJson;
+import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
+
+import java.util.List;
 
 /**
  * как составлять контроллеры написано
@@ -40,5 +39,11 @@ public class AuthController implements Controller {
   @Mapping("/userInfo")
   public UserInfo userInfo(@ParSession("personId") String personId) {
     return authRegister.get().getUserInfo(personId);
+  }
+
+  @ToJson
+  @Mapping("/clientsInfo")
+  public List<ClientInfo> clientsInfo() {
+    return authRegister.get().getClientsInfo();
   }
 }

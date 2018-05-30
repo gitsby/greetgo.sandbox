@@ -2,20 +2,25 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
-
+import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
+  public final List<ClientDot> clientDotList = new ArrayList<>();
 
   @Override
   public void afterInject() throws Exception {
+    initClientDotList();
     try (BufferedReader br = new BufferedReader(
       new InputStreamReader(getClass().getResourceAsStream("StandDbInitData.txt"), "UTF-8"))) {
 
@@ -41,6 +46,15 @@ public class StandDb implements HasAfterInject {
             throw new RuntimeException("Unknown command " + command);
         }
       }
+    }
+  }
+
+  private void initClientDotList() {
+    for (int i = 0; i < 100; i++) {
+      ClientDot clientDot = new ClientDot();
+      clientDot.name = RND.str(10);
+      clientDot.surname = RND.str(10);
+      clientDotList.add(clientDot);
     }
   }
 

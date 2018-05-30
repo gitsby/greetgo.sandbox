@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
@@ -13,12 +14,10 @@ import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.util.ServerUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Bean
 public class AuthRegisterStand implements AuthRegister {
@@ -125,5 +124,14 @@ public class AuthRegisterStand implements AuthRegister {
   @Override
   public UserInfo getUserInfo(String personId) {
     return db.get().personStorage.get(personId).toUserInfo();
+  }
+
+  @Override
+  public List<ClientInfo> getClientsInfo() {
+    List<ClientInfo> clientsInfo = new ArrayList<>();
+    for (int i = 0; i < db.get().clientDotList.size(); i++) {
+      clientsInfo.add(db.get().clientDotList.get(i).toClientInfo());
+    }
+    return clientsInfo;
   }
 }
