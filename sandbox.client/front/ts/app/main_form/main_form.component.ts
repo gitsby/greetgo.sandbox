@@ -3,8 +3,6 @@ import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {Client} from "../../model/Client";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {MatTable, MatSortModule} from "@angular/material"
 
 const STRINGS: {
     npmn: string,
@@ -14,6 +12,7 @@ const STRINGS: {
     maxBalance: number,
     minBalance: number
 }[] = [];
+const sliceNum: number = 10;
 
 
 @Component({
@@ -21,9 +20,11 @@ const STRINGS: {
     template: require("./main_form.component.html"),
     styles: [require('./main_form.component.css')],
 })
+
 export class MainFormComponent {
     @Output() exit = new EventEmitter<void>();
-
+    currentPagination = 0;
+    paginationNum = 10;
     clients = STRINGS;
     userInfo: UserInfo | null = null;
     loadUserInfoButtonEnabled: boolean = true;
@@ -31,13 +32,29 @@ export class MainFormComponent {
 
     constructor(private httpService: HttpService) {
         this.loadClients();
+        this.loadTotalNumberOfPaginationPage();
+    }
+
+    loadTotalNumberOfPaginationPage() {
+        this.httpService.get("/auth/pagination_page_num").toPromise().then(
+            result => {
+                this.paginationNum = result.json();
+            }, error => {
+                alert(error)
+            }
+        );
     }
 
     loadClients() {
-        this.httpService.get("/auth/clients").toPromise().then(result => {
+        this.httpService.get("/auth/clients",
+            {paginationPage: this.currentPagination + ""})
+            .toPromise().then(result => {
             let clients: Client[] = [];
             for (let res of result.json()) {
                 clients.push(res);
+            }
+            while (STRINGS.length > 0) {
+                STRINGS.pop();
             }
             for (let arr of clients) {
                 STRINGS.push({
@@ -49,6 +66,8 @@ export class MainFormComponent {
                     "minBalance": arr.minBalance + 10
                 });
             }
+            this.loadTotalNumberOfPaginationPage();
+
         }, error => {
             alert("Error   " + error.toString())
         });
@@ -58,7 +77,9 @@ export class MainFormComponent {
         this.loadUserInfoButtonEnabled = false;
         this.loadUserInfoError = null;
 
-        this.httpService.get("/auth/userInfo").toPromise().then(result => {
+        this.httpService.get("/auth/userInfo",
+            {paginationPage: this.currentPagination})
+            .toPromise().then(result => {
             this.userInfo = UserInfo.copy(result.json());
             let phoneType: PhoneType | null = this.userInfo.phoneType;
             console.log(phoneType);
@@ -70,11 +91,27 @@ export class MainFormComponent {
         });
     }
 
-    plusClick(index: number) {
-        alert(index);
+    loadClientSlice(index: number) {
+        this.currentPagination = index;
+        this.loadClients();
     }
 
-    deleteClient(index: number) {
-        STRINGS.splice(index, 1);
+    plusClick(index: number) {
+        alert(index)
+    }
+
+    sortBy(column: number) {
+        alert(column)
+    }
+
+    deleteClient(deleteIndex: any) {
+        this.httpService.get("/auth/delete", {
+            index: deleteIndex + "",
+            paginationPage: this.currentPagination as any
+        }).toPromise().then(result => {
+            this.loadClients();
+        }, error => {
+            alert(error)
+        });
     }
 }

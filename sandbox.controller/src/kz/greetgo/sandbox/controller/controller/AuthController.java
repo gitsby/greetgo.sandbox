@@ -43,7 +43,22 @@ public class AuthController implements Controller {
 
     @ToJson
     @Mapping("/clients")
-    public List<Client> getClients() {
-        return authRegister.get().getClients();
+    public List<Client> getClients(@Par("paginationPage") String paginationPage) {
+        return authRegister.get().getClients(paginationPage);
+    }
+
+    @ToJson
+    @Mapping("/delete")
+    public boolean deleteClient(@Par("index") String index,
+                                @Par("paginationPage") String paginationPage) {
+        System.out.println("Value: " + index);
+        authRegister.get().deleteClient(index);
+        return false;
+    }
+
+    @ToJson
+    @Mapping("/pagination_page_num")
+    public int getPaginationNum() {
+        return authRegister.get().getPaginationNum();
     }
 }

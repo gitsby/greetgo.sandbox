@@ -6,12 +6,13 @@
 </head>
 <body>
 <div>
+
     <h2>Main Form Component</h2>
 
-    <button (click)="exit.emit()">Выход</button>
+    <button class="button" (click)="exit.emit()">Выход</button>
 
     <div *ngIf="!userInfo">
-        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+        <button class="button" [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
             Загрузить данные пользователя
         </button>
         <div *ngIf="loadUserInfoError">
@@ -61,13 +62,13 @@
     <div>
         <table>
             <tbody>
-            <tr>
-                <td>Surname Name Middle Name</td>
-                <td>Character</td>
-                <td>Age</td>
-                <td>Load</td>
-                <td>max</td>
-                <td>min</td>
+            <tr class="headers">
+                <td (click)="sortBy(1)">Surname Name Middle Name</td>
+                <td (click)="sortBy(1)">Character</td>
+                <td (click)="sortBy(1)">Age</td>
+                <td (click)="sortBy(1)">Load</td>
+                <td (click)="sortBy(1)">max</td>
+                <td (click)="sortBy(1)">min</td>
             </tr>
             <tr *ngFor="let client of clients; let i = index">
                 <td>{{client.npmn}}</td>
@@ -77,17 +78,20 @@
                 <td>{{client.maxBalance}}</td>
                 <td>{{client.minBalance}}</td>
                 <td>
-                    <button (click)="plusClick(i)">+</button>
+                    <a class="button" (click)="plusClick(i)">+</a>
                 </td>
                 <td>
-                    <button>...</button>
+                    <a class="button">...</a>
                 </td>
                 <td>
-                    <button (click)="deleteClient(i)">-</button>
+                    <a class="button" (click)="deleteClient(i)">-</a>
                 </td>
             </tr>
             </tbody>
         </table>
+    </div>
+    <div class="pagination" *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index">
+        <a (click)="loadClientSlice(ind)">{{ind}}</a>
     </div>
     <dialog>
         <button>SAdasd</button>

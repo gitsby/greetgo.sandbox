@@ -128,7 +128,23 @@ public class AuthRegisterStand implements AuthRegister {
     }
 
     @Override
-    public List<Client> getClients() {
-        return db.get().clientDotList;
+    public boolean deleteClient(String clientId) {
+        if (clientId == null) {
+            System.out.println("NULL");
+            return false;
+        }
+        db.get().deleteClient(clientId);
+        return false;
+    }
+
+    @Override
+    public int getPaginationNum() {
+        return db.get().getPaginationNum();
+    }
+
+    @Override
+    public List<Client> getClients(String paginationPage) {
+        System.out.println("Slice" + db.get().getClientSlice(paginationPage));
+        return db.get().getClientSlice(paginationPage);
     }
 }

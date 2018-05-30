@@ -13,66 +13,70 @@ import java.util.List;
  * Аутентификация, авторизация и работа с сессией
  */
 public interface AuthRegister {
-  /**
-   * Сохраняет значение пользовательского параметра. У каждого пользователя свои значения
-   *
-   * @param personId идентификатор пользователя
-   * @param name     имя параметра
-   * @param value    значение параметра
-   */
-  void saveParam(String personId, UserParamName name, String value);
+    /**
+     * Сохраняет значение пользовательского параметра. У каждого пользователя свои значения
+     *
+     * @param personId идентификатор пользователя
+     * @param name     имя параметра
+     * @param value    значение параметра
+     */
+    void saveParam(String personId, UserParamName name, String value);
 
-  /**
-   * Возвращает значение указанного параметра
-   *
-   * @param personId идентификатор пользователя
-   * @param name     имя указываемого параметра
-   * @return значение
-   */
-  String getParam(String personId, UserParamName name);
+    /**
+     * Возвращает значение указанного параметра
+     *
+     * @param personId идентификатор пользователя
+     * @param name     имя указываемого параметра
+     * @return значение
+     */
+    String getParam(String personId, UserParamName name);
 
-  /**
-   * Производит аутентификацию
-   *
-   * @param accountName логин
-   * @param password    пароль
-   * @return токен
-   */
-  String login(String accountName, String password);
+    /**
+     * Производит аутентификацию
+     *
+     * @param accountName логин
+     * @param password    пароль
+     * @return токен
+     */
+    String login(String accountName, String password);
 
-  /**
-   * Проверяет токен и сохраняет параметры сессии в ThreadLocal переменной, для дальнейшего использования в запросе
-   *
-   * @param token токен сессии
-   * @throws SecurityError генерируется в случае нарушения секурити
-   */
-  void checkTokenAndPutToThreadLocal(String token);
+    /**
+     * Проверяет токен и сохраняет параметры сессии в ThreadLocal переменной, для дальнейшего использования в запросе
+     *
+     * @param token токен сессии
+     * @throws SecurityError генерируется в случае нарушения секурити
+     */
+    void checkTokenAndPutToThreadLocal(String token);
 
-  /**
-   * Очищает параметры сессии из переменной ThreadLocal
-   */
-  void cleanTokenThreadLocal();
+    /**
+     * Очищает параметры сессии из переменной ThreadLocal
+     */
+    void cleanTokenThreadLocal();
 
-  /**
-   * @return получает SessionInfo из ThreadLocal
-   */
-  SessionInfo getSessionInfo();
+    /**
+     * @return получает SessionInfo из ThreadLocal
+     */
+    SessionInfo getSessionInfo();
 
-  /**
-   * Предоставляет клиенту информацию о проделаной аутентификации
-   *
-   * @param personId идентификатор пользователя
-   * @return информация о проделаной аутентификации
-   */
-  AuthInfo getAuthInfo(String personId);
+    /**
+     * Предоставляет клиенту информацию о проделаной аутентификации
+     *
+     * @param personId идентификатор пользователя
+     * @return информация о проделаной аутентификации
+     */
+    AuthInfo getAuthInfo(String personId);
 
-  /**
-   * Предоставляет детальную информацию о пользователе
-   *
-   * @param personId идентификатор пользователя
-   * @return детальная информация о пользователе
-   */
-  UserInfo getUserInfo(String personId);
+    /**
+     * Предоставляет детальную информацию о пользователе
+     *
+     * @param personId идентификатор пользователя
+     * @return детальная информация о пользователе
+     */
+    UserInfo getUserInfo(String personId);
 
-  List<Client> getClients();
+    List<Client> getClients(String paginationPage);
+
+    boolean deleteClient(String clientId);
+
+    int getPaginationNum();
 }
