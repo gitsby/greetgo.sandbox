@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {Component} from "@angular/core";
 import {HttpService} from "../HttpService";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
@@ -15,13 +15,13 @@ import {Phone} from "../../model/Phone";
 
 export class EditFormComponent {
 
-    @Input() client: Client;
+    public client = null;
 
     constructor(private httpService: HttpService) {
+        let modal = document.getElementById("myModal");
     }
 
     saveClient() {
-        // Required
         let nameInput = document.getElementById("nameInput") as HTMLInputElement;
         let surnameInput = document.getElementById("surnameInput") as HTMLInputElement;
         let patronymicInput = document.getElementById("patronymicInput") as HTMLInputElement;
@@ -51,66 +51,102 @@ export class EditFormComponent {
             alert("You must fill all required fields!");
             return;
         }
-        let newClient: Client = new Client();
-        newClient.id = -1;
-        newClient.name = nameInput.value;
-        newClient.surname = surnameInput.value;
-        newClient.patronymic = patronymicInput.value;
-        newClient.gender = genderInput.value;
-        newClient.birthDate = birthDateInput.value;
+        if (this.client == null) {
+            alert("Add");
+            let newClient: Client = new Client();
+            newClient.id = -1;
+            newClient.name = nameInput.value;
+            newClient.surname = surnameInput.value;
+            newClient.patronymic = patronymicInput.value;
+            newClient.gender = genderInput.value;
+            newClient.birthDate = birthDateInput.value;
 
-        let addresses: Address[] = [];
+            let addresses: Address[] = [];
 
-        let address: Address = new Address();
-        address.type = "REG";
-        address.street = streetInput.value;
-        address.house = houseInput.value;
-        address.flat = flatInput.value;
-        addresses.push(address);
+            let address: Address = new Address();
+            address.type = "REG";
+            address.street = streetInput.value;
+            address.house = houseInput.value;
+            address.flat = flatInput.value;
+            addresses.push(address);
 
-        if (factStreetInput.value.length != 0 && factHouseInput.value.length != 0
-            && factFlatInput.value.length != 0) {
-            let factAddress = new Address();
-            factAddress.house = factHouseInput.value;
-            factAddress.street = factStreetInput.value;
-            factAddress.flat = factFlatInput.value;
-            factAddress.type = "FACT";
-            addresses.push(factAddress);
-        }
-
-
-        let phones: Phone[] = [];
-
-        if (homePhoneInput.value.length != 0) {
-            let homePhone = new Phone();
-            homePhone.number = homePhoneInput.value;
-            homePhone.type = "HOME";
-            phones.push(homePhone);
-        }
-
-        if (workingPhoneInput.value.length != 0) {
-            let workingPhone = new Phone();
-            workingPhone.number = workingPhoneInput.value;
-            workingPhone.type = "WORKING";
-            phones.push(workingPhone);
-        }
-
-        for (let mobilePhone of mobilePhonesInput) {
-            if (mobilePhone.value.length != 0) {
-                let newPhone = new Phone();
-                newPhone.number = mobilePhone.value;
-                newPhone.type = "MOBILE";
-                phones.push(newPhone);
+            if (factStreetInput.value.length != 0 && factHouseInput.value.length != 0
+                && factFlatInput.value.length != 0) {
+                let factAddress = new Address();
+                factAddress.house = factHouseInput.value;
+                factAddress.street = factStreetInput.value;
+                factAddress.flat = factFlatInput.value;
+                factAddress.type = "FACT";
+                addresses.push(factAddress);
             }
+
+
+            let phones: Phone[] = [];
+
+            if (homePhoneInput.value.length != 0) {
+                let homePhone = new Phone();
+                homePhone.number = homePhoneInput.value;
+                homePhone.type = "HOME";
+                phones.push(homePhone);
+            }
+
+            if (workingPhoneInput.value.length != 0) {
+                let workingPhone = new Phone();
+                workingPhone.number = workingPhoneInput.value;
+                workingPhone.type = "WORKING";
+                phones.push(workingPhone);
+            }
+
+            for (let mobilePhone of mobilePhonesInput) {
+                if (mobilePhone.value.length != 0) {
+                    let newPhone = new Phone();
+                    newPhone.number = mobilePhone.value;
+                    newPhone.type = "MOBILE";
+                    phones.push(newPhone);
+                }
+            }
+            newClient.addresses = addresses;
+            newClient.phones = phones;
+            //
+            this.httpService.get("/auth/add_client", {newClient: newClient.toString()}).toPromise().then(result => {
+                if (result) {
+                    alert("Added");
+                } else {
+                    alert("Unable to add!");
+                }
+            }, error => {
+                alert(error)
+            });
+        } else {
+            alert("Edit")
         }
-        newClient.addresses = addresses;
-        newClient.phones = phones;
-        //
-        this.httpService.get("/auth/add_client", {newClient: newClient.toString()}).toPromise().then(result => {
-            alert("ADDED");
+        // Required
+    }
+
+    async loadFromDatabase() {
+        await sleep(10);
+
+        function sleep(time = 0) {
+            return new Promise(r => setTimeout(r, time))
+        }
+
+        if (this.client == null) {
+            alert("Error clientId is null");
+            return;
+        }
+        this.httpService.get("/auth/getClientWithId",
+            {clientId: this.client + ""}).toPromise().then(result => {
+            let retClient: Client = result.json();
+            let nameInput = document.getElementById("nameInput") as HTMLInputElement;
+            let surnameInput = document.getElementById("surnameInput") as HTMLInputElement;
+            let patronymicInput = document.getElementById("patronymicInput") as HTMLInputElement;
+
+            nameInput.value = retClient.name;
+            surnameInput.value = retClient.surname;
+            patronymicInput.value = retClient.patronymic;
         }, error => {
-            alert(error)
-        });
+            alert("Error from retrieving " + error)
+        })
     }
 
     mobilePhonesEmpty(mobilePhones): Boolean {

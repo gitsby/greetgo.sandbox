@@ -79,11 +79,13 @@ public interface AuthRegister {
 
     List<RecordClient> searchClient(String searchName);
 
-    List<RecordClient> sortClientByColumnNum(int num);
+    List<RecordClient> sortClientByColumnNum(String columnNum, String paginationPage);
 
     boolean addNewClient(String newClient);
 
     boolean deleteClient(String clientId);
 
     int getPaginationNum();
+
+    Client getClientById(String clientId);
 }

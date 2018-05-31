@@ -160,15 +160,48 @@ public class StandDb implements HasAfterInject {
         return clients;
     }
 
-    public List<RecordClient> sortClientByColumnNum(int num) {
-        List<RecordClient> sortedList = getClientSlice("0");
-        if (num == 1) {
-            Collections.sort(clientDotList, new Comparator<Client>() {
+    public List<RecordClient> sortClientByColumnNum(int columnNum, String paginationPage) {
+        List<RecordClient> sortedList = getClientSlice(paginationPage);
+        System.out.println("Column header num:" + columnNum);
+        if (columnNum == 1) {
+            System.out.println("Sorting with surname:");
+            Collections.sort(sortedList, new Comparator<RecordClient>() {
                 @Override
-                public int compare(Client o1, Client o2) {
+                public int compare(RecordClient o1, RecordClient o2) {
                     return o1.surname.compareTo(o2.surname);
                 }
             });
+        } else if (columnNum == 3) {
+            Collections.sort(sortedList, new Comparator<RecordClient>() {
+                @Override
+                public int compare(RecordClient o1, RecordClient o2) {
+                    return (o1.age > o2.age) ? 1 : ((o1.age < o2.age) ? -1 : 0);
+                }
+            });
+        } else if (columnNum == 4) {
+            Collections.sort(sortedList, new Comparator<RecordClient>() {
+                @Override
+                public int compare(RecordClient o1, RecordClient o2) {
+                    return (o1.accBalance > o2.accBalance) ? 1 : ((o1.accBalance < o2.accBalance) ? -1 : 0);
+                }
+            });
+        } else if (columnNum == 5) {
+            Collections.sort(sortedList, new Comparator<RecordClient>() {
+                @Override
+                public int compare(RecordClient o1, RecordClient o2) {
+                    return (o1.maxBalance > o2.maxBalance) ? 1 : ((o1.maxBalance < o2.maxBalance) ? -1 : 0);
+                }
+            });
+        } else if (columnNum == 6) {
+            Collections.sort(sortedList, new Comparator<RecordClient>() {
+                @Override
+                public int compare(RecordClient o1, RecordClient o2) {
+                    return (o1.minBalance > o2.minBalance) ? 1 : ((o1.minBalance < o2.minBalance) ? -1 : 0);
+                }
+            });
+        }
+        for (RecordClient recordClient : sortedList) {
+            System.out.println(recordClient.surname);
         }
         return sortedList;
     }
@@ -193,6 +226,16 @@ public class StandDb implements HasAfterInject {
     public boolean deleteClient(String clientId) {
         clientDotList.remove(Integer.parseInt(clientId));
         return true;
+    }
+
+    public Client getClientById(String clientId){
+        int clientNum = Integer.parseInt(clientId);
+        for (Client client: clientDotList) {
+            if(client.id == clientNum){
+                return client;
+            }
+        }
+        return null;
     }
 
     public List<RecordClient> searchClient(String name) {

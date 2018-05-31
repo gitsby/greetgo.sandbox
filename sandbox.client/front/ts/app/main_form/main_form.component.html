@@ -4,37 +4,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <title>Title</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
 </head>
 <body>
 <div>
 
-    <h2>Main Form Component</h2>
-
-
     <div class="">
 
     </div>
+    <div class="container topMenu">
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="row">
+                    <div class="col-sm-1">
+                        <a class="btn" (click)="exit.emit()">Выход</a>
+                    </div>
+                    <div class="col-sm-4">
+                        <button *ngIf="!userInfo" class="btn" [disabled]="!loadUserInfoButtonEnabled"
+                                (click)="loadUserInfoButtonClicked()">
+                            Загрузить данные пользователя
+                        </button>
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="input" type="text" class="form-control" placeholder="Enter FIO">
+                    </div>
 
-    <div class="pagination">
-        <button class="button" (click)="exit.emit()">Выход</button>
-        <button *ngIf="!userInfo" class="button" [disabled]="!loadUserInfoButtonEnabled"
-                (click)="loadUserInfoButtonClicked()">
-            Загрузить данные пользователя
-        </button>
-
-        <input id="input" type="text" class="field__input" placeholder="Enter FIO">
-        <button (click)="searchFromInput()" class="button">Search</button>
-
-        <div *ngIf="!userInfo">
-
-            <div *ngIf="loadUserInfoError">
-                {{loadUserInfoError}}
+                    <div class="col-sm-2">
+                        <a (click)="searchFromInput()" class="btn">Search</a>
+                    </div>
+                    <div class="col-sm-2">
+                        <a class="btn" (click)="plusClick()">+</a>
+                    </div>
+                </div>
             </div>
+            <div class="col-lg-3">
+                <h4>Main Form Component</h4>
+            </div>
+
         </div>
-        <a class="button" (click)="plusClick()">+</a>
+    </div>
+    <div *ngIf="!userInfo">
+
+        <div *ngIf="loadUserInfoError">
+            {{loadUserInfoError}}
+        </div>
     </div>
     <div *ngIf="userInfo">
-
         <table>
             <tbody>
 
@@ -74,6 +92,8 @@
 
     </div>
     <div>
+
+        <h3>Clients</h3>
         <table>
             <tbody>
             <tr class="headers">
@@ -94,7 +114,7 @@
                 <td>{{client.maxBalance}}</td>
                 <td>{{client.minBalance}}</td>
                 <td>
-                    <a class="button">...</a>
+                    <a class="button" (click)="editClick(i)">...</a>
                 </td>
                 <td>
                     <a class="button" (click)="deleteClient(i)">-</a>
@@ -103,11 +123,27 @@
             </tbody>
         </table>
     </div>
-    <div class="pagination" *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index">
-        <a (click)="loadClientSlice(ind)">{{ind}}</a>
+    <div class="pagination">
+        <a><<</a>
+        <a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"
+           (click)="loadClientSlice(ind)">{{ind}}</a>
+        <a>>></a>
     </div>
 
-    <edit-form-component *ngIf="currentClient" [client]="currentClient"></edit-form-component>
+    <edit-form-component></edit-form-component>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="bootstrap/js/bootstrap.min.js"
+            integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+            crossorigin="anonymous"></script>
 </div>
 </body>
 </html>

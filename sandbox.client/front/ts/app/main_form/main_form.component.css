@@ -7,15 +7,12 @@
     text-decoration: none;
 }
 
-.field__input {
-    position: relative;
-    margin-bottom: 2px;
-    width: 360px;
-    background: #fff;
-    color: #595959;
-    font: inherit;
-    border: 1px solid #adadad;
-    padding: 10px 10px;
+.btn {
+    margin: 5px;
+}
+
+.form-control {
+    margin: 5px;
 }
 
 .button:hover {
@@ -47,6 +44,24 @@ tr:nth-child(even) {
 
 .pagination {
     display: inline-block;
+}
+
+.container {
+    margin: 0px;
+    padding: 0px;
+}
+
+.btn {
+    width: 100%;
+}
+
+.row {
+    alignment: left;
+}
+
+.col-sm {
+    margin: 0;
+    padding: 0;
 }
 
 .pagination a {

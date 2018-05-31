@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
@@ -141,6 +142,12 @@ public class AuthRegisterStand implements AuthRegister {
     }
 
     @Override
+    public Client getClientById(String clientId) {
+
+        return db.get().getClientById(clientId);
+    }
+
+    @Override
     public List<RecordClient> getClients(String paginationPage) {
         System.out.println("Slice" + db.get().getClientSlice(paginationPage));
         return db.get().getClientSlice(paginationPage);
@@ -152,8 +159,9 @@ public class AuthRegisterStand implements AuthRegister {
     }
 
     @Override
-    public List<RecordClient> sortClientByColumnNum(int num) {
-        return null;
+    public List<RecordClient> sortClientByColumnNum(String columnNum, String paginationPage) {
+        System.out.println("Inside StandRegister:" + columnNum);
+        return db.get().sortClientByColumnNum(Integer.parseInt(columnNum), paginationPage);
     }
 
     @Override

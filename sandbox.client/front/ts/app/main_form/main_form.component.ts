@@ -1,9 +1,10 @@
-import {Component, EventEmitter, Output} from "@angular/core";
+import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {Client} from "../../model/Client";
 import {RecordClient} from "../../model/RecordClient";
+import {EditFormComponent} from "../edit_form/edit_form.component";
 
 const CLIENTS: {
     npmn: string,
@@ -23,9 +24,13 @@ const sliceNum: number = 10;
 })
 
 export class MainFormComponent {
+
+    @ViewChild(EditFormComponent) child;
+
     public mvar = 10;
     @Output() exit = new EventEmitter<void>();
     currentClient: Client = null;
+    currentColumnNum = 0;
     currentPagination = 0;
     paginationNum = 10;
     clients = CLIENTS;
@@ -98,13 +103,40 @@ export class MainFormComponent {
     }
 
     plusClick() {
-        this.currentClient = new Client();
+        this.currentClient = null;
         this.modalFormVisible = true;
         document.getElementById("myModal").style.display = "block";
     }
 
-    sortBy(column: number) {
-        alert(column);
+    editClick(index: any) {
+        this.child.client = index;
+        alert("asda " + this.child.client);
+        document.getElementById("myModal").style.display = "block";
+        this.child.loadFromDatabase().then(() => {
+        }, error => {
+            alert(error);
+        });
+    }
+
+    sortBy(columnNum: any) {
+        this.currentColumnNum = columnNum;
+        alert(columnNum);
+        this.httpService.get("/auth/sort", {
+            columnNum:
+            columnNum + "",
+            paginationPage:
+            this.currentPagination + ""
+        }).toPromise().then(result => {
+            let clients: RecordClient[] = [];
+            for (let res of result.json()) {
+                clients.push(res);
+            }
+            this.clearClientsList();
+            this.pushToClientsList(clients);
+            this.loadTotalNumberOfPaginationPage();
+        }, error => {
+            alert(error);
+        })
     }
 
     searchFromInput() {
