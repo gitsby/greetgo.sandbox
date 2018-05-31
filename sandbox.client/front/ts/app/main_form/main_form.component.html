@@ -17,17 +17,12 @@
     </div>
     <div class="container topMenu">
         <div class="row">
+
+            <div class="col-lg-3">
+                <h4>Main Form Component</h4>
+            </div>
             <div class="col-lg-9">
                 <div class="row">
-                    <div class="col-sm-1">
-                        <a class="btn" (click)="exit.emit()">Выход</a>
-                    </div>
-                    <div class="col-sm-4">
-                        <button *ngIf="!userInfo" class="btn" [disabled]="!loadUserInfoButtonEnabled"
-                                (click)="loadUserInfoButtonClicked()">
-                            Загрузить данные пользователя
-                        </button>
-                    </div>
                     <div class="col-sm-3">
                         <input id="input" type="text" class="form-control" placeholder="Enter FIO">
                     </div>
@@ -35,13 +30,21 @@
                     <div class="col-sm-2">
                         <a (click)="searchFromInput()" class="btn">Search</a>
                     </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-1">
                         <a class="btn" (click)="plusClick()">+</a>
                     </div>
+
+                    <div class="col-sm-4">
+                        <button *ngIf="!userInfo" class="btn" [disabled]="!loadUserInfoButtonEnabled"
+                                (click)="loadUserInfoButtonClicked()">
+                            Загрузить данные пользователя
+                        </button>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <a class="btn" (click)="exit.emit()">Выход</a>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-3">
-                <h4>Main Form Component</h4>
             </div>
 
         </div>
@@ -123,11 +126,13 @@
             </tbody>
         </table>
     </div>
-    <div class="pagination">
-        <a><<</a>
-        <a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"
-           (click)="loadClientSlice(ind)">{{ind}}</a>
-        <a>>></a>
+    <div class="center">
+        <div class="pagination">
+            <a (click)="increaseCurrentPagination()"><<</a>
+            <a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"
+               (click)="loadClientSlice(ind)">{{ind}}</a>
+            <a (click)="decreaseCurrentPagination()">>></a>
+        </div>
     </div>
 
     <edit-form-component></edit-form-component>

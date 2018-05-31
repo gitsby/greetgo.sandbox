@@ -35,6 +35,16 @@
     font-weight: bold;
 }
 
+.cancelBtn {
+    border-radius: 5px;
+    border: 1px solid #59B2E0;
+}
+
+.cancelBtn:hover {
+    color: #4345ff;
+    border: 1px solid #4770ff;
+}
+
 .close:hover,
 .close:focus {
     color: #000;
@@ -51,6 +61,10 @@
 .btn-primary {
     border: none;
     background: #59B2E0;
+}
+
+.btn-primary:hover {
+    background: #4770ff;
 }
 
 .bottom-btns {

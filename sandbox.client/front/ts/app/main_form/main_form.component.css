@@ -7,8 +7,20 @@
     text-decoration: none;
 }
 
+.topMenu {
+    width: 100%;
+    border-bottom: 1px solid #3498db;
+}
+
 .btn {
+    color: white;
+    background: #3498db;
     margin: 5px;
+    border-color: #4fcadb;
+}
+
+.center {
+    text-align: center;
 }
 
 .form-control {
@@ -44,11 +56,6 @@ tr:nth-child(even) {
 
 .pagination {
     display: inline-block;
-}
-
-.container {
-    margin: 0px;
-    padding: 0px;
 }
 
 .btn {

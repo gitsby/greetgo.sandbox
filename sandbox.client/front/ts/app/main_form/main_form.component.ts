@@ -103,7 +103,7 @@ export class MainFormComponent {
     }
 
     plusClick() {
-        this.currentClient = null;
+        this.child.client = null;
         this.modalFormVisible = true;
         document.getElementById("myModal").style.display = "block";
     }
@@ -166,6 +166,21 @@ export class MainFormComponent {
         });
     }
 
+    increaseCurrentPagination() {
+        this.currentPagination++;
+        if (this.currentPagination > this.paginationNum) {
+            this.currentPagination = 0;
+        }
+        this.loadClients();
+    }
+
+    decreaseCurrentPagination() {
+        this.currentPagination--;
+        if (this.currentPagination < 0) {
+            this.currentPagination = this.paginationNum;
+        }
+        this.loadClients();
+    }
 
     loadUserInfoButtonClicked() {
         this.loadUserInfoButtonEnabled = false;
