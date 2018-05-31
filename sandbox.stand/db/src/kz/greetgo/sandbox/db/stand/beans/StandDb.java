@@ -1,5 +1,7 @@
 package kz.greetgo.sandbox.db.stand.beans;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.*;
@@ -8,6 +10,7 @@ import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -26,7 +29,6 @@ public class StandDb implements HasAfterInject {
             new Character()};
 
     private final int sliceNum = 10;
-
 
     @Override
     public void afterInject() throws Exception {
@@ -72,7 +74,7 @@ public class StandDb implements HasAfterInject {
     }
 
     public int getPaginationNum() {
-        return clientDotList.size() / sliceNum;
+        return clientDotList.size() / sliceNum + clientDotList.size() % sliceNum;
     }
 
     private void initClientList() {
@@ -94,6 +96,8 @@ public class StandDb implements HasAfterInject {
             d.phones = createRandomPhoneNumbers();
 
             clientDotList.add(d);
+
+            System.out.println(d);
         }
     }
 
@@ -146,12 +150,44 @@ public class StandDb implements HasAfterInject {
             client.name = clientDotList.get(i).name;
             client.surname = clientDotList.get(i).surname;
             client.patronymic = clientDotList.get(i).patronymic;
+            client.age = clientDotList.get(i).age;
 
             client.accBalance = clientDotList.get(i).accBalance;
             client.maxBalance = clientDotList.get(i).maxBalance;
             clients.add(client);
         }
+
         return clients;
+    }
+
+    public List<RecordClient> sortClientByColumnNum(int num) {
+        List<RecordClient> sortedList = getClientSlice("0");
+        if (num == 1) {
+            Collections.sort(clientDotList, new Comparator<Client>() {
+                @Override
+                public int compare(Client o1, Client o2) {
+                    return o1.surname.compareTo(o2.surname);
+                }
+            });
+        }
+        return sortedList;
+    }
+
+    public boolean addNewClient(String newClient) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode node = mapper.readTree(newClient);
+            Client client = mapper.readValue(newClient, Client.class);
+
+            clientDotList.add(client);
+            for (Client cl : clientDotList) {
+                System.out.println(cl);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     public boolean deleteClient(String clientId) {
@@ -178,6 +214,7 @@ public class StandDb implements HasAfterInject {
                 foundClient.surname = client.surname;
                 foundClient.patronymic = client.patronymic;
 
+                foundClient.age = client.age;
                 foundClient.accBalance = client.accBalance;
                 foundClient.maxBalance = client.maxBalance;
                 searchClients.add(foundClient);

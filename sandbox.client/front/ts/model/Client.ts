@@ -3,6 +3,7 @@ import {Address} from "./Address";
 import {Phone} from "./Phone";
 
 export class Client {
+
     public id:number;
     public name: string = "";
     public surname: string = "";
@@ -24,4 +25,8 @@ export class Client {
 
     // Phone numbers
     public phones: Phone[] = null;
+
+    public toString = () : string=>{
+        return JSON.stringify(this);
+    }
 }

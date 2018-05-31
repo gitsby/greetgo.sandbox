@@ -24,6 +24,7 @@
 
         <input id="input" type="text" class="field__input" placeholder="Enter FIO">
         <button (click)="searchFromInput()" class="button">Search</button>
+
         <div *ngIf="!userInfo">
 
             <div *ngIf="loadUserInfoError">

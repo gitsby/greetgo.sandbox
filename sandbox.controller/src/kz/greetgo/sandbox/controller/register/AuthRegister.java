@@ -79,6 +79,10 @@ public interface AuthRegister {
 
     List<RecordClient> searchClient(String searchName);
 
+    List<RecordClient> sortClientByColumnNum(int num);
+
+    boolean addNewClient(String newClient);
+
     boolean deleteClient(String clientId);
 
     int getPaginationNum();
