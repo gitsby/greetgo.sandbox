@@ -42,51 +42,6 @@ public class AuthController implements Controller {
         return authRegister.get().getUserInfo(personId);
     }
 
-    @ToJson
-    @Mapping("/clients")
-    public List<RecordClient> getClients(@Par("paginationPage") String paginationPage) {
-        return authRegister.get().getClients(paginationPage);
-    }
 
-    @ToJson
-    @Mapping("/delete")
-    public boolean deleteClient(@Par("index") String index,
-                                @Par("paginationPage") String paginationPage) {
-        System.out.println("Value: " + index);
-        authRegister.get().deleteClient(index);
-        return false;
-    }
 
-    @ToJson
-    @Mapping("/search")
-    public List<RecordClient> searchClient(@Par("searchName") String searchName) {
-        return authRegister.get().searchClient(searchName);
-    }
-
-    @ToJson
-    @Mapping("/add_client")
-    public boolean addClient(@Par("newClient") String newClient) {
-        return authRegister.get().addNewClient(newClient);
-    }
-
-    @ToJson
-    @Mapping("/sort")
-    public List<RecordClient> sortClientByColumnNum(@Par("columnNum") String columnNum,
-                                                    @Par("paginationPage") String paginationPage) {
-        System.out.println("Inside Controller:" + columnNum);
-        return authRegister.get().sortClientByColumnNum(columnNum, paginationPage);
-    }
-
-    @ToJson
-    @Mapping("/pagination_page_num")
-    public int getPaginationNum() {
-        return authRegister.get().getPaginationNum();
-    }
-
-    @ToJson
-    @Mapping("/getClientWithId")
-    public Client getClientById(@Par("clientId") String clientId) {
-        System.out.println("Retrieving from Controller: " + clientId);
-        return authRegister.get().getClientById(clientId);
-    }
 }

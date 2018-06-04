@@ -75,17 +75,4 @@ public interface AuthRegister {
      */
     UserInfo getUserInfo(String personId);
 
-    List<RecordClient> getClients(String paginationPage);
-
-    List<RecordClient> searchClient(String searchName);
-
-    List<RecordClient> sortClientByColumnNum(String columnNum, String paginationPage);
-
-    boolean addNewClient(String newClient);
-
-    boolean deleteClient(String clientId);
-
-    int getPaginationNum();
-
-    Client getClientById(String clientId);
 }

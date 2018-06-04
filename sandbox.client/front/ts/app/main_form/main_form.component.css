@@ -19,6 +19,11 @@
     border-color: #4fcadb;
 }
 
+.btn:hover {
+    color: white;
+    background: #2b7edb;
+}
+
 .center {
     text-align: center;
 }
@@ -28,7 +33,8 @@
 }
 
 .button:hover {
-    background: #34bcdb;
+    color: white;
+    background: #2b7edb;
 }
 
 /* Table start */
@@ -89,3 +95,10 @@ tr:nth-child(even) {
 }
 
 /* Pagination end */
+
+.bottom_links {
+    height: auto;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}

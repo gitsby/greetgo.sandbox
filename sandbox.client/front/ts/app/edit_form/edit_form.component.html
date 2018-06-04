@@ -1,83 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-</head>
-<body>
-
 <div id="myModal" class="modal">
     <div class="modal-content">
         <span (click)="closeModalForm()" class="close">&times;</span>
-        <h2><b>Add new Client</b></h2><br>
+        <h2 id="welcomeText"><b>Add new Client</b></h2><br>
         <div class="container">
             <div class="row">
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Basic data</h4>
                         <p>Surname:</p>
-                        <input id="surnameInput" class="form-control" type="text" placeholder="Required">
+                        <input #surnameInput id="surnameInput" class="form-control" type="text" placeholder="Required">
                         <p>Name:</p>
-                        <input id="nameInput" class="form-control" type="text" placeholder="Required">
+                        <input #nameInput id="nameInput" class="form-control" type="text" placeholder="Required">
                         <p>Middle Name:</p>
-                        <input id="patronymicInput" class="form-control" type="text" placeholder="Required">
+                        <input #patronymicInput id="patronymicInput" class="form-control" type="text"
+                               placeholder="Required">
                         <p>Date of birth</p>
-                        <input id="dateInput" class="input-group date" type="date">
+                        <input #dateInput id="dateInput" class="input-group date" type="date">
                         <p>Character:(Required)</p>
                         <select>
                         </select>
                         <p>Gender</p>
-                        <input id="genderInput" class="form-control" type="text" placeholder="Required">
+                        <input #genderInput id="genderInput" class="form-control" type="text" placeholder="Required">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Living address (fact)</h4>
                         <p>Street</p>
-                        <input id="factStreetInput" class="form-control" type="text">
+                        <input #factStreetInput id="factStreetInput" class="form-control" type="text">
 
                         <p>House</p>
-                        <input id="factHouseInput" class="form-control" type="text">
+                        <input #factHouseInput id="factHouseInput" class="form-control" type="text">
 
                         <p>Flat</p>
-                        <input id="factFlatInput" class="form-control" type="text">
+                        <input #factFlatInput id="factFlatInput" class="form-control" type="text">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Registration address(Required)</h4>
                         <p>Street</p>
-                        <input id="streetInput" class="form-control" type="text">
+                        <input #streetInput id="streetInput" class="form-control" type="text">
 
-                        <p>House</p>
-                        <input id="houseInput" class="form-control" type="text">
+                        <p #anyP>House</p>
+                        <input #houseInput id="houseInput" class="form-control" type="text">
 
                         <p>Flat</p>
-                        <input id="flatInput" class="form-control" type="text">
+                        <input #flatInput id="flatInput" class="form-control" type="text">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Phones(At least one mobile)</h4>
                         <p>Home</p>
-                        <input id="homePhoneInput" class="form-control" type="text">
+                        <input #homePhoneInput id="homePhoneInput" class="form-control" type="text">
 
                         <p>Working</p>
-                        <input id="workingPhoneInput" class="form-control" type="text">
+                        <input #workingPhoneInput id="workingPhoneInput" class="form-control" type="text">
 
                         <p>Mobile 1</p>
-                        <input id="mobilePhone1Input" class="form-control" type="text">
+                        <input #mobilePhone1Input id="mobilePhone1Input" class="form-control" type="text">
 
                         <p>Mobile 2</p>
-                        <input id="mobilePhone2Input" class="form-control" type="text">
+                        <input #mobilePhone2Input id="mobilePhone2Input" class="form-control" type="text">
 
                         <p>Mobile 3</p>
-                        <input id="mobilePhone3Input" class="form-control" type="text">
+                        <input #mobilePhone3Input id="mobilePhone3Input" class="form-control" type="text">
                     </div>
                 </div>
 
@@ -107,5 +95,3 @@
 <script src="bootstrap/js/bootstrap.min.js"
         integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
         crossorigin="anonymous"></script>
-</body>
-</html>

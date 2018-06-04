@@ -126,47 +126,39 @@ public class AuthRegisterStand implements AuthRegister {
         return db.get().personStorage.get(personId).toUserInfo();
     }
 
-    @Override
-    public boolean deleteClient(String clientId) {
-        if (clientId == null) {
-            System.out.println("NULL");
-            return false;
-        }
-        db.get().deleteClient(clientId);
-        return false;
-    }
+//    @Override
+//    public boolean deleteClient(String clientId) {
+//        if (clientId == null) {
+//            System.out.println("NULL");
+//            return false;
+//        }
+//        db.get().deleteClient(clientId);
+//        return true;
+//    }
+//
+//    @Override
+//    public int getPaginationNum() {
+//        return db.get().getPaginationNum();
+//    }
+//
+//    @Override
+//    public Client getClientById(String clientId) {
+//
+//        return db.get().getClientById(clientId);
+//    }
+//
+//    @Override
+//    public List<RecordClient> searchClient(String searchName) {
+//        return db.get().searchClient(searchName);
+//    }
+//
+//    @Override
+//    public List<RecordClient> sortClientByColumnNum(String columnNum, String paginationPage) {
+//        return db.get().sortClientByColumnNum(Integer.parseInt(columnNum), paginationPage);
+//    }
 
-    @Override
-    public int getPaginationNum() {
-        return db.get().getPaginationNum();
-    }
-
-    @Override
-    public Client getClientById(String clientId) {
-
-        return db.get().getClientById(clientId);
-    }
-
-    @Override
-    public List<RecordClient> getClients(String paginationPage) {
-        System.out.println("Slice" + db.get().getClientSlice(paginationPage));
-        return db.get().getClientSlice(paginationPage);
-    }
-
-    @Override
-    public List<RecordClient> searchClient(String searchName) {
-        return db.get().searchClient(searchName);
-    }
-
-    @Override
-    public List<RecordClient> sortClientByColumnNum(String columnNum, String paginationPage) {
-        System.out.println("Inside StandRegister:" + columnNum);
-        return db.get().sortClientByColumnNum(Integer.parseInt(columnNum), paginationPage);
-    }
-
-    @Override
-    public boolean addNewClient(String newClient) {
-        System.out.println(newClient);
-        return db.get().addNewClient(newClient);
-    }
+//    @Override
+//    public boolean addNewClient(String newClient) {
+//        return db.get().addNewClient(newClient);
+//    }
 }

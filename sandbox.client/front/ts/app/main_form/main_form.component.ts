@@ -2,11 +2,11 @@ import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {Client} from "../../model/Client";
 import {RecordClient} from "../../model/RecordClient";
 import {EditFormComponent} from "../edit_form/edit_form.component";
 
 const CLIENTS: {
+    id: any,
     npmn: string,
     character: string,
     age: number,
@@ -15,7 +15,6 @@ const CLIENTS: {
     minBalance: number
 }[] = [];
 const sliceNum: number = 10;
-
 
 @Component({
     selector: 'main-form-component',
@@ -29,10 +28,13 @@ export class MainFormComponent {
 
     public mvar = 10;
     @Output() exit = new EventEmitter<void>();
-    currentClient: Client = null;
+
+    editingClient = null;
+
     currentColumnNum = 0;
     currentPagination = 0;
     paginationNum = 10;
+
     clients = CLIENTS;
     userInfo: UserInfo | null = null;
     loadUserInfoButtonEnabled: boolean = true;
@@ -51,8 +53,12 @@ export class MainFormComponent {
         }
     }
 
+    setEditingClientNull() {
+        this.editingClient = null;
+    }
+
     loadTotalNumberOfPaginationPage() {
-        this.httpService.get("/auth/pagination_page_num").toPromise().then(
+        this.httpService.get("/client/pagination_page_num").toPromise().then(
             result => {
                 this.paginationNum = result.json();
             }, error => {
@@ -62,9 +68,12 @@ export class MainFormComponent {
     }
 
     loadClients() {
-        this.httpService.get("/auth/clients",
-            {paginationPage: this.currentPagination + ""})
-            .toPromise().then(result => {
+        this.httpService.get("/client/sort", {
+            columnNum:
+            this.currentColumnNum + "",
+            paginationPage:
+            this.currentPagination + ""
+        }).toPromise().then(result => {
             let clients: RecordClient[] = [];
             for (let res of result.json()) {
                 clients.push(res);
@@ -87,8 +96,9 @@ export class MainFormComponent {
     pushToClientsList(clients: RecordClient[]) {
         for (let arr of clients) {
             CLIENTS.push({
+                "id": arr.id,
                 "npmn": arr.surname + " " + arr.name + " " + arr.patronymic,
-                "character": arr.name,
+                "character": arr.character,
                 "age": arr.age,
                 "accBalance": arr.accBalance + 10,
                 "maxBalance": arr.maxBalance + 10,
@@ -105,23 +115,22 @@ export class MainFormComponent {
     plusClick() {
         this.child.client = null;
         this.modalFormVisible = true;
-        document.getElementById("myModal").style.display = "block";
+        this.editingClient = -1;
     }
 
     editClick(index: any) {
-        this.child.client = index;
-        alert("asda " + this.child.client);
-        document.getElementById("myModal").style.display = "block";
-        this.child.loadFromDatabase().then(() => {
-        }, error => {
-            alert(error);
-        });
+        // this.child.client = this.clients[index].id;
+        this.editingClient = this.clients[index].id + "";
+        this.child.loadFromDatabase(this.clients[index].id);
     }
 
     sortBy(columnNum: any) {
-        this.currentColumnNum = columnNum;
-        alert(columnNum);
-        this.httpService.get("/auth/sort", {
+        if (this.currentColumnNum == columnNum) {
+            this.currentColumnNum = 0;
+        } else {
+            this.currentColumnNum = columnNum;
+        }
+        this.httpService.get("/client/sort", {
             columnNum:
             columnNum + "",
             paginationPage:
@@ -142,7 +151,7 @@ export class MainFormComponent {
     searchFromInput() {
         let stringToSearch = (document.getElementById("input") as HTMLInputElement).value;
 
-        this.httpService.get("/auth/search", {searchName: stringToSearch + ""})
+        this.httpService.get("/client/search", {searchName: stringToSearch + ""})
             .toPromise().then(result => {
             let clients: RecordClient[] = [];
             for (let client of result.json()) {
@@ -156,9 +165,8 @@ export class MainFormComponent {
     }
 
     deleteClient(deleteIndex: any) {
-        this.httpService.get("/auth/delete", {
-            index: deleteIndex + "",
-            paginationPage: this.currentPagination as any
+        this.httpService.get("/client/delete", {
+            index: this.clients[deleteIndex].id + ""
         }).toPromise().then(result => {
             this.loadClients();
         }, error => {
@@ -168,7 +176,8 @@ export class MainFormComponent {
 
     increaseCurrentPagination() {
         this.currentPagination++;
-        if (this.currentPagination > this.paginationNum) {
+        alert(this.currentPagination + " " + this.paginationNum)
+        if (this.currentPagination > this.paginationNum - 1) {
             this.currentPagination = 0;
         }
         this.loadClients();
@@ -177,7 +186,7 @@ export class MainFormComponent {
     decreaseCurrentPagination() {
         this.currentPagination--;
         if (this.currentPagination < 0) {
-            this.currentPagination = this.paginationNum;
+            this.currentPagination = this.paginationNum - 1;
         }
         this.loadClients();
     }

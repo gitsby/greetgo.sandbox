@@ -7,6 +7,7 @@ public class RecordClient {
     public String name;
     public String surname;
     public String patronymic;
+    public String character;
 
     public int age = 0;
     public int accBalance = 10;

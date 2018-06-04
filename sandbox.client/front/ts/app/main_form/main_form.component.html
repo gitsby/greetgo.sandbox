@@ -18,10 +18,10 @@
     <div class="container topMenu">
         <div class="row">
 
-            <div class="col-lg-3">
+            <div class="col-sm-3">
                 <h4>Main Form Component</h4>
             </div>
-            <div class="col-lg-9">
+            <div class="col-sm-9">
                 <div class="row">
                     <div class="col-sm-3">
                         <input id="input" type="text" class="form-control" placeholder="Enter FIO">
@@ -100,14 +100,14 @@
         <table>
             <tbody>
             <tr class="headers">
-                <td (click)="sortBy(1)">Surname Name Middle Name</td>
-                <td (click)="sortBy(2)">Character</td>
-                <td (click)="sortBy(3)">Age</td>
-                <td (click)="sortBy(4)">Load</td>
-                <td (click)="sortBy(5)">max</td>
-                <td (click)="sortBy(6)">min</td>
-                <td>Edit</td>
-                <td>Delete</td>
+                <th (click)="sortBy(1)">Surname Name Middle Name</th>
+                <th (click)="sortBy(2)">Character</th>
+                <th (click)="sortBy(3)">Age</th>
+                <th (click)="sortBy(4)">Load</th>
+                <th (click)="sortBy(5)">max</th>
+                <th (click)="sortBy(6)">min</th>
+                <th>Edit</th>
+                <th>Delete</th>
             </tr>
             <tr *ngFor="let client of clients; let i = index">
                 <td>{{client.npmn}}</td>
@@ -128,15 +128,18 @@
     </div>
     <div class="center">
         <div class="pagination">
-            <a (click)="increaseCurrentPagination()"><<</a>
+            <a (click)="decreaseCurrentPagination()"><<</a>
+            <a>...</a>
+            <a>...</a>
+            <a>...</a>
             <a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"
                (click)="loadClientSlice(ind)">{{ind}}</a>
-            <a (click)="decreaseCurrentPagination()">>></a>
+            <a (click)="increaseCurrentPagination()">>></a>
         </div>
     </div>
 
-    <edit-form-component></edit-form-component>
-
+    <edit-form-component (onClose)="setEditingClientNull()" [ngStyle]="{display:
+    editingClient ? 'block': 'none'}"></edit-form-component>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -149,6 +152,10 @@
     <script src="bootstrap/js/bootstrap.min.js"
             integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
             crossorigin="anonymous"></script>
+</div>
+<div id="bottom_links">
+    <a href="http://gwiki.greetgo/index.php/%D0%9E%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5">Links
+        gwiki</a>
 </div>
 </body>
 </html>

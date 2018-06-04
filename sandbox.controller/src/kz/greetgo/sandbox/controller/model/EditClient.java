@@ -18,13 +18,13 @@ public class EditClient {
 
     public Character charm;
 
-    Address[] unchangedAddresses;
-    Address[] editedAddresses;
-    Address[] deletedAddresses;
+    public Address[] addedAddresses;
+    public Address[] editedAddresses;
+    public Address[] deletedAddresses;
 
-    Phone[] unchangedPhones;
-    Phone[] deletedPhones;
-    Phone[] editedPhones;
+    public Phone[] addedPhones;
+    public Phone[] deletedPhones;
+    public Phone[] editedPhones;
 
     @Override
     public String toString() {

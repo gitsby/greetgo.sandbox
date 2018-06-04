@@ -1,11 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.io.StringWriter;
+import java.util.Arrays;
 
 public class Client {
 
@@ -32,17 +27,21 @@ public class Client {
 
     @Override
     public String toString() {
-        StringWriter stringWriter = new StringWriter();
-        String jsonString = "";
-        try {
-            JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter);
-            jsonGenerator.setCodec(new ObjectMapper());
-            jsonGenerator.writeObject(this);
-            jsonGenerator.close();
-            jsonString = stringWriter.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jsonString;
+        return "Client{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", patronymic='" + patronymic + '\'' +
+                ", gender='" + gender + '\'' +
+                ", birthDate='" + birthDate + '\'' +
+                ", snmn='" + snmn + '\'' +
+                ", age=" + age +
+                ", accBalance=" + accBalance +
+                ", maxBalance=" + maxBalance +
+                ", minBalance=" + minBalance +
+                ", charm=" + charm +
+                ", addresses=" + Arrays.toString(addresses) +
+                ", phones=" + Arrays.toString(phones) +
+                '}';
     }
 }

@@ -1,7 +1,7 @@
 /* Modal form */
 /* The Modal (background) */
 .modal {
-    display: none; /* Hidden by default */
+    display: block;
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
     padding-top: 100px; /* Location of the box */
@@ -17,14 +17,14 @@
 /* Modal Content */
 .modal-content {
     background-color: #fefefe;
-    margin: auto;
+    margin: 20px;
     padding-top: 10px;
     padding-right: 20px;
     padding-left: 20px;
     padding-bottom: 30px;
     border: 1px solid #888;
     height: auto;
-    width: 80%;
+    width: auto;
 }
 
 /* The Close Button */
