@@ -2,11 +2,13 @@ package kz.greetgo.sandbox.controller.controller;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.mvc.annotations.Json;
 import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.RecordClient;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.EditClient;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -14,7 +16,7 @@ import java.util.List;
 
 @Bean
 @Mapping("/client")
-public class ClientCotroller implements Controller {
+public class ClientController implements Controller {
 
     public BeanGetter<ClientRegister> clientRegister;
 
@@ -28,28 +30,23 @@ public class ClientCotroller implements Controller {
 
     @ToJson
     @Mapping("/edit")
-    public boolean editedClient(@Par("editedClient") String editedClient) {
+    public boolean editedClient(@Json @Par("editedClient") EditClient editedClient) {
         System.out.println("EDITED Client:" + editedClient);
-        return false;
+        return clientRegister.get().editedClient(editedClient);
     }
 
     @ToJson
     @Mapping("/search")
-    public List<RecordClient> searchClient(@Par("searchName") String searchName) {
+    public List<ClientRecord> searchClient(@Par("searchName") String searchName) {
         return clientRegister.get().searchClient(searchName);
     }
 
     @ToJson
-    @Mapping("/add_client")
-    public boolean addClient(@Par("newClient") String newClient) {
-        return clientRegister.get().addNewClient(newClient);
-    }
-
-    @ToJson
     @Mapping("/sort")
-    public List<RecordClient> sortClientByColumnNum(@Par("columnNum") String columnNum,
-                                                    @Par("paginationPage") String paginationPage) {
-        return clientRegister.get().sortClientByColumnNum(columnNum, paginationPage);
+    public List<ClientRecord> getClients(@Par("columnName") String columnName,
+                                         @Par("paginationPage") String paginationPage,
+                                         @Par("searchName") String searchName) {
+        return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName);
     }
 
     @ToJson
@@ -60,9 +57,9 @@ public class ClientCotroller implements Controller {
 
     @ToJson
     @Mapping("/getClientWithId")
-    public Client getClientById(@Par("clientId") String clientId) {
+    public ClientToSave getClientById(@Par("clientId") String clientId) {
         System.out.println("Retrieving from Controller: " + clientId);
-        return clientRegister.get().getClientById(clientId);
+        return clientRegister.get().getClientById(Integer.parseInt(clientId));
     }
 
 

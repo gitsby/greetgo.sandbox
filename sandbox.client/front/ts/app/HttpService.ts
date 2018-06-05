@@ -54,7 +54,7 @@ export class HttpService {
             let appended = false;
             for (let key in keyValue) {
                 let value = keyValue[key];
-                if (value) {
+                if (value != null) {
                     data.append(key, value as string);
                     appended = true;
                 }
@@ -76,7 +76,7 @@ export class HttpService {
         let data = new URLSearchParams();
         for (let key in keyValue) {
             let value = keyValue[key];
-            if (value) data.append(key, value as string);
+            if (value != null) data.append(key, value as string);
         }
 
         let ob = this.newOptionsBuilder();
@@ -94,7 +94,7 @@ export class HttpService {
             let appended = false;
             for (let key in keyValue) {
                 let value = keyValue[key];
-                if (value) {
+                if (value != null) {
                     data.append(key, value as string);
                     appended = true;
                 }

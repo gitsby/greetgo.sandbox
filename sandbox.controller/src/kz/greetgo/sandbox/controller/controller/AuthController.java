@@ -4,14 +4,10 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
-
-import java.util.List;
 
 /**
  * как составлять контроллеры написано

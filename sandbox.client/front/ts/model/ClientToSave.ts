@@ -2,7 +2,7 @@ import {Character} from "./Character";
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
-export class Client {
+export class ClientToSave {
 
     public id:number;
     public name: string = "";

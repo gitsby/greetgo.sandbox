@@ -9,7 +9,7 @@ import java.io.StringWriter;
 
 public class EditClient {
 
-    public int id;
+    public Integer id;
     public String name;
     public String surname;
     public String patronymic;

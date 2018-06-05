@@ -4,8 +4,6 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
@@ -17,7 +15,6 @@ import kz.greetgo.util.ServerUtil;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.List;
 
 @Bean
 public class AuthRegisterStand implements AuthRegister {

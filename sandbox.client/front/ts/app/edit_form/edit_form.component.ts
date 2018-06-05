@@ -1,15 +1,16 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, Output, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, EventEmitter, Output} from "@angular/core";
 import {HttpService} from "../HttpService";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/toPromise";
-import {Client} from "../../model/Client";
+import {ClientToSave} from "../../model/ClientToSave";
 import {Address} from "../../model/Address";
 import {Phone} from "../../model/Phone";
 import {Character} from "../../model/Character";
 import {EditClient} from "../../model/EditClient";
+import {ClientInput} from "../../model/ClientInput";
 
-let retrievedClient: Client;
+let retrievedClient: ClientToSave;
 
 @Component({
     selector: 'edit-form-component',
@@ -18,53 +19,43 @@ let retrievedClient: Client;
 })
 
 export class EditFormComponent implements AfterViewInit {
-    @ViewChild("anyP") anyP;
-    @ViewChild("nameInput") nameInput: ElementRef;
-    @ViewChild("surnameInput") surnameInput: ElementRef;
-    @ViewChild("patronymicInput") patronymicInput: ElementRef;
-    @ViewChild("genderInput") genderInput: ElementRef;
-    @ViewChild("dateInput") birthDateInput: ElementRef;
 
-    @ViewChild("houseInput") houseInput: ElementRef;
-    @ViewChild("streetInput") streetInput: ElementRef;
-    @ViewChild("flatInput") flatInput: ElementRef;
 
-    @ViewChild("factStreetInput") factStreetInput: ElementRef;
-    @ViewChild("factHouseInput") factHouseInput: ElementRef;
-    @ViewChild("factFlatInput") factFlatInput: ElementRef;
+    clientInput: ClientInput = new ClientInput();
+    factAddress: Address = new Address();
+    regAddress: Address = new Address();
+    homePhone: Phone = new Phone();
+    workingPhone: Phone = new Phone();
+    mobilePhone1: Phone = new Phone();
+    mobilePhone2: Phone = new Phone();
+    mobilePhone3: Phone = new Phone();
 
-    @ViewChild("homePhoneInput") homePhoneInput: ElementRef;
-    @ViewChild("workingPhoneInput") workingPhoneInput: ElementRef;
-    @ViewChild("mobilePhone1Input") mobilePhone1Input: ElementRef;
-
-    @ViewChild("mobilePhone2Input") mobilePhone2Input: ElementRef;
-    @ViewChild("mobilePhone3Input") mobilePhone3Input: ElementRef;
-
-    public client = null;
+    public clientId: string = null;
 
     mobilePhonesInput = [];
 
     @Output() onClose = new EventEmitter<void>();
+    @Output() returnChanges = new EventEmitter<any>();
 
     closeModalForm() {
-        this.nameInput.nativeElement.value = "";
-        this.surnameInput.nativeElement.value = "";
-
-        this.patronymicInput.nativeElement.value = "";
-        this.genderInput.nativeElement.value = "";
-
-        this.houseInput.nativeElement.value = "";
-        this.streetInput.nativeElement.value = "";
-        this.flatInput.nativeElement.value = "";
-
-        this.factHouseInput.nativeElement.value = "";
-        this.factFlatInput.nativeElement.value = "";
-        this.factFlatInput.nativeElement.value = "";
-
-
-        this.homePhoneInput.nativeElement.value = "";
-        this.workingPhoneInput.nativeElement.value = "";
-
+        // this.nameInput.nativeElement.value = "";
+        // this.surnameInput.nativeElement.value = "";
+        //
+        // this.patronymicInput.nativeElement.value = "";
+        // this.genderInput.nativeElement.value = "";
+        //
+        // this.houseInput.nativeElement.value = "";
+        // this.streetInput.nativeElement.value = "";
+        // this.flatInput.nativeElement.value = "";
+        //
+        // this.factHouseInput.nativeElement.value = "";
+        // this.factFlatInput.nativeElement.value = "";
+        // this.factFlatInput.nativeElement.value = "";
+        //
+        //
+        // this.homePhoneInput.nativeElement.value = "";
+        // this.workingPhoneInput.nativeElement.value = "";
+        //
         this.onClose.emit();
         // document.getElementById("myModal").style.display = "none";
     }
@@ -74,69 +65,60 @@ export class EditFormComponent implements AfterViewInit {
     }
 
     saveClient() {
-        if (this.nameInput.nativeElement.value.length == 0 || this.surnameInput.nativeElement.value.length == 0 || this.patronymicInput.nativeElement.value.length == 0 ||
-            this.genderInput.nativeElement.value.length == 0 || this.houseInput.nativeElement.value.length == 0 || this.streetInput.nativeElement.value.length == 0 ||
-            this.flatInput.nativeElement.value.length == 0 ||
+        if (this.clientInput.name == null || this.clientInput.surname == null || this.clientInput.patronymic == null ||
+            this.clientInput.gender == null || this.regAddress.house == null || this.regAddress.street == null ||
+            this.regAddress.flat == null ||
             this.mobilePhonesEmpty(this.mobilePhonesInput)) {
             alert("You must fill all required fields!");
             return;
         }
-        if (this.client == null) {
-            let newClient: Client = new Client();
-            newClient.id = -1;
-            newClient.name = this.nameInput.nativeElement.value;
-            newClient.surname = this.surnameInput.nativeElement.value;
-            newClient.patronymic = this.patronymicInput.nativeElement.value;
+        if (this.clientId == null) { // When adding
+            alert("ADD")
+            let newClient: EditClient = new EditClient();
+            newClient.id = null;
+            newClient.name = this.clientInput.name;
+            newClient.surname = this.clientInput.surname;
+            newClient.patronymic = this.clientInput.patronymic;
             newClient.charm = new Character();
-            newClient.gender = this.genderInput.nativeElement.value;
-            newClient.birthDate = this.birthDateInput.nativeElement.value;
+            newClient.gender = this.clientInput.gender;
+            newClient.birthDate = this.clientInput.birthDate;
 
             let addresses: Address[] = [];
 
-            addresses.push(this.getRegAddress());
-
-            if (this.factStreetInput.nativeElement.value.length != 0 && this.factHouseInput.nativeElement.value.length != 0
-                && this.factFlatInput.nativeElement.value.length != 0) {
-                addresses.push(this.getFactAddress());
+            addresses.push(this.regAddress);
+            if (this.factAddress.street.length != 0 && this.factAddress.house.length != 0
+                && this.factAddress.flat.length != 0) {
+                this.factAddress.type = "FACT";
+                addresses.push(this.factAddress);
             }
 
             let phones: Phone[] = [];
 
-            if (this.homePhoneInput.nativeElement.value.length != 0) {
-                let homePhone = new Phone();
-                homePhone.number = this.homePhoneInput.nativeElement.value;
-                homePhone.type = "HOME";
-                phones.push(homePhone);
+            if (this.homePhone.number != null) {
+                this.homePhone.type = "HOME";
+                phones.push(this.homePhone);
             }
 
-            if (this.workingPhoneInput.nativeElement.value.length != 0) {
-                let workingPhone = new Phone();
-                workingPhone.number = this.workingPhoneInput.nativeElement.value;
-                workingPhone.type = "WORKING";
-                phones.push(workingPhone);
+            if (this.workingPhone.number != null) {
+                this.workingPhone.type = "WORKING";
+                phones.push(this.workingPhone);
             }
 
             for (let mobilePhone of this.mobilePhonesInput) {
-                if (mobilePhone.nativeElement.value.length != 0) {
-                    let newPhone = new Phone();
-                    newPhone.number = mobilePhone.nativeElement.value;
-                    newPhone.type = "MOBILE";
-                    phones.push(newPhone);
+                if (mobilePhone.number != null) {
+                    mobilePhone.type = "MOBILE";
+                    phones.push(mobilePhone);
                 }
             }
-            newClient.addresses = addresses;
-            newClient.phones = phones;
-            //
-            this.httpService.get("/client/add_client", {newClient: newClient.toString()}).toPromise().then(result => {
-                if (result) {
-                    alert("Added");
-                } else {
-                    alert("Unable to add!");
-                }
+            newClient.addedAddresses = addresses;
+            newClient.addedPhones = phones;
+            console.log(newClient.toString())
+            this.httpService.get("/client/edit", {editedClient: newClient.toString()}).toPromise().then(result => {
+
             }, error => {
-                alert(error)
+                alert(error);
             });
-        } else {
+        } else {// When editing
             // TODO: Change edit
             alert("Edit");
             let factNum = -1;
@@ -145,13 +127,14 @@ export class EditFormComponent implements AfterViewInit {
             let workingNum = -1;
             let mobilePhoneNumIndexes: number[] = [];
             retrievedClient.phones.forEach((val, index) => {
-                if (val.type = "MOBILE") {
+                alert(index)
+                if (val.type == "MOBILE") {
                     mobilePhoneNumIndexes.push(index);
                 }
-                if (val.type = "HOME") {
+                if (val.type == "HOME") {
                     homeNum = index;
                 }
-                if (val.type = "WORKING") {
+                if (val.type == "WORKING") {
                     workingNum = index;
                 }
             });
@@ -162,54 +145,100 @@ export class EditFormComponent implements AfterViewInit {
                     regNum = index;
                 }
             });
+            this.regAddress.clientId = retrievedClient.id;
+            this.factAddress.clientId = retrievedClient.id;
+
+            this.homePhone.client = retrievedClient.id;
+            this.workingPhone.client = retrievedClient.id;
 
             let editClient: EditClient = new EditClient();
-            if (retrievedClient.name != this.nameInput.nativeElement.value) {
-                editClient.name = this.nameInput.nativeElement.value;
+            editClient.id = retrievedClient.id;
+
+            if (retrievedClient.name != this.clientInput.name) {
+                editClient.name = this.clientInput.name;
             }
-            if (retrievedClient.surname != this.surnameInput.nativeElement.value) {
-                editClient.name = this.surnameInput.nativeElement.value;
+            if (retrievedClient.surname != this.clientInput.surname) {
+                editClient.surname = this.clientInput.surname;
             }
-            if (retrievedClient.patronymic != this.patronymicInput.nativeElement.value) {
-                editClient.patronymic = this.patronymicInput.nativeElement.value;
+            if (retrievedClient.patronymic != this.clientInput.patronymic) {
+                editClient.patronymic = this.clientInput.patronymic;
             }
-            if (this.birthDateInput.nativeElement.value != retrievedClient.patronymic) {
-                editClient.birthDate = this.birthDateInput.nativeElement.value;
+            if (this.clientInput.birthDate != retrievedClient.birthDate) {
+                editClient.birthDate = this.clientInput.birthDate;
             }
-            if (this.factHouseInput.nativeElement.value.size != 0
-                && this.factStreetInput.nativeElement.value.size != 0
-                && this.factFlatInput.nativeElement.value.size != 0) {
+            if (this.clientInput.gender != retrievedClient.gender) {
+                editClient.gender = this.clientInput.gender;
+            }
+
+            if (this.factAddress.house.length != 0
+                && this.factAddress.street.length != 0
+                && this.factAddress.flat.length != 0) {
                 if (factNum != -1) {
-                    if (retrievedClient.addresses[factNum].street != this.factStreetInput.nativeElement.value
-                        || retrievedClient.addresses[factNum].house != this.factHouseInput.nativeElement.value
-                        || retrievedClient.addresses[factNum].flat != this.factFlatInput.nativeElement.value) {
-                        let newFact = this.getFactAddress();
-                        newFact.clientId = retrievedClient.id;
-                        editClient.editedAddresses.push(newFact);
+                    if (retrievedClient.addresses[factNum].street != this.factAddress.street
+                        || retrievedClient.addresses[factNum].house != this.factAddress.house
+                        || retrievedClient.addresses[factNum].flat != this.factAddress.flat) {
+                        editClient.editedAddresses.push(this.factAddress);
                     }
                 } else {
-                    let newFact = this.getFactAddress();
-                    newFact.clientId = retrievedClient.id;
-                    editClient.addedAddresses.push(newFact);
+                    editClient.addedAddresses.push(this.factAddress);
                 }
             } else {
                 if (factNum != -1) {
                     editClient.deletedAddresses.push(retrievedClient.addresses[factNum]);
                 }
             }
-            if (this.houseInput.nativeElement.value.size != 0
-                && this.streetInput.nativeElement.value.size != 0
-                && this.flatInput.nativeElement.value.size != 0) {
-                if (retrievedClient.addresses[regNum].street != this.streetInput.nativeElement.value
-                    || retrievedClient.addresses[regNum].house != this.houseInput.nativeElement.value
-                    || retrievedClient.addresses[regNum].flat != this.flatInput.nativeElement.value) {
-                    let newFact = this.getRegAddress();
-                    newFact.clientId = retrievedClient.id;
-                    editClient.editedAddresses.push(newFact);
+
+            if (this.regAddress.house.length != 0
+                && this.regAddress.street.length != 0
+                && this.regAddress.flat.length != 0) {
+                if (retrievedClient.addresses[regNum].street != this.regAddress.street
+                    || retrievedClient.addresses[regNum].house != this.regAddress.house
+                    || retrievedClient.addresses[regNum].flat != this.regAddress.flat) {
+                    editClient.editedAddresses.push(this.regAddress);
                 }
             } else {
                 alert("Register Address must not be empty");
+                return;
             }
+            if (homeNum != -1) {
+                if (this.homePhone.number.length != 0) {
+
+                    if (this.homePhone.number != retrievedClient.phones[homeNum].number) {
+                        editClient.editedPhones.push(this.homePhone);
+                    }
+                } else {
+                    editClient.deletedPhones.push(retrievedClient.phones[homeNum]);
+                }
+            } else {
+                if (this.homePhone.number != null) {
+                    editClient.addedPhones.push(this.homePhone);
+                }
+            }
+
+            if (workingNum != -1) {
+                if (this.workingPhone.number.length != 0) {
+                    if (this.workingPhone.number
+                        != retrievedClient.phones[workingNum].number) {
+                        editClient.editedPhones.push(this.workingPhone);
+                    }
+                } else {
+                    editClient.deletedPhones.push(retrievedClient.phones[workingNum]);
+                }
+            } else {
+                if (this.workingPhone.number != null) {
+                    editClient.addedPhones.push(this.workingPhone);
+                }
+            }
+            mobilePhoneNumIndexes.forEach(value => {
+                if (this.mobilePhonesInput[value].number.length != 0) {
+                    if (this.mobilePhonesInput[value].number
+                        != retrievedClient.phones[value].number) {
+                        editClient.editedPhones.push(this.mobilePhonesInput[value]);
+                    }
+                } else {
+                    editClient.deletedPhones.push(retrievedClient.phones[value]);
+                }
+            })
             alert("EDITING");
             this.httpService.get("/client/edit", {editedClient: editClient.toString()}).toPromise().then(result => {
 
@@ -217,40 +246,33 @@ export class EditFormComponent implements AfterViewInit {
                 alert(error);
             });
         }
-
+        this.outputResults();
+        // this.clientInput = new ClientInput();
+        // this.factAddress = new Address();
+        // this.regAddress = new Address();
+        // this.homePhone = new Phone();
+        // this.workingPhone = new Phone();
+        // this.mobilePhone1 = new Phone();
+        // this.mobilePhone2 = new Phone();
+        // this.mobilePhone3 = new Phone();
     }
 
-    getFactAddress(): Address {
-        let newFact: Address = new Address();
-        newFact.street = this.factStreetInput.nativeElement.value;
-        newFact.house = this.factHouseInput.nativeElement.value;
-        newFact.flat = this.factFlatInput.nativeElement.value;
-        newFact.type = "FACT";
-        return newFact;
+    outputResults(){
+        this.returnChanges.emit();
     }
-
-    getRegAddress(): Address {
-        let newReg: Address = new Address();
-        newReg.street = this.streetInput.nativeElement.value;
-        newReg.house = this.houseInput.nativeElement.value;
-        newReg.flat = this.flatInput.nativeElement.value;
-        newReg.type = "REG";
-        return newReg;
-    }
-
     public loadFromDatabase(clientId) {
-        this.client = clientId;
+        this.clientId = clientId;
         console.log("started .........")
         this.httpService.get("/client/getClientWithId",
-            {clientId: this.client + ""}).toPromise().then(result => {
+            {clientId: this.clientId + ""}).toPromise().then(result => {
             retrievedClient = result.json();
 
-            this.nameInput.nativeElement.value = retrievedClient.name;
-            this.surnameInput.nativeElement.value = retrievedClient.surname;
-            this.patronymicInput.nativeElement.value = retrievedClient.patronymic;
+            this.clientInput.name = retrievedClient.name;
+            this.clientInput.surname = retrievedClient.surname;
+            this.clientInput.patronymic = retrievedClient.patronymic;
 
-            this.genderInput.nativeElement.value = "aSDASD";
-            this.birthDateInput.nativeElement.value = retrievedClient.birthDate;
+            this.clientInput.gender = retrievedClient.gender;
+            this.clientInput.birthDate = retrievedClient.birthDate;
 
             let homePhone: Phone = null;
             let workingPhone: Phone = null;
@@ -277,26 +299,26 @@ export class EditFormComponent implements AfterViewInit {
             }
 
             if (factAddress != null) {
-                this.factFlatInput.nativeElement.value = factAddress.flat;
-                this.factHouseInput.nativeElement.value = factAddress.house;
-                this.factStreetInput.nativeElement.value = factAddress.street;
+                this.factAddress.flat = factAddress.flat;
+                this.factAddress.house = factAddress.house;
+                this.factAddress.street = factAddress.street;
             }
 
             if (regAddress != null) {
-                this.houseInput.nativeElement.value = regAddress.house;
-                this.streetInput.nativeElement.value = regAddress.street;
-                this.flatInput.nativeElement.value = regAddress.flat;
+                this.regAddress.house = regAddress.house;
+                this.regAddress.street = regAddress.street;
+                this.regAddress.flat = regAddress.flat;
             }
 
             if (homePhone != null) {
-                this.homePhoneInput.nativeElement.value = homePhone.number;
+                this.homePhone.number = homePhone.number;
             }
             if (workingPhone != null) {
-                this.workingPhoneInput.nativeElement.value = workingPhone.number;
+                this.workingPhone.number = workingPhone.number;
             }
 
             mobilePhones.forEach((item, index) => {
-                this.mobilePhonesInput[index].nativeElement.value = item.number;
+                this.mobilePhonesInput[index].number = item.number;
             });
 
 
@@ -310,7 +332,7 @@ export class EditFormComponent implements AfterViewInit {
 
     mobilePhonesEmpty(mobilePhones): Boolean {
         for (let mobilePhone of mobilePhones) {
-            if (mobilePhone.nativeElement.value.length != 0) {
+            if (mobilePhone.number != null) {
                 return false;
             }
         }
@@ -318,10 +340,16 @@ export class EditFormComponent implements AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.mobilePhonesInput.push(this.mobilePhone1Input);
-        this.mobilePhonesInput.push(this.mobilePhone2Input);
-        this.mobilePhonesInput.push(this.mobilePhone3Input);
+        this.initElements();
     }
 
-
+    initElements() {
+        this.regAddress.type = "REG";
+        this.factAddress.type = "FACT";
+        this.homePhone.type = "HOME";
+        this.workingPhone.type = "WORKING";
+        this.mobilePhonesInput.push(this.mobilePhone1);
+        this.mobilePhonesInput.push(this.mobilePhone2);
+        this.mobilePhonesInput.push(this.mobilePhone3);
+    }
 }

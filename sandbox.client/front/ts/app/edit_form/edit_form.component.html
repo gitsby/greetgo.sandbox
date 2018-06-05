@@ -1,71 +1,85 @@
 <div id="myModal" class="modal">
     <div class="modal-content">
         <span (click)="closeModalForm()" class="close">&times;</span>
-        <h2 id="welcomeText"><b>Add new Client</b></h2><br>
+        <h2 id="welcomeText"><b>Add new ClientToSave</b></h2><br>
         <div class="container">
             <div class="row">
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Basic data</h4>
                         <p>Surname:</p>
-                        <input #surnameInput id="surnameInput" class="form-control" type="text" placeholder="Required">
+                        <input [(ngModel)]="clientInput.surname" #surnameInput id="surnameInput" class="form-control"
+                               type="text"
+                               placeholder="Required">
                         <p>Name:</p>
-                        <input #nameInput id="nameInput" class="form-control" type="text" placeholder="Required">
+                        <input [(ngModel)]="clientInput.name" #nameInput id="nameInput" class="form-control" type="text"
+                               placeholder="Required">
                         <p>Middle Name:</p>
-                        <input #patronymicInput id="patronymicInput" class="form-control" type="text"
+                        <input [(ngModel)]="clientInput.patronymic" #patronymicInput id="patronymicInput"
+                               class="form-control" type="text"
                                placeholder="Required">
                         <p>Date of birth</p>
-                        <input #dateInput id="dateInput" class="input-group date" type="date">
+                        <input [(ngModel)]="clientInput.birthDate" #dateInput id="dateInput" class="input-group date"
+                               type="date">
                         <p>Character:(Required)</p>
                         <select>
                         </select>
                         <p>Gender</p>
-                        <input #genderInput id="genderInput" class="form-control" type="text" placeholder="Required">
+                        <input [(ngModel)]="clientInput.gender" #genderInput id="genderInput" class="form-control"
+                               type="text" placeholder="Required">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Living address (fact)</h4>
                         <p>Street</p>
-                        <input #factStreetInput id="factStreetInput" class="form-control" type="text">
+                        <input [(ngModel)]="factAddress.street" #factStreetInput id="factStreetInput"
+                               class="form-control" type="text">
 
                         <p>House</p>
-                        <input #factHouseInput id="factHouseInput" class="form-control" type="text">
+                        <input [(ngModel)]="factAddress.house" #factHouseInput id="factHouseInput" class="form-control"
+                               type="text">
 
                         <p>Flat</p>
-                        <input #factFlatInput id="factFlatInput" class="form-control" type="text">
+                        <input [(ngModel)]="factAddress.flat" id="factFlatInput" class="form-control" type="text">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Registration address(Required)</h4>
                         <p>Street</p>
-                        <input #streetInput id="streetInput" class="form-control" type="text">
+                        <input [(ngModel)]="regAddress.street" id="streetInput" class="form-control" type="text">
 
-                        <p #anyP>House</p>
-                        <input #houseInput id="houseInput" class="form-control" type="text">
+                        <p>House</p>
+                        <input [(ngModel)]="regAddress.house" #houseInput id="houseInput" class="form-control"
+                               type="text">
 
                         <p>Flat</p>
-                        <input #flatInput id="flatInput" class="form-control" type="text">
+                        <input [(ngModel)]="regAddress.flat" #flatInput id="flatInput" class="form-control" type="text">
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="check">
                         <h4>Phones(At least one mobile)</h4>
                         <p>Home</p>
-                        <input #homePhoneInput id="homePhoneInput" class="form-control" type="text">
+                        <input [(ngModel)]="homePhone.number" #homePhoneInput id="homePhoneInput" class="form-control"
+                               type="text">
 
                         <p>Working</p>
-                        <input #workingPhoneInput id="workingPhoneInput" class="form-control" type="text">
+                        <input [(ngModel)]="workingPhone.number" #workingPhoneInput id="workingPhoneInput"
+                               class="form-control" type="text">
 
                         <p>Mobile 1</p>
-                        <input #mobilePhone1Input id="mobilePhone1Input" class="form-control" type="text">
+                        <input [(ngModel)]="mobilePhone1.number" #mobilePhone1Input id="mobilePhone1Input"
+                               class="form-control" type="text">
 
                         <p>Mobile 2</p>
-                        <input #mobilePhone2Input id="mobilePhone2Input" class="form-control" type="text">
+                        <input [(ngModel)]="mobilePhone2.number" #mobilePhone2Input id="mobilePhone2Input"
+                               class="form-control" type="text">
 
                         <p>Mobile 3</p>
-                        <input #mobilePhone3Input id="mobilePhone3Input" class="form-control" type="text">
+                        <input [(ngModel)]="mobilePhone3.number" #mobilePhone3Input id="mobilePhone3Input"
+                               class="form-control" type="text">
                     </div>
                 </div>
 

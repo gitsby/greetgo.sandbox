@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.model;
 
 import java.util.Arrays;
 
-public class Client {
+public class ClientToSave {
 
     public int id;
     public String name;
@@ -20,6 +20,7 @@ public class Client {
     public Character charm;
 
     // Addresses
+    // TODO: Change to ArrayList
     public Address[] addresses;
 
     // Phone numbers

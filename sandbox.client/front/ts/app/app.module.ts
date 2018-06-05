@@ -7,6 +7,7 @@ import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
 import {EditFormComponent} from "./edit_form/edit_form.component";
+import {ListFormComponent} from "./list_form/list_form.component";
 
 @NgModule({
     imports: [
@@ -14,6 +15,7 @@ import {EditFormComponent} from "./edit_form/edit_form.component";
     ],
     declarations: [
         RootComponent, LoginComponent, MainFormComponent, EditFormComponent,
+        ListFormComponent
     ],
     bootstrap: [RootComponent],
     providers: [HttpService],
