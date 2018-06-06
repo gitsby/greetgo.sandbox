@@ -20,8 +20,8 @@ import {PhoneType} from "../../model/PhoneType";
         </div>
       </div>
       <div>
-          <button (click)="loadTestButtonClicked()">
-              damn tessst
+          <button (click)="loadMockRequestClicked()">
+              mockRequest
           </button>
       </div>
         
@@ -66,8 +66,8 @@ import {PhoneType} from "../../model/PhoneType";
 
       </div>
       </div>
-      <div *ngIf="testData">
-          {{testData}}
+      <div *ngIf="mockRequest">
+          {{mockRequest}}
       </div>
   
   
@@ -79,8 +79,7 @@ export class MainFormComponent {
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
-  testData: string | null = null;
-  // loadTestButtonEnabled: boolean = true;
+  mockRequest: string | null = null;
 
   constructor(private httpService: HttpService) {}
 
@@ -100,11 +99,10 @@ export class MainFormComponent {
     });
   }
 
-  loadTestButtonClicked() {
-    // this.loadTestButtonEnabled:boolean =true;
-    this.httpService.get( "/table").toPromise().then( result => {
-      this.testData=result.toString();
-      console.log(this.testData);
+  loadMockRequestClicked() {
+    this.httpService.get( "/mockRequest").toPromise().then( result => {
+      this.mockRequest=result.json();
+      console.log(this.mockRequest);
     })
   }
 }
