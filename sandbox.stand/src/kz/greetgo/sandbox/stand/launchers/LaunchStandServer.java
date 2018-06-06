@@ -10,6 +10,8 @@ public class LaunchStandServer {
     new LaunchStandServer().run();
   }
 
+
+
   private void run() throws Exception {
     DepinjectUtil.implementAndUseBeanContainers(
       "kz.greetgo.sandbox.stand",

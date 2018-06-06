@@ -19,6 +19,12 @@ import {PhoneType} from "../../model/PhoneType";
           {{loadUserInfoError}}
         </div>
       </div>
+      <div>
+          <button (click)="loadTestButtonClicked()">
+              damn tessst
+          </button>
+      </div>
+        
       <div *ngIf="userInfo">
 
         <table>
@@ -59,7 +65,13 @@ import {PhoneType} from "../../model/PhoneType";
         </table>
 
       </div>
-    </div>`,
+      </div>
+      <div *ngIf="testData">
+          {{testData}}
+      </div>
+  
+  
+  `,
 })
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
@@ -67,6 +79,8 @@ export class MainFormComponent {
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
+  testData: string | null = null;
+  // loadTestButtonEnabled: boolean = true;
 
   constructor(private httpService: HttpService) {}
 
@@ -84,5 +98,13 @@ export class MainFormComponent {
       this.loadUserInfoError = error;
       this.userInfo = null;
     });
+  }
+
+  loadTestButtonClicked() {
+    // this.loadTestButtonEnabled:boolean =true;
+    this.httpService.get( "/table").toPromise().then( result => {
+      this.testData=result.toString();
+      console.log(this.testData);
+    })
   }
 }
