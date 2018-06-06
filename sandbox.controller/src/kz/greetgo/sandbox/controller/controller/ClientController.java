@@ -6,6 +6,7 @@ import kz.greetgo.mvc.annotations.Json;
 import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
+import kz.greetgo.sandbox.controller.model.Character;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.model.EditClient;
@@ -36,23 +37,17 @@ public class ClientController implements Controller {
     }
 
     @ToJson
-    @Mapping("/search")
-    public List<ClientRecord> searchClient(@Par("searchName") String searchName) {
-        return clientRegister.get().searchClient(searchName);
+    @Mapping("getPaginationNum")
+    public int getPaginationNum(@Par("searchText") String){
+        return 0;
     }
 
     @ToJson
-    @Mapping("/sort")
+    @Mapping("/getClients")
     public List<ClientRecord> getClients(@Par("columnName") String columnName,
                                          @Par("paginationPage") String paginationPage,
                                          @Par("searchName") String searchName) {
         return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName);
-    }
-
-    @ToJson
-    @Mapping("/pagination_page_num")
-    public int getPaginationNum() {
-        return clientRegister.get().getPaginationNum();
     }
 
     @ToJson
@@ -62,5 +57,10 @@ public class ClientController implements Controller {
         return clientRegister.get().getClientById(Integer.parseInt(clientId));
     }
 
+    @ToJson
+    @Mapping("/characters")
+    public List<Character> getCharacters(){
+        return clientRegister.get().getCharacters();
+    }
 
 }

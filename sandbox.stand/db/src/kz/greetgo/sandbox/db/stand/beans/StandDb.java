@@ -2,8 +2,6 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.Character;
 import kz.greetgo.sandbox.db.stand.model.*;
 import kz.greetgo.util.RND;
 
@@ -16,7 +14,6 @@ public class StandDb implements HasAfterInject {
     Random random;
 
     public final Map<String, PersonDot> personStorage = new HashMap<>();
-    public final List<ClientToSave> clientDotList = new ArrayList<>();
 
     List<ClientDot> clientDots = new ArrayList<>();
     List<PhoneDot> phoneDots = new ArrayList<>();
@@ -31,17 +28,10 @@ public class StandDb implements HasAfterInject {
         return addressDots;
     }
 
-    public final CharacterDot[] characters = {
-            new CharacterDot(),
-            new CharacterDot(),
-            new CharacterDot(),
-            new CharacterDot(),
-            new CharacterDot()};
+    public List<CharacterDot> characterDots = new ArrayList<>();
 
-    private final int sliceNum = 10;
-
-    public CharacterDot[] getCharacterDots() {
-        return characters;
+    public List<CharacterDot> getCharacterDots() {
+        return characterDots;
     }
 
     public List<ClientAccountDot> getClientAccountDots() {
@@ -133,30 +123,22 @@ public class StandDb implements HasAfterInject {
         return addresses;
     }
 
-    public List<ClientAccountDot> getClientAccountWithId(int clientId) {
-        List<ClientAccountDot> accounts = new ArrayList<>();
-        for (ClientAccountDot clientAccountDot : clientAccountDots) {
-            if (clientAccountDot.clientId == clientId) {
-                accounts.add(clientAccountDot);
-            }
-        }
-        return accounts;
-    }
-
     private void initClientAddresses() {
+        int id = 0;
         for (int i = 0; i < 100; i++) {
             AddressDot fact = new AddressDot();
-            fact.id = i;
+            fact.id = id;
             fact.clientId = i;
             fact.flat = RND.str(10);
             fact.street = RND.str(10);
             fact.house = RND.str(10);
             fact.type = "FACT";
+            id++;
 
             addressDots.add(fact);
 
             AddressDot reg = new AddressDot();
-            reg.id = i + 1;
+            reg.id = id;
             reg.clientId = i;
             reg.flat = RND.str(10);
             reg.street = RND.str(10);
@@ -164,6 +146,7 @@ public class StandDb implements HasAfterInject {
             reg.type = "REG";
 
             addressDots.add(reg);
+            id++;
         }
     }
 
@@ -176,70 +159,45 @@ public class StandDb implements HasAfterInject {
             clientDot.patronymic = RND.str(10);
             clientDot.gender = RND.str(10);
             clientDot.birthDate = "2012-12-12";
-            clientDot.charm = random.nextInt(characters.length);
+            clientDot.charm = random.nextInt(characterDots.size());
             clientDots.add(clientDot);
         }
     }
 
     private void initCharacters() {
-        characters[0].name = "Angry";
-        characters[0].id = 0;
+        CharacterDot angry = new CharacterDot();
+        angry.id = 0;
+        angry.name = "Angry";
 
-        characters[1].name = "Scrappy";
-        characters[1].id = 1;
+        characterDots.add(angry);
 
-        characters[2].name = "Cold-blooded";
-        characters[2].id = 2;
+        CharacterDot scrappy = new CharacterDot();
+        scrappy.id = 1;
+        scrappy.name = "Scrappy";
 
-        characters[3].name = "Careful";
-        characters[3].id = 3;
+        characterDots.add(scrappy);
 
-        characters[4].name = "Relaxed";
-        characters[4].id = 4;
+        CharacterDot cold = new CharacterDot();
+        cold.name = "Cold-blooded";
+        cold.id = 2;
+        characterDots.add(cold);
+
+        CharacterDot careful = new CharacterDot();
+        careful.name = "Careful";
+        careful.id = 3;
+
+        characterDots.add(careful);
+
+        CharacterDot relaxed = new CharacterDot();
+        relaxed.name = "Relaxed";
+        relaxed.id = 4;
+        characterDots.add(relaxed);
     }
 
     public List<ClientDot> getClientDot() {
         return clientDots;
     }
 
-
-    private Address[] createRandomAddresses() {
-        Address[] addresses = new Address[2];
-        addresses[0] = new Address();
-        addresses[0].street = RND.str(10);
-        addresses[0].house = RND.str(10);
-        addresses[0].flat = RND.str(10);
-        addresses[0].type = "FACT";
-
-        addresses[1] = new Address();
-        addresses[1].street = RND.str(10);
-        addresses[1].house = RND.str(10);
-        addresses[1].flat = RND.str(10);
-        addresses[1].type = "REG";
-        return addresses;
-    }
-
-    private Phone[] createRandomPhoneNumbers() {
-        Phone[] phones = new Phone[3];
-        phones[0] = new Phone();
-        phones[0].number = RND.str(10);
-        phones[0].type = "MOBILE";
-
-        phones[1] = new Phone();
-        phones[1].number = RND.str(10);
-        phones[1].type = "HOME";
-
-        phones[2] = new Phone();
-        phones[2].number = RND.str(10);
-        phones[2].type = "WORKING";
-
-        return phones;
-    }
-
-    private CharacterDot giveRandomCharacter() {
-        int randNum = random.nextInt(characters.length);
-        return characters[randNum];
-    }
 
     @SuppressWarnings("unused")
     private void appendPerson(String[] splitLine, String line, int lineNo) {

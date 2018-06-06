@@ -1,10 +1,9 @@
-import {Character} from "./Character";
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
 export class ClientToSave {
 
-    public id:number;
+    public id: number;
     public name: string = "";
     public surname: string = "";
     public patronymic: string = "";
@@ -18,7 +17,7 @@ export class ClientToSave {
     public maxBalance: number = 10;
     public minBalance: number = 10;
 
-    public charm: Character = null;
+    public charm: number = null;
 
     // Addresses
     public addresses: Address[] = null;
@@ -26,7 +25,7 @@ export class ClientToSave {
     // Phone numbers
     public phones: Phone[] = null;
 
-    public toString = () : string=>{
+    public toString = (): string => {
         return JSON.stringify(this);
     }
 }

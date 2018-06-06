@@ -22,7 +22,11 @@
                         <input [(ngModel)]="clientInput.birthDate" #dateInput id="dateInput" class="input-group date"
                                type="date">
                         <p>Character:(Required)</p>
-                        <select>
+                        <select [(ngModel)]="clientInput.character" size="characters.length">
+                            <option disabled> Select character</option>
+                            <option *ngFor="let character of characters"
+                                    value="{{character.id}}">{{character.name}}
+                            </option>
                         </select>
                         <p>Gender</p>
                         <input [(ngModel)]="clientInput.gender" #genderInput id="genderInput" class="form-control"
@@ -73,13 +77,13 @@
                         <input [(ngModel)]="mobilePhone1.number" #mobilePhone1Input id="mobilePhone1Input"
                                class="form-control" type="text">
 
-                        <p>Mobile 2</p>
-                        <input [(ngModel)]="mobilePhone2.number" #mobilePhone2Input id="mobilePhone2Input"
-                               class="form-control" type="text">
+                        <!--<p>Mobile 2</p>-->
+                        <!--<input [(ngModel)]="mobilePhone2.number" #mobilePhone2Input id="mobilePhone2Input"-->
+                        <!--class="form-control" type="text">-->
 
-                        <p>Mobile 3</p>
-                        <input [(ngModel)]="mobilePhone3.number" #mobilePhone3Input id="mobilePhone3Input"
-                               class="form-control" type="text">
+                        <!--<p>Mobile 3</p>-->
+                        <!--<input [(ngModel)]="mobilePhone3.number" #mobilePhone3Input id="mobilePhone3Input"-->
+                        <!--class="form-control" type="text">-->
                     </div>
                 </div>
 

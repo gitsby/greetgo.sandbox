@@ -2,6 +2,7 @@ import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {RecordClient} from "../../model/RecordClient";
 import {EditFormComponent} from "../edit_form/edit_form.component";
+import {EditClient} from "../../model/EditClient";
 
 const CLIENTS: {
     id: any,
@@ -24,11 +25,6 @@ export class ListFormComponent {
 
     @Output() openEditingForm = new EventEmitter<any>()
 
-    constructor(private httpService: HttpService) {
-        this.loadClients();
-        this.loadTotalNumberOfPaginationPage();
-    }
-
     @ViewChild(EditFormComponent) child;
 
     editingClient = null;
@@ -41,20 +37,9 @@ export class ListFormComponent {
     modalFormVisible: boolean = false;
     searchWord = '';
 
-
-    loadTotalNumberOfPaginationPage() {
-        this.httpService.get("/client/pagination_page_num").toPromise().then(
-            result => {
-                this.paginationNum = result.json();
-            }, error => {
-                alert(error)
-            }
-        );
-    }
-
     loadClients() {
         console.log(this.currentColumnName);
-        this.httpService.get("/client/sort", {
+        this.httpService.get("/client/getClients", {
             columnName:
             this.currentColumnName + "",
             paginationPage:
@@ -98,9 +83,38 @@ export class ListFormComponent {
         }
     }
 
-    loadClientSlice(index: number) {
-        this.currentPagination = index;
-        this.loadClients();
+    tempPaginationArray = [];
+
+    loadClientSlice(pagination: number) {
+
+        this.currentPagination = pagination;
+
+        if (this.currentPagination == 0 || this.currentPagination == 1) {
+            while (this.tempPaginationArray.pop()) ;
+            for (let i = 0; i < 3; i++) {
+                this.tempPaginationArray.push(i);
+            }
+            this.loadClients();
+            return;
+        }
+
+        if (this.currentPagination > 1 && this.currentPagination < this.paginationNum - 3) {
+            while (this.tempPaginationArray.pop()) ;
+            for (let i = this.currentPagination - 1; i <= this.currentPagination + 1; i++) {
+                this.tempPaginationArray.push(i)
+            }
+            this.loadClients();
+            return;
+        }
+
+        if (this.currentPagination >= this.paginationNum - 3) {
+            while (this.tempPaginationArray.pop()) ;
+            for (let i = this.paginationNum - 3; i < this.paginationNum; i++) {
+                this.tempPaginationArray.push(i);
+            }
+            this.loadClients();
+        }
+
     }
 
     editClick(index: any) {
@@ -144,6 +158,34 @@ export class ListFormComponent {
             this.currentPagination = this.paginationNum - 1;
         }
         this.loadClients();
+    }
+
+    addNewClient(client: EditClient) {
+        if (client.id == null) {
+            CLIENTS.pop();
+            let recordClient: RecordClient = new RecordClient();
+            recordClient.name = client.name;
+            recordClient.surname = client.surname;
+            recordClient.patronymic = client.patronymic;
+            recordClient.maxBalance = 0;
+            recordClient.minBalance = 0;
+            recordClient.accBalance = 0;
+            CLIENTS.unshift({
+                "id": recordClient.id,
+                "npmn": recordClient.surname + " " + recordClient.name + " " + recordClient.patronymic,
+                "character": recordClient.character,
+                "age": recordClient.age,
+                "accBalance": recordClient.accBalance,
+                "maxBalance": recordClient.maxBalance,
+                "minBalance": recordClient.minBalance
+            })
+        } else {
+
+        }
+    }
+
+    constructor(private httpService: HttpService) {
+        this.loadClientSlice(0);
     }
 
 }

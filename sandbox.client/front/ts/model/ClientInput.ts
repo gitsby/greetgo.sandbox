@@ -6,4 +6,5 @@ export class ClientInput {
     public patronymic: string;
     public gender: string;
     public birthDate: string;
+    public character: number=-1;
 }

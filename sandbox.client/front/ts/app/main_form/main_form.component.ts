@@ -4,16 +4,7 @@ import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {EditFormComponent} from "../edit_form/edit_form.component";
 import {ListFormComponent} from "../list_form/list_form.component";
-
-const CLIENTS: {
-    id: any,
-    npmn: string,
-    character: string,
-    age: number,
-    accBalance: number,
-    maxBalance: number,
-    minBalance: number
-}[] = [];
+import {EditClient} from "../../model/EditClient";
 
 @Component({
     selector: 'main-form-component',
@@ -56,6 +47,11 @@ export class MainFormComponent {
 
     plusClick() {
         this.editingClient = ' ';
+        this.child.clientId = null;
+    }
+
+    applyChanges(editedClient: EditClient) {
+        this.listForm.addNewClient(editedClient);
     }
 
     loadUserInfoButtonClicked() {

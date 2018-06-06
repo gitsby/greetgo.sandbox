@@ -16,7 +16,7 @@ public class EditClient {
     public String gender;
     public String birthDate;
 
-    public Character charm;
+    public Integer charm;
 
     public Address[] addedAddresses;
     public Address[] editedAddresses;

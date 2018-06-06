@@ -70,12 +70,21 @@
         </tbody>
     </table>
 </div>
+
 <div class="center">
     <div class="pagination">
         <a (click)="decreaseCurrentPagination()"><<</a>
-        <a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"
-           [ngStyle]="{background:ind==currentPagination?'#ddd':'#fff'}"
-           (click)="loadClientSlice(ind)">{{ind}}</a>
+        <a *ngIf="currentPagination>1" (click)="loadClientSlice(0)">0</a>
+        <a *ngIf="currentPagination>1">...</a>
+        <a *ngFor="let pag of tempPaginationArray; let ind = index"
+           [ngStyle]="{background:pag==currentPagination?'#ddd':'#fff'}"
+           (click)="loadClientSlice(pag)">{{pag}}</a>
+        <!--<a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"-->
+        <!--[ngStyle]="{background:ind==currentPagination?'#ddd':'#fff'}"-->
+        <!--(click)="loadClientSlice(ind)">{{ind}}</a>-->
+        <a *ngIf="currentPagination<paginationNum-3">...</a>
+        <a *ngIf="currentPagination<paginationNum-3">{{paginationNum-1}}</a>
         <a (click)="increaseCurrentPagination()">>></a>
+
     </div>
 </div>

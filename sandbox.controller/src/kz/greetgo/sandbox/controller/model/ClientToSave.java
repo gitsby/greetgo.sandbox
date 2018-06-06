@@ -17,7 +17,7 @@ public class ClientToSave {
     public int maxBalance = 0;
     public int minBalance = 0;
 
-    public Character charm;
+    public int charm;
 
     // Addresses
     // TODO: Change to ArrayList

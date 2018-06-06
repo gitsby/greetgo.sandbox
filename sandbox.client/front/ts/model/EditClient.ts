@@ -10,7 +10,7 @@ export class EditClient {
     public gender: string;
     public birthDate: string;
 
-    public charm: Character;
+    public charm: number;
 
     public addedAddresses: Address[] = [];
     public editedAddresses: Address[] = [];

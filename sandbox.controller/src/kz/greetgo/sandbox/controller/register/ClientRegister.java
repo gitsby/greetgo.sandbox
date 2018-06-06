@@ -1,8 +1,9 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.sandbox.controller.model.Character;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.model.EditClient;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 
 import java.util.List;
 
@@ -14,9 +15,11 @@ public interface ClientRegister {
 
     boolean deleteClient(String clientId);
 
-    int getPaginationNum();
-
     ClientToSave getClientById(int clientId);
 
     boolean editedClient(EditClient editedClient);
+
+    List<Character> getCharacters();
+
+    int getRequestedPaginationNum(String searchText);
 }
