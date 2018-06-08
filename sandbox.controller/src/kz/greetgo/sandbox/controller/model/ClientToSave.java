@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
 import java.util.Arrays;
+import java.util.Date;
 
 public class ClientToSave {
 
@@ -9,13 +10,10 @@ public class ClientToSave {
     public String surname;
     public String patronymic;
     public String gender;
-    public String birthDate;
+    public Date birthDate;
 
     public String snmn = "Empty";
     public int age = 0;
-    public int accBalance = 10;
-    public int maxBalance = 0;
-    public int minBalance = 0;
 
     public int charm;
 
@@ -37,9 +35,6 @@ public class ClientToSave {
                 ", birthDate='" + birthDate + '\'' +
                 ", snmn='" + snmn + '\'' +
                 ", age=" + age +
-                ", accBalance=" + accBalance +
-                ", maxBalance=" + maxBalance +
-                ", minBalance=" + minBalance +
                 ", charm=" + charm +
                 ", addresses=" + Arrays.toString(addresses) +
                 ", phones=" + Arrays.toString(phones) +

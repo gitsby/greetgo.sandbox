@@ -123,3 +123,15 @@ i {
     transform: rotate(-135deg);
     -webkit-transform: rotate(-135deg);
 }
+
+.selectSliceNum {
+    margin-top: 10px;
+}
+
+h3 {
+    height: auto;
+}
+
+.options {
+    margin-top: 10px;
+}

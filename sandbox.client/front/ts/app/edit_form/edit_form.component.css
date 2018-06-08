@@ -1,5 +1,10 @@
 /* Modal form */
 /* The Modal (background) */
+
+input.ng-touched.ng-invalid {
+    border: solid red 2px;
+}
+
 .modal {
     display: block;
     position: fixed; /* Stay in place */

@@ -1,4 +1,3 @@
-import {Character} from "./Character";
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
@@ -8,7 +7,7 @@ export class EditClient {
     public surname: string;
     public patronymic: string;
     public gender: string;
-    public birthDate: string;
+    public birthDate: Date;
 
     public charm: number;
 
@@ -20,7 +19,7 @@ export class EditClient {
     public deletedPhones: Phone[] = [];
     public editedPhones: Phone[] = [];
 
-    public toString = () : string=>{
+    public toString = (): string => {
         return JSON.stringify(this);
     }
 }

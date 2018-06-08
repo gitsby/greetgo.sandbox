@@ -7,6 +7,7 @@ import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.*;
 
 @Bean
@@ -37,6 +38,11 @@ public class StandDb implements HasAfterInject {
     public List<ClientAccountDot> getClientAccountDots() {
         return clientAccountDots;
     }
+
+    String[] randomName = {"Jason", "Steven", "Delphi", "Tomas", "Fred", "Pindre", "Andro"
+            , "Ford", "Klinton", "George", "Mikael", "Alden", "Frank", "Sebastian", "Pupy", "Maximus",
+            "Sonre", "Nox", "Nyx", "Taurus", "Talmit", "Ferdinand", "Somali", "Freddy", "Bart", "Aquinas",
+            "Talos"};
 
     @Override
     public void afterInject() throws Exception {
@@ -90,13 +96,13 @@ public class StandDb implements HasAfterInject {
         for (int i = 0; i < 100; i++) {
             PhoneDot mobile1 = new PhoneDot();
             mobile1.client = i;
-            mobile1.number = RND.str(15);
+            mobile1.number = 7 + "" + random.nextInt(1000) + 1000;
             mobile1.type = "MOBILE";
             phoneDots.add(mobile1);
 
             PhoneDot home = new PhoneDot();
             home.client = i;
-            home.number = RND.str(15);
+            home.number = 7 + "" + random.nextInt(1000) + 1000;
             home.type = "HOME";
 
             phoneDots.add(home);
@@ -150,15 +156,16 @@ public class StandDb implements HasAfterInject {
         }
     }
 
-    private void initClientDots() {
+    private void initClientDots() throws ParseException {
         for (int i = 0; i < 100; i++) {
             ClientDot clientDot = new ClientDot();
             clientDot.id = i;
-            clientDot.name = RND.str(10);
-            clientDot.surname = RND.str(10);
-            clientDot.patronymic = RND.str(10);
-            clientDot.gender = RND.str(10);
-            clientDot.birthDate = "2012-12-12";
+            clientDot.name = randomName[random.nextInt(randomName.length)];
+            clientDot.surname = randomName[random.nextInt(randomName.length)];
+            clientDot.patronymic = randomName[random.nextInt(randomName.length)];
+
+            clientDot.gender = (random.nextInt(1) == 0) ? "MALE" : "FEMALE";
+            clientDot.birthDate = new Date();
             clientDot.charm = random.nextInt(characterDots.size());
             clientDots.add(clientDot);
         }

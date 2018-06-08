@@ -7,7 +7,6 @@ import kz.greetgo.sandbox.controller.errors.NoAccountName;
 import kz.greetgo.sandbox.controller.errors.NoPassword;
 import kz.greetgo.sandbox.controller.errors.NotFound;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
-import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
@@ -105,8 +104,4 @@ public class AuthRegisterImpl implements AuthRegister {
         return userInfo;
     }
 
-    @Override
-    public List<Client> getClients() {
-        return null;
-    }
 }

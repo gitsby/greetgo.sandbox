@@ -4,7 +4,7 @@ import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {EditFormComponent} from "../edit_form/edit_form.component";
 import {ListFormComponent} from "../list_form/list_form.component";
-import {EditClient} from "../../model/EditClient";
+import {RecordClient} from "../../model/RecordClient";
 
 @Component({
     selector: 'main-form-component',
@@ -13,9 +13,9 @@ import {EditClient} from "../../model/EditClient";
 })
 
 export class MainFormComponent {
-
-    searchField = '';
-
+    clientsText = "Open Clients";
+    userInfoText = "Load User Data"
+    openClient = null;
     editingClient = null;
     userInfo: UserInfo | null = null;
     loadUserInfoButtonEnabled: boolean = true;
@@ -33,31 +33,40 @@ export class MainFormComponent {
 
     openEditingForm(clientId: string) {
         this.editingClient = clientId;
-        this.child.loadFromDatabase(clientId);
+        if (this.editingClient.toString() != ' ') {
+            this.child.loadFromDatabase(clientId);
+        }
     }
 
     setEditingClientNull() {
         this.editingClient = null;
     }
 
-    searchClicked() {
-        this.listForm.searchWord = this.searchField;
-        this.listForm.loadClients();
+
+    openClients() {
+        if (!this.openClient) {
+            this.clientsText = "Hide Clients"
+            this.openClient = 'open';
+        } else {
+            this.clientsText = "Open Clients"
+            this.openClient = null;
+        }
     }
 
-    plusClick() {
-        this.editingClient = ' ';
-        this.child.clientId = null;
-    }
-
-    applyChanges(editedClient: EditClient) {
+    applyChanges(editedClient: RecordClient) {
         this.listForm.addNewClient(editedClient);
     }
 
     loadUserInfoButtonClicked() {
-        this.loadUserInfoButtonEnabled = false;
         this.loadUserInfoError = null;
-
+        if (this.userInfo != null) {
+            this.userInfoText = "Load User Data";
+            this.loadUserInfoButtonEnabled = true;
+            this.userInfo = null;
+            return;
+        }
+        this.userInfoText = "Hide User Data";
+        this.loadUserInfoButtonEnabled = false;
         this.httpService.get("/auth/userInfo")
             .toPromise().then(result => {
             this.userInfo = UserInfo.copy(result.json());

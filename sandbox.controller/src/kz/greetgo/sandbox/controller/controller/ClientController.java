@@ -7,9 +7,9 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.model.Character;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.model.EditClient;
+import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -31,23 +31,25 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/edit")
-    public boolean editedClient(@Json @Par("editedClient") EditClient editedClient) {
-        System.out.println("EDITED Client:" + editedClient);
+    public int editedClient(@Json @Par("editedClient") EditClient editedClient) {
+        System.out.println("EDITED Client:" + editedClient.birthDate);
+
         return clientRegister.get().editedClient(editedClient);
     }
 
     @ToJson
-    @Mapping("getPaginationNum")
-    public int getPaginationNum(@Par("searchText") String){
-        return 0;
+    @Mapping("/getPaginationNum")
+    public int getPaginationNum(@Par("searchText") String searchText, @Par("sliceNum") int sliceNum) {
+        return clientRegister.get().getRequestedPaginationNum(searchText, sliceNum);
     }
 
     @ToJson
     @Mapping("/getClients")
-    public List<ClientRecord> getClients(@Par("columnName") String columnName,
+    public List<RecordClient> getClients(@Par("columnName") String columnName,
                                          @Par("paginationPage") String paginationPage,
-                                         @Par("searchName") String searchName) {
-        return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName);
+                                         @Par("searchName") String searchName,
+                                         @Par("sliceNum") int sliceNum) {
+        return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName, sliceNum);
     }
 
     @ToJson
@@ -59,7 +61,7 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/characters")
-    public List<Character> getCharacters(){
+    public List<Character> getCharacters() {
         return clientRegister.get().getCharacters();
     }
 

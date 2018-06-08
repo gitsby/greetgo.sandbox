@@ -3,16 +3,19 @@ import {HttpService} from "../HttpService";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/toPromise";
-import {ClientToSave} from "../../model/ClientToSave";
+import {ClientDetails} from "../../model/ClientDetails";
 import {Address} from "../../model/Address";
 import {Phone} from "../../model/Phone";
 import {Character} from "../../model/Character";
 import {EditClient} from "../../model/EditClient";
 import {ClientInput} from "../../model/ClientInput";
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {RecordClient} from "../../model/RecordClient";
 
-let retrievedClient: ClientToSave;
+let retrievedClient: ClientDetails;
 
 @Component({
+
     selector: 'edit-form-component',
     template: require('./edit_form.component.html'),
     styles: [require('./edit_form.component.css')],
@@ -20,9 +23,9 @@ let retrievedClient: ClientToSave;
 
 export class EditFormComponent implements AfterViewInit {
 
-
+    welcomeText = "Add new Client";
+    clientInputForm: FormGroup;
     characters: Character[] = []
-    characterInput = '';
     clientInput: ClientInput = new ClientInput();
     factAddress: Address = new Address();
     regAddress: Address = new Address();
@@ -30,20 +33,34 @@ export class EditFormComponent implements AfterViewInit {
     workingPhone: Phone = new Phone();
     mobilePhone1: Phone = new Phone();
 
+    phoneMask: any[] = ['+', '7', ' ', '(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
+
     public clientId: string = null;
 
     mobilePhonesInput = [];
 
+
     @Output() onClose = new EventEmitter<void>();
     @Output() returnChanges = new EventEmitter<any>();
 
-    closeModalForm() {
-        this.initElements();
-        this.onClose.emit();
-        // document.getElementById("myModal").style.display = "none";
-    }
-
     constructor(private httpService: HttpService) {
+        this.clientInputForm = new FormBuilder().group({
+            "surname": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
+            "name": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
+            "patronymic": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
+            "dateBirth": new FormControl("", Validators.required),
+            "character": new FormControl("", Validators.required),
+            "gender": new FormControl("", Validators.required),
+            "factStreet": new FormControl(),
+            "factHouse": new FormControl(),
+            "factFlat": new FormControl(),
+            "regStreet": new FormControl("", Validators.required),
+            "regHouse": new FormControl("", Validators.required),
+            "regFlat": new FormControl("", Validators.required),
+            "homePhone": new FormControl("+7", Validators.required),
+            "workingPhone": new FormControl("+7", Validators.required),
+            "mobilePhone": new FormControl("+7", Validators.required),
+        });
         httpService.get("/client/characters").toPromise().then(result => {
             for (let chars of result.json()) {
                 console.log(chars.name);
@@ -54,27 +71,45 @@ export class EditFormComponent implements AfterViewInit {
         })
     }
 
-    saveClient() {
 
-        if (this.clientInput.name == null || this.clientInput.surname == null || this.clientInput.patronymic == null ||
-            this.clientInput.gender == null || this.regAddress.house == null || this.regAddress.street == null ||
-            this.regAddress.flat == null || this.clientInput.birthDate == null || this.clientInput.character == -1 ||
-            this.mobilePhonesEmpty(this.mobilePhonesInput)) {
-            alert("You must fill all required fields!");
+    omit_special_char(event) {
+        focus()
+        var k;
+        k = event.charCode;  //         k = event.keyCode;  (Both can be used)
+        return ((k > 48 && k < 58));
+    }
+
+    closeModalForm() {
+        this.clientId = null;
+        this.initElements();
+        this.onClose.emit();
+        // document.getElementById("myModal").style.display = "none";
+        this.welcomeText = "Add new Client";
+    }
+
+    saveClient() {
+        alert(this.homePhone.number);
+        if (this.clientInputForm.controls['surname'].invalid || this.clientInputForm.controls['name'].invalid ||
+            this.clientInputForm.controls['patronymic'].invalid ||
+            this.clientInputForm.controls['dateBirth'].invalid || (this.clientInput.character == null || this.clientInput.character == -1) ||
+            this.clientInputForm.controls['regStreet'].invalid || this.clientInputForm.controls['regHouse'].invalid ||
+            this.clientInputForm.controls['regFlat'].invalid || this.mobilePhonesEmpty() || this.clientInput.gender == undefined) {
+            alert("Fill all required fields");
             return;
         }
+        this.homePhone.number = this.homePhone.number.replace(/\D/g, '');
+        this.mobilePhone1.number = this.mobilePhone1.number.replace(/\D/g, '');
+        this.workingPhone.number = this.workingPhone.number.replace(/\D/g, '');
 
         let editClient: EditClient = new EditClient();
         if (this.clientId == null) { // When adding
-            alert("ADD");
             editClient.id = null;
             editClient.name = this.clientInput.name;
             editClient.surname = this.clientInput.surname;
             editClient.patronymic = this.clientInput.patronymic;
-
             editClient.charm = this.characters[this.clientInput.character].id;
             editClient.gender = this.clientInput.gender;
-            editClient.birthDate = this.clientInput.birthDate;
+            editClient.birthDate = new Date(this.clientInput.birthDate);
 
             let addresses: Address[] = [];
             if (this.regAddress.flat.length != 0 && this.regAddress.house.length != 0
@@ -92,38 +127,31 @@ export class EditFormComponent implements AfterViewInit {
 
             let phones: Phone[] = [];
 
-            if (this.homePhone.number != null) {
+            if (!this.clientInputForm.controls['homePhone'].invalid) {
                 this.homePhone.type = "HOME";
                 phones.push(this.homePhone);
             }
 
-            if (this.workingPhone.number != null) {
+            if (!this.clientInputForm.controls['workingPhone'].invalid) {
                 this.workingPhone.type = "WORKING";
                 phones.push(this.workingPhone);
             }
-            if (this.mobilePhone1.number != null) {
+            if (!this.clientInputForm.controls['mobilePhone'].invalid) {
                 this.mobilePhone1.type = "MOBILE";
                 phones.push(this.workingPhone);
             }
 
             editClient.addedAddresses = addresses;
             editClient.addedPhones = phones;
+            console.log("FINISHED ADDING");
             console.log(editClient.toString())
-            this.httpService.get("/client/edit", {editedClient: editClient.toString()}).toPromise().then(result => {
-
-            }, error => {
-                alert(error);
-            });
         } else {// When editing
-            // TODO: Change edit
-            alert("Edit");
             let factNum = -1;
             let regNum = 0;
             let homeNum = -1;
             let workingNum = -1;
             let mobilePhoneNum = -1;
             retrievedClient.phones.forEach((val, index) => {
-                alert(index)
                 if (val.type == "MOBILE") {
                     mobilePhoneNum = index;
                 }
@@ -133,6 +161,7 @@ export class EditFormComponent implements AfterViewInit {
                 if (val.type == "WORKING") {
                     workingNum = index;
                 }
+                console.log("Received type::" + typeof val)
             });
             retrievedClient.addresses.forEach((val, index) => {
                 if (val.type == "FACT") {
@@ -141,7 +170,6 @@ export class EditFormComponent implements AfterViewInit {
                     regNum = index;
                 }
             });
-            console.log("First " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
             this.regAddress.clientId = retrievedClient.id;
             this.factAddress.clientId = retrievedClient.id;
 
@@ -159,8 +187,8 @@ export class EditFormComponent implements AfterViewInit {
             if (retrievedClient.patronymic != this.clientInput.patronymic) {
                 editClient.patronymic = this.clientInput.patronymic;
             }
-            if (this.clientInput.birthDate != retrievedClient.birthDate) {
-                editClient.birthDate = this.clientInput.birthDate;
+            if (this.clientInput.birthDate != new Date(retrievedClient.birthDate).toISOString().split('T')[0]) {
+                editClient.birthDate = new Date(this.clientInput.birthDate);
             }
             if (this.clientInput.gender != retrievedClient.gender) {
                 editClient.gender = this.clientInput.gender;
@@ -168,7 +196,7 @@ export class EditFormComponent implements AfterViewInit {
             if (this.clientInput.gender != retrievedClient.gender) {
                 editClient.gender = this.clientInput.gender;
             }
-            console.log("Second " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
+            console.log(typeof retrievedClient.phones[mobilePhoneNum]);
 
             if (this.factAddress.house.length != 0
                 && this.factAddress.street.length != 0
@@ -187,8 +215,6 @@ export class EditFormComponent implements AfterViewInit {
                     editClient.deletedAddresses.push(retrievedClient.addresses[factNum]);
                 }
             }
-            console.log("Third " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
-
             if (this.regAddress.house.length != 0
                 && this.regAddress.street.length != 0
                 && this.regAddress.flat.length != 0) {
@@ -201,11 +227,11 @@ export class EditFormComponent implements AfterViewInit {
                 alert("Register Address must not be empty");
                 return;
             }
-            console.log("Fourth " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
 
             if (homeNum != -1) {
                 if (this.homePhone.number.length != 0) {
-                    if (this.homePhone.number != retrievedClient.phones[homeNum].number) {
+                    if (this.homePhone.number != retrievedClient.phones[homeNum].number
+                        && !this.clientInputForm.controls['homePhone'].invalid) {
                         let number = this.homePhone.number;
                         this.homePhone.number = retrievedClient.phones[homeNum].number;
                         this.homePhone.editedTo = number;
@@ -219,12 +245,12 @@ export class EditFormComponent implements AfterViewInit {
                     editClient.addedPhones.push(this.homePhone);
                 }
             }
-            console.log("Fifth " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
 
             if (workingNum != -1) {
                 if (this.workingPhone.number.length != 0) {
                     if (this.workingPhone.number
-                        != retrievedClient.phones[workingNum].number) {
+                        != retrievedClient.phones[workingNum].number
+                        && !this.clientInputForm.controls['workingPhone'].invalid) {
                         let number = this.workingPhone.number;
                         this.workingPhone.number = retrievedClient.phones[workingNum].number;
                         this.workingPhone.editedTo = number;
@@ -238,18 +264,16 @@ export class EditFormComponent implements AfterViewInit {
                     editClient.addedPhones.push(this.workingPhone);
                 }
             }
-            console.log("Sixth " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
 
             if (mobilePhoneNum != -1) {
                 if (this.mobilePhone1.number.length != 0) {
-                    console.log("Seventh " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
 
                     if (this.mobilePhone1.number
-                        != retrievedClient.phones[mobilePhoneNum].number) {
+                        != retrievedClient.phones[mobilePhoneNum].number
+                        && !this.clientInputForm.controls['mobilePhone'].invalid) {
                         let number = this.mobilePhone1.number;
                         this.mobilePhone1.number = retrievedClient.phones[mobilePhoneNum].number;
                         this.mobilePhone1.editedTo = number;
-                        console.log("Eight " + retrievedClient.phones[mobilePhoneNum].number + " " + this.mobilePhone1.editedTo);
 
                         editClient.editedPhones.push(this.mobilePhone1);
                     }
@@ -261,26 +285,39 @@ export class EditFormComponent implements AfterViewInit {
                     editClient.addedPhones.push(this.mobilePhone1);
                 }
             }
-
-            console.log(editClient.toString())
-
-            alert("EDITING");
-            this.httpService.get("/client/edit", {editedClient: editClient.toString()}).toPromise().then(result => {
-
-            }, error => {
-                alert(error);
-            });
         }
-        this.outputResults(editClient);
+        console.log(editClient.toString())
+
+        this.httpService.get("/client/edit", {editedClient: editClient.toString()}).toPromise().then(result => {
+            if (result.json() != -1) {
+                editClient.id = result.json();
+            }
+
+            this.outputResults(editClient);
+            this.closeModalForm();
+        }, error => {
+            alert(error);
+        });
     }
 
     outputResults(editClient: EditClient) {
-        this.returnChanges.emit(editClient);
+        let recClient: RecordClient = new RecordClient();
+        recClient.id = editClient.id;
+        recClient.name = (editClient.name == undefined) ? retrievedClient.name : editClient.name;
+        recClient.surname = (editClient.surname == undefined) ? retrievedClient.surname : editClient.surname;
+        recClient.patronymic = (editClient.patronymic == undefined) ? retrievedClient.patronymic : editClient.patronymic;
+
+        console.log("CHARM" + editClient.charm + " " + retrievedClient.charm);
+        console.log((editClient.charm == undefined));
+        recClient.character = (editClient.charm == undefined) ? this.characters[retrievedClient.charm].name : this.characters[editClient.charm].name;
+
+        this.returnChanges.emit(recClient);
     }
 
     public loadFromDatabase(clientId) {
         this.clientId = clientId;
-        console.log("started .........")
+        this.welcomeText = "Edit client";
+        console.log("started .........");
         this.httpService.get("/client/getClientWithId",
             {clientId: this.clientId + ""}).toPromise().then(result => {
             retrievedClient = result.json();
@@ -288,10 +325,9 @@ export class EditFormComponent implements AfterViewInit {
             this.clientInput.name = retrievedClient.name;
             this.clientInput.surname = retrievedClient.surname;
             this.clientInput.patronymic = retrievedClient.patronymic;
-            alert(retrievedClient.charm);
             this.clientInput.character = this.characters[retrievedClient.charm].id;
-            this.clientInput.gender = retrievedClient.gender;
-            this.clientInput.birthDate = retrievedClient.birthDate;
+            this.clientInput.gender = "MALE";
+            this.clientInput.birthDate = new Date(retrievedClient.birthDate).toISOString().split('T')[0];
 
             let homePhone: Phone = null;
             let workingPhone: Phone = null;
@@ -340,7 +376,6 @@ export class EditFormComponent implements AfterViewInit {
                 this.workingPhone.number = workingPhone.number;
             }
             if (mobilePhone != null) {
-                console.log("RETRIVED MOBILE: " + mobilePhone.number);
                 this.mobilePhone1.number = mobilePhone.number;
             }
 
@@ -353,9 +388,13 @@ export class EditFormComponent implements AfterViewInit {
         console.log("FINISHED...");
     }
 
-    mobilePhonesEmpty(mobilePhones): Boolean {
-        for (let mobilePhone of mobilePhones) {
-            if (mobilePhone.number != null) {
+    mobilePhonesEmpty(): Boolean {
+        let isEmpty: boolean[] = [];
+        isEmpty.push(this.clientInputForm.controls['homePhone'].invalid);
+        isEmpty.push(this.clientInputForm.controls['workingPhone'].invalid);
+        isEmpty.push(this.clientInputForm.controls['mobilePhone'].invalid);
+        for (let e of isEmpty) {
+            if (!e) {
                 return false;
             }
         }

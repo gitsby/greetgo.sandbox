@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Date;
 
 public class EditClient {
 
@@ -14,7 +15,7 @@ public class EditClient {
     public String surname;
     public String patronymic;
     public String gender;
-    public String birthDate;
+    public Date birthDate;
 
     public Integer charm;
 

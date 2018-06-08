@@ -8,16 +8,14 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Calendar.*;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
 
-    private final int sliceNum = 10;
     public BeanGetter<StandDb> db;
 
     @Override
@@ -32,14 +30,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public int getPaginationNum() {
-        return db.get().getClientDot().size() / sliceNum
-                + ((db.get().getClientDot().size() % sliceNum == 0) ? 0 : 1);
-    }
-
-    @Override
     public ClientToSave getClientById(int clientId) {
-        System.out.println("SEARCHING FOR: " + clientId);
         for (ClientDot clientDot : db.get().getClientDot()) {
             if (clientDot.id == clientId) {
                 ClientToSave foundClient = new ClientToSave();
@@ -66,9 +57,7 @@ public class ClientRegisterStand implements ClientRegister {
 
                 List<AddressDot> addressDotList = getAddressesWithClientId(foundClient.id);
                 List<Address> addresses = new ArrayList<>();
-                for (AddressDot addressDot : db.get().getAddressDots()) {
-                    System.out.println(addressDot.id + " " + addressDot.clientId + " " + addressDot.flat);
-                }
+
                 for (AddressDot addressDot : addressDotList) {
                     Address address = new Address();
                     address.id = addressDot.id;
@@ -78,8 +67,6 @@ public class ClientRegisterStand implements ClientRegister {
                     address.street = addressDot.street;
                     address.type = addressDot.type;
 
-                    System.out.println(address.id + " " + address.flat);
-                    System.out.println("STREET IS : " + addressDot.street);
                     addresses.add(address);
                 }
 
@@ -102,10 +89,12 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public boolean editedClient(EditClient editedClient) {
+    public int editedClient(EditClient editedClient) {
+        System.out.println("HERE IT GOES");
+        System.out.println(editedClient.id);
         if (editedClient.id == null) {
             createNewClient(editedClient);
-            return true;
+            return editedClient.id;
         }
         if (editedClient.name != null) {
             if (!editedClient.name.equals(getClientDot(editedClient.id).name)) {
@@ -124,6 +113,9 @@ public class ClientRegisterStand implements ClientRegister {
             }
         }
         if (editedClient.birthDate != null) {
+            System.out.println("First:" + editedClient.birthDate);
+            System.out.println("First:" + (getClientDot(editedClient.id).birthDate));
+
             if (!editedClient.birthDate.equals
                     (getClientDot(editedClient.id).birthDate)) {
                 getClientDot(editedClient.id).birthDate = editedClient.birthDate;
@@ -135,7 +127,6 @@ public class ClientRegisterStand implements ClientRegister {
             }
         }
         if (editedClient.gender != null) {
-            System.out.println("GENDER: " + editedClient.gender);
             if (!editedClient.gender.equals
                     (getClientDot(editedClient.id).gender)) {
                 getClientDot(editedClient.id).gender = editedClient.gender;
@@ -154,23 +145,15 @@ public class ClientRegisterStand implements ClientRegister {
                 db.get().getAddressDots().add(addressDot);
             }
         }
-        for (AddressDot addressDot : db.get().getAddressDots()) {
-            System.out.println("CHECK ADDRESS: " + addressDot.id + " " + addressDot.flat + " " + addressDot.clientId);
-        }
+
         if (editedClient.editedAddresses != null) {
             // Edited
-            System.out.println("Length is: " + editedClient.editedAddresses.length);
             for (Address address : editedClient.editedAddresses) {
                 AddressDot editedAddress = getAddressWithId(address.id);
-                System.out.println("ADDRESS TO EDIT: " + editedAddress.id);
                 editedAddress.house = address.house;
                 editedAddress.street = address.street;
                 editedAddress.flat = address.flat;
-                System.out.println("EDITED ADDRESS: " + editedAddress.flat);
 
-                for (AddressDot addressDot : db.get().getAddressDots()) {
-                    System.out.println("CHECK ADDRESS: " + addressDot.id + " " + addressDot.flat + " " + addressDot.clientId);
-                }
             }
         }
 
@@ -198,11 +181,8 @@ public class ClientRegisterStand implements ClientRegister {
         if (editedClient.editedPhones != null) {
             for (Phone phone : editedClient.editedPhones) {
                 for (PhoneDot phoneDot : db.get().getPhoneDots()) {
-                    System.out.println("Searching phone: " + phone.number + " " + phoneDot.number + ";Id : " + phone.client + " " + phoneDot.client);
-
                     if (phoneDot.client == phone.client && phoneDot.number.equals(phone.number)) {
                         phoneDot.number = phone.editedTo;
-                        System.out.println("Phone changed to: " + phoneDot.number);
                         break;
                     }
                 }
@@ -212,14 +192,13 @@ public class ClientRegisterStand implements ClientRegister {
             for (Phone phone : editedClient.deletedPhones) {
                 for (PhoneDot phoneDot : db.get().getPhoneDots()) {
                     if (phone.number.equals(phoneDot.number)) {
-                        System.out.println("REMOVING: " + phone.number);
                         db.get().getPhoneDots().remove(phoneDot);
                         break;
                     }
                 }
             }
         }
-        return true;
+        return -1;
     }
 
     private AddressDot getAddressWithId(int id) {
@@ -245,7 +224,6 @@ public class ClientRegisterStand implements ClientRegister {
         List<Character> characters = new ArrayList<>();
         for (CharacterDot characterDot : db.get().getCharacterDots()) {
             Character character = new Character();
-            System.out.println("NEW CHAR:" + characterDot.name);
             character.id = characterDot.id;
             character.name = characterDot.name;
             characters.add(character);
@@ -254,6 +232,9 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     private void createNewClient(EditClient client) {
+        for (ClientDot clientDot : db.get().getClientDot()) {
+            System.out.println("BEFORE:" + clientDot.id);
+        }
         client.id = db.get().getClientDot().get(db.get().getClientDot().size() - 1).id + 1;
         ClientDot clientDot = new ClientDot();
         clientDot.id = client.id;
@@ -265,7 +246,9 @@ public class ClientRegisterStand implements ClientRegister {
         clientDot.charm = client.charm;
 
         db.get().getClientDot().add(clientDot);
-
+        for (ClientDot cl : db.get().getClientDot()) {
+            System.out.println("BEFORE:" + cl.id);
+        }
         for (Address address : client.addedAddresses) {
             AddressDot addressDot = new AddressDot();
             addressDot.clientId = client.id;
@@ -290,33 +273,47 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
 
-    @Override
-    public List<ClientRecord> searchClient(String searchName) {
-        List<ClientRecord> searchClients = new ArrayList<>();
-        System.out.println("ToSearch:" + searchName);
+    public List<RecordClient> searchClient(String searchName, int sliceNum) {
+        List<RecordClient> searchClients = new ArrayList<>();
         if (searchName == null) {
-            return getClientSlice(createRecordList(), "0");
+            return getClientSlice(createRecordList(), "0", sliceNum);
         }
+        searchName = searchName.toLowerCase();
         for (ClientDot client : db.get().getClientDot()) {
-            String snmn = client.surname + " " + client.name + " " + client.patronymic;
+            String snmn = (client.surname + " " + client.name + " " + client.patronymic).toLowerCase();
             if (snmn.contains(searchName)) {
-                ClientRecord foundClient = new ClientRecord();
+                RecordClient foundClient = new RecordClient();
                 foundClient.id = client.id;
                 foundClient.name = client.name;
                 foundClient.surname = client.surname;
                 foundClient.patronymic = client.patronymic;
                 foundClient.character = getCharacterById(client.charm);
-                foundClient.age = 60;
+                foundClient.age = getDiffYears(client.birthDate, new Date());
                 foundClient.accBalance = (int) db.get().getClientAccountDots().get(client.id).money;
                 foundClient.minBalance = (int) db.get().getClientAccountDots().get(client.id).money;
                 foundClient.maxBalance = (int) db.get().getClientAccountDots().get(client.id).money;
                 searchClients.add(foundClient);
             }
         }
-        for (ClientRecord clientRecord : searchClients) {
-            clientRecord.paginationNum = getPaginationNum(searchClients);
-        }
+
         return searchClients;
+    }
+
+    public static int getDiffYears(Date first, Date last) {
+        Calendar a = getCalendar(first);
+        Calendar b = getCalendar(last);
+        int diff = b.get(YEAR) - a.get(YEAR);
+        if (a.get(MONTH) > b.get(MONTH) ||
+                (a.get(MONTH) == b.get(MONTH) && a.get(DATE) > b.get(DATE))) {
+            diff--;
+        }
+        return diff;
+    }
+
+    public static Calendar getCalendar(Date date) {
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(date);
+        return cal;
     }
 
     public String getCharacterById(int id) {
@@ -328,30 +325,28 @@ public class ClientRegisterStand implements ClientRegister {
         return "Undefined";
     }
 
-    public List<ClientRecord> getClientSlice(List<ClientRecord> clientRecords, String paginationPage) {
-        List<ClientRecord> clients;
+    public List<RecordClient> getClientSlice(List<RecordClient> recordClients, String paginationPage, int sliceNum) {
+        List<RecordClient> clients;
         int currentPagination = Integer.parseInt(paginationPage);
         int startSlice = currentPagination * sliceNum;
         int endSlice = sliceNum * currentPagination;
         endSlice += sliceNum;
 
-        if (endSlice > clientRecords.size()) {
-            endSlice = clientRecords.size();
+        if (endSlice > recordClients.size()) {
+            endSlice = recordClients.size();
         }
 
-        clients = clientRecords.subList(startSlice, endSlice);
+        clients = recordClients.subList(startSlice, endSlice);
 
 
         return clients;
     }
 
     @Override
-    public List<ClientRecord> sortClientByColumnNum(String columnName, String paginationPage,
-                                                    String searchText) {
+    public List<RecordClient> sortClientByColumnNum(String columnName, String paginationPage,
+                                                    String searchText, int sliceNum) {
 //        int currentColumn = Integer.parseInt(columnNum);
-        List<ClientRecord> sortedList = searchClient(searchText);
-        System.out.println("SEARCHING FOR : " + searchText);
-        System.out.println("SORTING: " + columnName);
+        List<RecordClient> sortedList = searchClient(searchText, sliceNum);
         Collections.sort(sortedList, (o1, o2) -> (o1.id < o2.id ? 1 : ((o1.id > o2.id) ? -1 : 0)));
 //        System.out.println("Sorting with: " + currentColumn);
         if (columnName.equals("surname")) {
@@ -375,41 +370,43 @@ public class ClientRegisterStand implements ClientRegister {
         } else if (columnName.equals("-min")) {
             Collections.sort(sortedList, (o1, o2) -> (o1.minBalance < o2.minBalance) ? 1 : ((o1.minBalance > o2.minBalance) ? -1 : 0));
         }
-        sortedList = getClientSlice(sortedList, paginationPage);
+        sortedList = getClientSlice(sortedList, paginationPage, sliceNum);
 
         return sortedList;
     }
 
     @Override
-    public int getRequestedPaginationNum(String searchText){
-        List<ClientRecord> records = searchClient(searchText);
-        return getPaginationNum(records);
+    public int getRequestedPaginationNum(String searchText, int sliceNum) {
+        List<RecordClient> records = searchClient(searchText, sliceNum);
+        return getPaginationNum(records, sliceNum);
     }
 
-    public int getPaginationNum(List<ClientRecord> list) {
+    public int getPaginationNum(List<RecordClient> list, int sliceNum) {
+        System.out.println("PAGINATION NUM:" + (list.size() / sliceNum
+                + ((list.size() % sliceNum == 0) ? 0 : 1)) + " " + sliceNum + " " + list.size());
         return list.size() / sliceNum
                 + ((list.size() % sliceNum == 0) ? 0 : 1);
     }
 
-    public List<ClientRecord> createRecordList() {
-        List<ClientRecord> clientRecords = new ArrayList<>();
+    public List<RecordClient> createRecordList() {
+        List<RecordClient> recordClients = new ArrayList<>();
         for (ClientDot clientDot : db.get().getClientDot()) {
-            ClientRecord clientRecord = new ClientRecord();
-            clientRecord.id = clientDot.id;
-            clientRecord.name = clientDot.name;
-            clientRecord.surname = clientDot.surname;
-            clientRecord.patronymic = clientDot.patronymic;
-            clientRecord.age = 65;
+            RecordClient recordClient = new RecordClient();
+            recordClient.id = clientDot.id;
+            recordClient.name = clientDot.name;
+            recordClient.surname = clientDot.surname;
+            recordClient.patronymic = clientDot.patronymic;
+            recordClient.age = 65;
             for (CharacterDot characterDot : db.get().getCharacterDots()) {
                 if (characterDot.id == clientDot.charm) {
-                    clientRecord.character = characterDot.name;
+                    recordClient.character = characterDot.name;
                 }
             }
-            clientRecord.minBalance = (int) db.get().getClientAccountDots().get(clientRecord.id).money;
-            clientRecord.maxBalance = (int) db.get().getClientAccountDots().get(clientRecord.id).money;
-            clientRecords.add(clientRecord);
+            recordClient.minBalance = (int) db.get().getClientAccountDots().get(recordClient.id).money;
+            recordClient.maxBalance = (int) db.get().getClientAccountDots().get(recordClient.id).money;
+            recordClients.add(recordClient);
         }
-        return clientRecords;
+        return recordClients;
     }
 
 

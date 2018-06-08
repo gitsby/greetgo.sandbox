@@ -1,14 +1,14 @@
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
-export class ClientToSave {
+export class ClientDetails {
 
     public id: number;
     public name: string = "";
     public surname: string = "";
     public patronymic: string = "";
     public gender: string = "";
-    public birthDate: string = "";
+    public birthDate: Date;
 
 
     public snmn: string = "";

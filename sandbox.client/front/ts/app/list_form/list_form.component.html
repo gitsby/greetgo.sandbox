@@ -1,7 +1,25 @@
 <div>
 
-    <h3 class="col-lg-3">Clients</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="col-lg-3">
+                    <h3 class="col-lg-3">Clients</h3>
+                </div>
+                <div class="col-lg-4 options">
+                    <input [(ngModel)]="searchWord" id="input" type="text" class="form-control"
+                           placeholder="Enter FIO">
+                </div>
+                <div class="col-lg-3 options">
+                    <a (click)="searchClicked()" class="btn">Search</a>
+                </div>
+                <div class="col-lg-1 options">
+                    <a class="btn" (click)="plusClick()">+</a>
+                </div>
+            </div>
 
+        </div>
+    </div>
     <table>
         <tbody>
         <tr class="headers">
@@ -74,8 +92,8 @@
 <div class="center">
     <div class="pagination">
         <a (click)="decreaseCurrentPagination()"><<</a>
-        <a *ngIf="currentPagination>1" (click)="loadClientSlice(0)">0</a>
-        <a *ngIf="currentPagination>1">...</a>
+        <a *ngIf="currentPagination>1 && paginationNum>3" (click)="loadClientSlice(0)">0</a>
+        <a *ngIf="currentPagination>2">...</a>
         <a *ngFor="let pag of tempPaginationArray; let ind = index"
            [ngStyle]="{background:pag==currentPagination?'#ddd':'#fff'}"
            (click)="loadClientSlice(pag)">{{pag}}</a>
@@ -83,8 +101,14 @@
         <!--[ngStyle]="{background:ind==currentPagination?'#ddd':'#fff'}"-->
         <!--(click)="loadClientSlice(ind)">{{ind}}</a>-->
         <a *ngIf="currentPagination<paginationNum-3">...</a>
-        <a *ngIf="currentPagination<paginationNum-3">{{paginationNum-1}}</a>
+        <a (click)="loadClientSlice(paginationNum-1)"
+           *ngIf="currentPagination<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
         <a (click)="increaseCurrentPagination()">>></a>
-
+        <select (change)="changed()" [(ngModel)]="sliceNum" class="selectSliceNum" placeholder="Select ">
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+        </select>
     </div>
+
 </div>
