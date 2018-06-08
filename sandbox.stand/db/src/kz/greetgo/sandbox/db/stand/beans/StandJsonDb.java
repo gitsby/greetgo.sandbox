@@ -22,15 +22,17 @@ import java.util.List;
 public class StandJsonDb implements HasAfterInject{
 
     public ArrayUsers Users = new ArrayUsers();
-    private final String path = "./StandDbJsonData.json";
-    private Gson gson  = new Gson();
+//    private final String path = "./StandDbJsonData.json";
+    public  Gson gson  = new Gson();
+    public String path="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
+
     @Override
     public void afterInject() throws Exception {
 //        byte[] encoded = Files.readAllBytes(Paths.get("./StandDbJsonData.json"));
 //        String json = new String(encoded, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
-
         Users = gson.fromJson(bufferedReader, ArrayUsers.class);
+        System.out.println(Users.toString());
     }
 
     public void updateDB() {

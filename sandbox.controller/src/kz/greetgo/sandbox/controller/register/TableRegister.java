@@ -1,12 +1,13 @@
 package kz.greetgo.sandbox.controller.register;
 
 
+import kz.greetgo.sandbox.controller.model.ArrayUsers;
 import kz.greetgo.sandbox.controller.model.User;
 
 import java.util.List;
 
 public interface TableRegister {
-    List<User> getTableData(int skipNumber, int limit, char sortDirection, char sortType);
+    ArrayUsers getTableData(int skipNumber, int limit, char sortDirection, char sortType);
     int tableSize();
     User getExactUser(String userID);
     String createUser(User user);
