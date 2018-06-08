@@ -1,0 +1,22 @@
+{"data":[{ "id":"0",
+  "surname":"boi",
+  "name":"boe",
+  "patronymic":"boikin",
+  "birthDate":11111,
+  "charm": "BOI",
+  "phones": [{"number":1245,"phoneType": "MOBILE"}],
+  "factualAddress": {
+    "flat":"12",
+    "house":"12",
+    "street":"12",
+    "addressType":"FAC"
+  },
+  "registeredAddress": {
+    "flat":"12",
+    "house":"12",
+    "street":"12",
+    "addressType":"FAC"
+  }
+
+}]
+}

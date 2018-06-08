@@ -9,15 +9,17 @@ import kz.greetgo.mvc.annotations.AsIs;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.util.Date;
+
 @Bean
-@Mapping("/table")
+@Mapping("/mock-request")
 public class MockRequestController implements Controller    {
     public BeanGetter <MockRequestRegister> mockRequestRegister;
     @ToJson
     @AsIs
     @NoSecurity
     @Mapping("")
-    public String mockRequest(){
+    public Date mockRequest(){
         return mockRequestRegister.get().getMockRequest();
     }
 }

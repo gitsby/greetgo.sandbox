@@ -100,7 +100,7 @@ export class MainFormComponent {
   }
 
   loadMockRequestClicked() {
-    this.httpService.get( "/mockRequest").toPromise().then( result => {
+    this.httpService.get( "/mock-request").toPromise().then( result => {
       this.mockRequest=result.json();
       console.log(this.mockRequest);
     })
