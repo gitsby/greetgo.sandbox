@@ -13,32 +13,33 @@ import java.util.List;
 
 @Bean
 public class StandServer implements HasAfterInject {
-  public final Server server = new Server(13_13/* Reptilians is out of there */);
+    public final Server server = new Server(13_13/* Reptilians is out of there */);
 
-  public StandServer start() throws Exception {
-    server.start();
-    System.err.println("[[[                                ]]]");
-    System.err.println("[[[ Stand server has been launched ]]]");
-    System.err.println("[[[                                ]]]");
-    return this;
-  }
+    public StandServer start() throws Exception {
+        server.start();
+        System.out.println("ASDASDASD");
+        System.err.println("[[[                                ]]]");
+        System.err.println("[[[ Stand server has been launched ]]]");
+        System.err.println("[[[                                ]]]");
+        return this;
+    }
 
-  public void join() throws InterruptedException {
-    server.join();
-  }
+    public void join() throws InterruptedException {
+        server.join();
+    }
 
-  public BeanGetter<List<WebAppContextRegistration>> webAppContextRegistrations;
+    public BeanGetter<List<WebAppContextRegistration>> webAppContextRegistrations;
 
-  @Override
-  public void afterInject() throws Exception {
-    WebAppContext webAppServlet = new WebAppContext(
-      Modules.clientDir().toPath().resolve(".").toString(),
-      "/access");
+    @Override
+    public void afterInject() throws Exception {
+        WebAppContext webAppServlet = new WebAppContext(
+                Modules.clientDir().toPath().resolve(".").toString(),
+                "/access");
 
-    webAppContextRegistrations.get().stream()
-      .sorted(Comparator.comparingDouble(WebAppContextRegistration::priority))
-      .forEachOrdered(r -> r.registerTo(webAppServlet));
+        webAppContextRegistrations.get().stream()
+                .sorted(Comparator.comparingDouble(WebAppContextRegistration::priority))
+                .forEachOrdered(r -> r.registerTo(webAppServlet));
 
-    server.setHandler(webAppServlet);
-  }
+        server.setHandler(webAppServlet);
+    }
 }
