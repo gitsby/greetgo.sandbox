@@ -9,6 +9,7 @@ import "rxjs/add/operator/toPromise";
   template: require('./login-component.html'),
   styles: [require('./login-component.css')],
 })
+
 export class LoginComponent {
   registration: boolean = false;
   enterButtonEnabled: boolean = false;

@@ -1,4 +1,4 @@
 export class AuthInfo {
-  public pageSize: number/*int*/;
+  public pageSize: number;
   public appTitle: string;
 }

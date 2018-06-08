@@ -1,0 +1,125 @@
+body {font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box}
+
+.custom-button {
+  float: left;
+  overflow: hidden;
+  background-color: #e9e9e9;
+}
+.custom-button button {
+  margin: 6px;
+  outline: none;
+  float: left;
+  display: block;
+  color: rgb(59,97,151);
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1.2em;
+  text-transform: uppercase;
+}
+.custom-button button:hover {
+  background-color: rgb(249,249,249);
+  color: black;
+}
+.custom-button input[type=text] {
+  float: right;
+  padding: 6px;
+  border: none;
+  margin-top: 8px;
+  margin-right: 16px;
+  font-size: 17px;
+}
+
+.selector {
+  outline: none;
+  height: 40px;
+  width: 50px;
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
+.not-sort-th {
+  font-size: 1.2em;
+  text-align: left;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  background-color: rgb(59,97,151);
+  color: white;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.customers {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  width: 100%;
+  table-layout:auto;
+  empty-cells: show;
+  border-collapse: separate;
+}
+.customers td, .customers th {
+  padding: 8px;
+}
+.customers tbody tr:nth-child(even){
+  background-color: rgb(249,249,249);
+}
+.customers tbody tr:hover {
+  background-color: rgb(230,230,230);
+}
+.customers td {
+  font-size: 1em;
+}
+.customers tfoot td {
+  vertical-align:center !important;
+  align-items: center;
+}
+
+.action-button {
+  outline: none;
+  border: none;
+  font-size: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  color: rgb(59,97,151);
+  background-color: rgba(255,255,255,0);
+}
+.action-button {
+  transition-duration: 0.4s;
+}
+.action-button:hover {
+  color: red;
+}
+.no-select {
+  user-select: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.float_center {
+  float: right;
+  position: relative;
+  left: -50%;
+  text-align: left;
+}
+.float_center > .pagination {
+  position: relative;
+  left: 50%;
+}
+
+.pagination span {
+  color: black;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color .3s;
+}
+.pagination span.active {
+  background-color: rgb(59,97,151);
+  color: white;
+}
+.pagination span:hover:not(.active) {background-color: #ddd;}
+.delete-button hover:not(.active) {background-color: #ddd;}

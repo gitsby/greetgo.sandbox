@@ -4,7 +4,7 @@ import {AuthInfo} from "../model/AuthInfo";
 
 @Component({
   selector: 'root-component',
-  template: `
+  template: `    
     <login-component
       *ngIf="mode == 'login'"
       (finish)="startApp()"
@@ -14,7 +14,7 @@ import {AuthInfo} from "../model/AuthInfo";
       *ngIf="mode == 'main-form'"
       (exit)="exit()"
     ></main-form-component>
-
+    
     <div *ngIf="mode == 'init'">
       Инициация системы... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
     </div>
