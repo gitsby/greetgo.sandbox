@@ -3,6 +3,8 @@ import {HttpService} from "../HttpService";
 import {RecordClient} from "../../model/RecordClient";
 import {EditFormComponent} from "../edit_form/edit_form.component";
 
+//fixme переменная не должна быть глобальной
+//fixme почему не используешь класс рекорда
 const CLIENTS: {
     id: any,
     npmn: string,
@@ -19,7 +21,7 @@ const CLIENTS: {
     styles: [require('./list_form.component.css')],
 })
 
-
+//FIXME Название компоненты не соответствует предназначению
 export class ListFormComponent {
 
     @Output() openEditingForm = new EventEmitter<any>()
@@ -66,6 +68,7 @@ export class ListFormComponent {
             for (let res of result.json()) {
                 clients.push(res);
             }
+          //fixme можно сделать CLIENTS не константой и CLIENTS = []?
             this.clearClientsList();
             this.pushToClientsList(clients);
             // this.loadTotalNumberOfPaginationPage();
@@ -239,7 +242,7 @@ export class ListFormComponent {
         }
         return true;
     }
-
+  //fixme конструктор должен быть сверху
     constructor(private httpService: HttpService) {
         this.loadPaginationNum();
         this.loadClients();

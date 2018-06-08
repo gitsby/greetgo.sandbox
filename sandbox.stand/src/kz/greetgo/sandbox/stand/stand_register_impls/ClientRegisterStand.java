@@ -15,7 +15,7 @@ import static java.util.Calendar.*;
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
-
+    @SuppressWarnings("WeakerAccess")
     public BeanGetter<StandDb> db;
 
     @Override
@@ -78,7 +78,7 @@ public class ClientRegisterStand implements ClientRegister {
         return null;
     }
 
-    public List<AddressDot> getAddressesWithClientId(int id) {
+    private List<AddressDot> getAddressesWithClientId(int id) {
         List<AddressDot> addressDots = new ArrayList<>();
         for (AddressDot addressDot : db.get().getAddressDots()) {
             if (addressDot.clientId == id) {
@@ -352,13 +352,13 @@ public class ClientRegisterStand implements ClientRegister {
         if (columnName.equals("surname")) {
             Collections.sort(sortedList, Comparator.comparing(o -> o.surname));
         } else if (columnName.equals("age")) {
-            Collections.sort(sortedList, (o1, o2) -> (o1.age > o2.age) ? 1 : ((o1.age < o2.age) ? -1 : 0));
+            Collections.sort(sortedList, Comparator.comparingInt(o -> o.age));
         } else if (columnName.equals("total")) {
-            Collections.sort(sortedList, (o1, o2) -> (o1.accBalance > o2.accBalance) ? 1 : ((o1.accBalance < o2.accBalance) ? -1 : 0));
+            Collections.sort(sortedList, (o1, o2) -> Integer.compare(o1.accBalance, o2.accBalance));
         } else if (columnName.equals("max")) {
-            Collections.sort(sortedList, (o1, o2) -> (o1.maxBalance > o2.maxBalance) ? 1 : ((o1.maxBalance < o2.maxBalance) ? -1 : 0));
+            Collections.sort(sortedList, Comparator.comparingInt(o -> o.maxBalance));
         } else if (columnName.equals("min")) {
-            Collections.sort(sortedList, (o1, o2) -> (o1.minBalance > o2.minBalance) ? 1 : ((o1.minBalance < o2.minBalance) ? -1 : 0));
+            Collections.sort(sortedList, (o1, o2) -> Integer.compare(o1.minBalance, o2.minBalance));
         } else if (columnName.equals("-surname")) {
             Collections.sort(sortedList, (o1, o2) -> (-o1.surname.compareTo(o2.surname)));
         } else if (columnName.equals("-age")) {
@@ -381,14 +381,14 @@ public class ClientRegisterStand implements ClientRegister {
         return getPaginationNum(records, sliceNum);
     }
 
-    public int getPaginationNum(List<RecordClient> list, int sliceNum) {
+    private int getPaginationNum(List<RecordClient> list, int sliceNum) {
         System.out.println("PAGINATION NUM:" + (list.size() / sliceNum
                 + ((list.size() % sliceNum == 0) ? 0 : 1)) + " " + sliceNum + " " + list.size());
         return list.size() / sliceNum
                 + ((list.size() % sliceNum == 0) ? 0 : 1);
     }
 
-    public List<RecordClient> createRecordList() {
+    private List<RecordClient> createRecordList() {
         List<RecordClient> recordClients = new ArrayList<>();
         for (ClientDot clientDot : db.get().getClientDot()) {
             RecordClient recordClient = new RecordClient();

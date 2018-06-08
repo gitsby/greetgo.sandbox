@@ -19,50 +19,53 @@ import java.util.List;
 @Mapping("/client")
 public class ClientController implements Controller {
 
-    public BeanGetter<ClientRegister> clientRegister;
+  // FIXME: 6/8/18 Method filter обязателен
 
-    @ToJson
-    @Mapping("/delete")
-    public boolean deleteClient(@Par("index") String index) {
-        System.out.println("Value: " + index);
-        clientRegister.get().deleteClient(index);
-        return false;
-    }
+  public BeanGetter<ClientRegister> clientRegister;
 
-    @ToJson
-    @Mapping("/edit")
-    public int editedClient(@Json @Par("editedClient") EditClient editedClient) {
-        System.out.println("EDITED Client:" + editedClient.birthDate);
+  @ToJson
+  @Mapping("/delete")
+  public boolean deleteClient(@Par("index") String index) {
+    System.out.println("Value: " + index);
+    clientRegister.get().deleteClient(index);
+    return false;
+  }
 
-        return clientRegister.get().editedClient(editedClient);
-    }
+  @ToJson
+  @Mapping("/edit")
+  public int editedClient(@Json @Par("editedClient") EditClient editedClient) {
+    // FIXME: 6/8/18 Soutа не должно быть
+    System.out.println("EDITED Client:" + editedClient.birthDate);
 
-    @ToJson
-    @Mapping("/getPaginationNum")
-    public int getPaginationNum(@Par("searchText") String searchText, @Par("sliceNum") int sliceNum) {
-        return clientRegister.get().getRequestedPaginationNum(searchText, sliceNum);
-    }
+    return clientRegister.get().editedClient(editedClient);
+  }
 
-    @ToJson
-    @Mapping("/getClients")
-    public List<RecordClient> getClients(@Par("columnName") String columnName,
-                                         @Par("paginationPage") String paginationPage,
-                                         @Par("searchName") String searchName,
-                                         @Par("sliceNum") int sliceNum) {
-        return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName, sliceNum);
-    }
+  @ToJson
+  @Mapping("/getPaginationNum")
+  public int getPaginationNum(@Par("searchText") String searchText, @Par("sliceNum") int sliceNum) {
+    return clientRegister.get().getRequestedPaginationNum(searchText, sliceNum);
+  }
 
-    @ToJson
-    @Mapping("/getClientWithId")
-    public ClientToSave getClientById(@Par("clientId") String clientId) {
-        System.out.println("Retrieving from Controller: " + clientId);
-        return clientRegister.get().getClientById(Integer.parseInt(clientId));
-    }
+  @ToJson
+  @Mapping("/getClients")
+  public List<RecordClient> getClients(@Par("columnName") String columnName,
+                                       @Par("paginationPage") String paginationPage,
+                                       @Par("searchName") String searchName,
+                                       @Par("sliceNum") int sliceNum) {
+    return clientRegister.get().sortClientByColumnNum(columnName, paginationPage, searchName, sliceNum);
+  }
 
-    @ToJson
-    @Mapping("/characters")
-    public List<Character> getCharacters() {
-        return clientRegister.get().getCharacters();
-    }
+  @ToJson
+  @Mapping("/getClientWithId")
+  public ClientToSave getClientById(@Par("clientId") String clientId) {
+    System.out.println("Retrieving from Controller: " + clientId);
+    return clientRegister.get().getClientById(Integer.parseInt(clientId));
+  }
+
+  @ToJson
+  @Mapping("/characters")
+  public List<Character> getCharacters() {
+    return clientRegister.get().getCharacters();
+  }
 
 }
