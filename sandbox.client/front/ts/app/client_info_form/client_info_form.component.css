@@ -1,0 +1,121 @@
+.modal {
+  display: block;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 10px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.red-text {
+  color: red;
+}
+
+.custom-input {
+  padding: 10px;
+  margin: 5px 0 10px 0;
+  border: none;
+  background: #f1f1f1;
+  border-radius: 7px;
+}
+.custom-input:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+select {
+  width: 90%;
+  outline: none;
+  padding: 10px;
+  height: 40px;
+  margin: 5px 0 10px 0;
+  display: inline-block;
+  border: none;
+  background: #f1f1f1;
+}
+td {
+  padding-left: 5px;
+}
+hr {
+  border: 1px solid #f1f1f1;
+  margin-bottom: 25px;
+}
+button {
+  background-color: rgb(59,97,151);
+  color: white;
+  border-radius: 7px;
+  outline: none;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  opacity: 0.8;
+}
+button:hover {
+  opacity:1;
+}
+
+.cancel-btn {
+  padding: 14px 20px;
+  background-color: red;
+  width: 100%;
+}
+.cancel-btn, .sign-up-btn {
+  float: left;
+  width: 100%;
+}
+
+.container {
+  padding: 16px;
+}
+
+.contain {
+  width: 100%;
+}
+
+input {
+  width: 90%;
+}
+span{
+  width: 10%;
+}
+input + span {
+  padding-right: 30px;
+}
+input:invalid+span:after {
+  position: absolute; content: '✖';
+  padding-left: 5px;
+  color: #8b0000;
+}
+input:valid+span:after {
+  position: absolute;
+  padding-left: 5px;
+  color: #009000;
+}
+
+select + span {
+  padding-right: 30px;
+}
+select:invalid+span {
+  position: absolute; content: '✖';
+  padding-left: 5px;
+  color: #8b0000;
+}
+select:valid+span:after {
+  position: absolute;
+  padding-left: 5px;
+  color: #009000;
+}

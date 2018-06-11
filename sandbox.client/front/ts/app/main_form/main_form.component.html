@@ -1,0 +1,89 @@
+<div>
+  <div class="top-nav">
+    <button (click)="exit.emit()">
+      Выход
+    </button>
+    <button [ngClass]="{active:loadUserInfoButtonEnabled}" (click)="switchBetweenUserAndClientButtonClicked(false)" >
+      Данные пользователя
+    </button>
+    <button [ngClass]="{active:loadClientInfoListButtonEnable}" (click)="switchBetweenUserAndClientButtonClicked(true)" >
+      Данные клентов
+    </button>
+    <button *ngIf="loadClientInfoListButtonEnable" (click)="openAddNewClientModal()">
+      Добавить новый клент
+    </button>
+  </div>
+
+  <div *ngIf="loadUserInfoButtonEnabled">
+    <table class="customers">
+      <tbody>
+      <tr>
+        <td>
+          ID
+        </td>
+        <td>
+          <b>
+            {{userInfo.id}}
+          </b>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Account name
+        </td>
+        <td>
+          <b>
+            {{userInfo.accountName}}
+          </b>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Surname
+        </td>
+        <td>
+          <b>
+            {{userInfo.surname}}
+          </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Name
+        </td>
+        <td>
+          <b>
+            {{userInfo.name}}
+          </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Patronymic
+        </td>
+        <td>
+          <b>
+            {{userInfo.patronymic}}
+          </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Phone type
+        </td>
+        <td>
+          <b>
+            {{userInfo.phoneType}}
+          </b>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <clients-list-form-component (editClient)="editClient($event)" *ngIf="loadClientInfoListButtonEnable"></clients-list-form-component>
+
+  <client-info-form-component [clientId]="editClientId" (onClose)="close($event)" *ngIf="clientInfoFormComponentEnable"></client-info-form-component>
+</div>

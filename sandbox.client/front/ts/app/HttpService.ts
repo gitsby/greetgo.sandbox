@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
-import {Headers, Http, Request, RequestOptionsArgs, Response} from "@angular/http";
+import {Headers, Http, RequestOptionsArgs, Response} from "@angular/http";
 
 class OptionsBuilder {
   private appendingHeaders: { [key: string]: string }[] = [];
@@ -54,7 +54,7 @@ export class HttpService {
       let appended = false;
       for (let key in keyValue) {
         let value = keyValue[key];
-        if (value) {
+        if (value != null) {
           data.append(key, value as string);
           appended = true;
         }
@@ -72,11 +72,11 @@ export class HttpService {
     return ob;
   }
 
-  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null }): Observable<Response> {
+  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | {[key:string]:string} | null }): Observable<Response> {
     let data = new URLSearchParams();
     for (let key in keyValue) {
       let value = keyValue[key];
-      if (value) data.append(key, value as string);
+      if (value != null) data.append(key, value as string);
     }
 
     let ob = this.newOptionsBuilder();
