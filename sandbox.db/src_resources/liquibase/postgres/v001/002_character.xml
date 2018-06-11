@@ -3,8 +3,16 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <!-- v001 -->
-  <include file="liquibase/postgres/v001/000_common.xml"/>
-  <include file="liquibase/postgres/v001/001_person.xml"/>
-  <include file="liquibase/postgres/v001/002_character.xml"/>
+  <!--<changeSet author="pompei" id="create-table-Charm">-->
+    <!--<sql endDelimiter=";;"><![CDATA[-->
+      <!--create table Characters (-->
+        <!--id int not null primary key,-->
+        <!--name varchar(30) not null,-->
+        <!--description varchar(100),-->
+        <!--energy float-->
+      <!--)-->
+    <!--]]></sql>-->
+  <!--</changeSet>-->
+
+
 </databaseChangeLog>

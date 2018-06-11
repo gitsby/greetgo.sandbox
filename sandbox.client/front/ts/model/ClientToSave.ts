@@ -1,7 +1,7 @@
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
-export class EditClient {
+export class ClientToSave {
     public id: number;
     public name: string;
     public surname: string;

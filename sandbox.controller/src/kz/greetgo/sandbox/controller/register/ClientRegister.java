@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ClientRegister {
 
-    List<RecordClient> sortClientByColumnNum(String columnNum,
+    List<RecordClient> getClients(String columnNum,
                                              String paginationPage,
                                              String searchText,
                                              int sliceNum);
