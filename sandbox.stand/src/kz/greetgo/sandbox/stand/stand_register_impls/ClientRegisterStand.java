@@ -31,9 +31,9 @@ public class ClientRegisterStand implements ClientRegister {
       clientDot = new ClientDot();
       db.get().clientsStorage.add(clientDot);
       clientDot.id = db.get().clientsStorage.size();
-    }
-    else clientDot = getClient(clientToSave.id);
+    } else clientDot = getClient(clientToSave.id);
     assert clientDot != null;
+    // FIXME: 6/11/18 name не может быть нул
     clientDot.name = clientToSave.name == null ? "" : clientToSave.name;
     clientDot.surname = clientToSave.surname == null ? "" : clientToSave.surname;
     clientDot.patronymic = clientToSave.patronymic == null ? "" : clientToSave.patronymic;
@@ -49,6 +49,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public void remove(int clientId) {
+    // FIXME: 6/11/18 рассмотри db.get().clientsStorage.removeIf
     List<ClientDot> clientDots = db.get().clientsStorage;
     for (int i = 0; i < clientDots.size(); i++)
       if (clientDots.get(i).id == clientId) clientDots.remove(i);
@@ -72,36 +73,36 @@ public class ClientRegisterStand implements ClientRegister {
 
     Comparator<ClientRecords> comparator = null;
     if (clientFilter.sortBy != null)
-    switch (clientFilter.sortBy) {
-      case NONE:
-        comparator = null;
-        break;
-      case NAME:
-        comparator = Comparator.comparing(o -> o.name);
-        break;
-      case SURNAME:
-        comparator = Comparator.comparing(o -> o.surname);
-        break;
-      case PATRONYMIC:
-        comparator = Comparator.comparing(o -> o.patronymic);
-        break;
-      case AGE:
-        comparator = Comparator.comparing(o -> o.age);
-        break;
-      case MIDDLE_BALANCE:
-        comparator = Comparator.comparing(o -> o.middle_balance);
-        break;
-      case MIN_BALANCE:
-        comparator = Comparator.comparing(o -> o.min_balance);
-        break;
-      case MAX_BALANCE:
-        comparator = Comparator.comparing(o -> o.max_balance);
-        break;
-    }
+      switch (clientFilter.sortBy) {
+        case NONE:
+          comparator = null;
+          break;
+        case NAME:
+          comparator = Comparator.comparing(o -> o.name);
+          break;
+        case SURNAME:
+          comparator = Comparator.comparing(o -> o.surname);
+          break;
+        case PATRONYMIC:
+          comparator = Comparator.comparing(o -> o.patronymic);
+          break;
+        case AGE:
+          comparator = Comparator.comparing(o -> o.age);
+          break;
+        case MIDDLE_BALANCE:
+          comparator = Comparator.comparing(o -> o.middle_balance);
+          break;
+        case MIN_BALANCE:
+          comparator = Comparator.comparing(o -> o.min_balance);
+          break;
+        case MAX_BALANCE:
+          comparator = Comparator.comparing(o -> o.max_balance);
+          break;
+      }
     if (comparator != null) clientRecords.sort(comparator);
 
     if (clientFilter.sortDirection != null)
-    if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
+      if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
 
     if (clientFilter.to < 0) clientFilter.to = 0;
     if (clientFilter.from < 0) clientFilter.from = 0;
@@ -117,15 +118,15 @@ public class ClientRegisterStand implements ClientRegister {
     List<ClientDot> temp = db.get().clientsStorage;
     List<ClientRecords> clientRecords = new ArrayList<>();
 
-    for(ClientDot clientDot : temp) {
+    // FIXME: 6/11/18 вынеси общий для getRecords и getRecordsCount в отдельный метод
+    for (ClientDot clientDot : temp) {
       if (clientFilter != null && clientFilter.fio != null) {
         if ((clientDot.name.contains(clientFilter.fio))
           || (clientDot.surname.contains(clientFilter.fio))
           || (clientDot.patronymic.contains(clientFilter.fio))) {
-            clientRecords.add(clientDot.toClientRecords());
+          clientRecords.add(clientDot.toClientRecords());
         }
-      }
-      else {
+      } else {
         clientRecords.add(clientDot.toClientRecords());
       }
     }
@@ -139,6 +140,9 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientDot getClient(int clientId) {
+
+    // TODO: 6/11/18 рассмотри вариант с stream api
+    // STREAM API return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
 
     List<ClientDot> clientDots = db.get().clientsStorage;
     for (ClientDot clientDot : clientDots)

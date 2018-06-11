@@ -14,6 +14,8 @@ public class ClientDot {
   public Gender gender;
   public Date birth_day;
   public int charmId;
+
+  // FIXME: 6/11/18 внутри Dot'а не могут быть объекты (тем более листы), только ссылки
   public ClientAddress addressFact;
   public ClientAddress addressReg;
   public ClientPhone homePhone;
@@ -21,7 +23,7 @@ public class ClientDot {
   public ClientPhone mobilePhone;
   public List<ClientAccount> accounts = new ArrayList<>();
 
-  public ClientRecords toClientRecords () {
+  public ClientRecords toClientRecords() {
     ClientRecords clientRecords = new ClientRecords();
     clientRecords.id = this.id;
     clientRecords.name = this.name;
@@ -51,6 +53,7 @@ public class ClientDot {
     return clientDetail;
   }
 
+  // FIXME: 6/11/18 не используй deprecated
   private int getAge() {
     return (new Date()).getYear() - birth_day.getYear() + 1900;
   }
@@ -60,7 +63,7 @@ public class ClientDot {
     float middle_balance = 0;
     for (int i = 0; i < accounts.size(); i++)
       middle_balance += accounts.get(i).money;
-    return middle_balance/accounts.size();
+    return middle_balance / accounts.size();
   }
 
   private float getMaxBalance() {
