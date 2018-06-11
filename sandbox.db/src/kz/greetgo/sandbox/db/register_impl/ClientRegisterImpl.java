@@ -3,8 +3,8 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.Character;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.EditClient;
 import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -28,12 +28,12 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public ClientToSave getClientById(int clientId) {
+  public ClientDetails getClientById(int clientId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public int editedClient(EditClient editedClient) {
+  public int editedClient(ClientToSave editedClient) {
     throw new UnsupportedOperationException();
   }
 

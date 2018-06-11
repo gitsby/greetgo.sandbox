@@ -24,16 +24,15 @@ public class ClientRegisterStand implements ClientRegister {
       System.out.println("NULL");
       return false;
     }
-    // TODO: 6/4/2018
     db.get().getClientDot().removeIf(client -> clientId.equals(client.id + ""));
     return true;
   }
 
   @Override
-  public ClientToSave getClientById(int clientId) {
+  public ClientDetails getClientById(int clientId) {
     for (ClientDot clientDot : db.get().getClientDot()) {
       if (clientDot.id == clientId) {
-        ClientToSave foundClient = new ClientToSave();
+        ClientDetails foundClient = new ClientDetails();
         foundClient.id = clientDot.id;
         foundClient.name = clientDot.name;
         foundClient.surname = clientDot.surname;
@@ -87,7 +86,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public int editedClient(EditClient editedClient) {
+  public int editedClient(ClientToSave editedClient) {
     System.out.println("HERE IT GOES");
     System.out.println(editedClient.id);
     if (editedClient.id == null) {
@@ -229,7 +228,7 @@ public class ClientRegisterStand implements ClientRegister {
     return characters;
   }
 
-  private void createNewClient(EditClient client) {
+  private void createNewClient(ClientToSave client) {
     for (ClientDot clientDot : db.get().getClientDot()) {
       System.out.println("BEFORE:" + clientDot.id);
     }

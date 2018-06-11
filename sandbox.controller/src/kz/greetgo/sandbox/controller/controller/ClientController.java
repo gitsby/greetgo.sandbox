@@ -5,8 +5,8 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.core.RequestMethod;
 import kz.greetgo.sandbox.controller.model.Character;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.EditClient;
 import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
@@ -19,7 +19,6 @@ public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
-  // FIXME: 6/8/18 Method filter обязателен
   @ToJson
   @MethodFilter(RequestMethod.DELETE)
   @Mapping("/delete")
@@ -31,7 +30,7 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public int save(@Json @Par("editedClient") EditClient editedClient) {
+  public int save(@Json @Par("editedClient") ClientToSave editedClient) {
     return clientRegister.get().editedClient(editedClient);
   }
 
@@ -55,7 +54,7 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getClientWithId")
-  public ClientToSave getClientById(@Par("clientId") String clientId) {
+  public ClientDetails getClientById(@Par("clientId") String clientId) {
     return clientRegister.get().getClientById(Integer.parseInt(clientId));
   }
 
