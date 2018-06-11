@@ -8,6 +8,10 @@ import {Charm} from "../../model/Charm";
   template: require('./client_info_form.component.html'),
   styles: [require('./client_info_form.component.css')],
 })
+//FiXME Название не верное, в компоненте происходит едит/сейв, не только отображение
+//fixme в поле для телефона вводяться буквы, форматирования нет
+//fixme подстветки пустых или не правильно заполненных полей нет
+//fixme лейблов на полях все еще нет
 export class ClientInfoFormComponent implements OnInit{
   @Input() clientId: number;
   @Output() onClose = new EventEmitter<boolean>();
