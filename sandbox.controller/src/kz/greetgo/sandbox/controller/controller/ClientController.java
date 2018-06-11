@@ -18,7 +18,7 @@ import java.util.List;
 public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
-
+  // FIXME: 6/8/18 Method filter обязателен
   @ToJson
   @Mapping("/delete")
   public boolean delete(@Par("index") String index) {
