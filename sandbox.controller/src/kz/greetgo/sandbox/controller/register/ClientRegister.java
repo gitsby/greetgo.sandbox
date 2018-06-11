@@ -8,7 +8,7 @@ import kz.greetgo.sandbox.controller.model.RecordClient;
 import java.util.List;
 
 public interface ClientRegister {
-
+    //
     List<RecordClient> getClients(String columnNum,
                                              String paginationPage,
                                              String searchText,

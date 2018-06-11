@@ -18,13 +18,46 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void checkCharactersNotNull(){
+  public void checkCharactersNotNull() {
     assertThat(clientRegister.get().getCharacters()).isNotNull();
   }
 
   @Test
-  public void getClientWithNullId(){
-
+  public void getClientWithNullId() {
+    int clientId = -1;
+    assertThat(clientRegister.get().getClientById(clientId)).isNull();
   }
 
+  @Test
+  public void searchForEmptyName(){
+    // Make search request that does not exist
+    assertThat(  clientRegister.get().getClients("","","NONEXISTING",0));
+  }
+
+  @Test
+  public void getNonExistingPaginationPage(){
+    // Cause bug
+//    assertThat(clientRegister.get().getClients("", "10", ""));
+  }
+
+
+  @Test
+  public void saveInvalidClient(){
+    // What will happen if
+  }
+
+  @Test
+  public void testCreateClient(){
+    // Send new client
+  }
+
+  @Test
+  public void testInvalidSliceNum(){
+    // Make negative slice num
+  }
+
+  @Test
+  public void deleteNonExistingClient(){
+
+  }
 }

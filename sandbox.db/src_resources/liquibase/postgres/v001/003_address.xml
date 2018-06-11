@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="pompei" id="create-table-ClientAddr">
+    <sql endDelimiter=";;">
+      <![CDATA[
+        create table ClientAddress(
+          clientId int not null,
+          type varchar(10) not null,
+          street varchar(100) not null,
+          house varchar(100) not null,
+          flat varchar(100) not null
+        )
+      ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-foreign-AddressClientFK">
+    <addForeignKeyConstraint
+      baseColumnNames="clientid"
+      baseTableName="clientaddress"
+      constraintName="fk_address_client"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="client"/>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-primary-AddressPrimaryKey">
+    <addPrimaryKey
+      columnNames="clientid, type"
+      constraintName="pk_client_addr"
+      schemaName="public"
+      tableName="clientaddress"/>
+  </changeSet>
+
+</databaseChangeLog>

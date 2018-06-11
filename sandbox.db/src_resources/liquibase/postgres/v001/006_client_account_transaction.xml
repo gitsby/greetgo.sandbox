@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="pompei" id="create-table-TransactionType">
+    <sql endDelimiter=";;"><![CDATA[
+      create table transaction_type (
+        id int not null primary key,
+        code varchar(30) not null,
+        name varchar(100)
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-table-ClientAccountTransaction">
+    <sql endDelimiter=";;">
+      <![CDATA[
+        create table client_account_transaction(
+          id int not null primary key,
+          account int not null,
+          money float not null,
+          finished_at timestamp,
+          type int not null
+        )
+      ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-foreign-TransactionAccountFK">
+    <addForeignKeyConstraint
+      baseColumnNames="account"
+      baseTableName="client_account_transaction"
+      constraintName="fk_account_transaction"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="client_account"/>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-foreign-TransactionTypeFK">
+    <addForeignKeyConstraint
+      baseColumnNames="type"
+      baseTableName="client_account_transaction"
+      constraintName="fk_account_transaction_type"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="transaction_type"/>
+  </changeSet>
+
+</databaseChangeLog>

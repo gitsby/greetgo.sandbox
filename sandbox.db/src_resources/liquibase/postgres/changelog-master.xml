@@ -7,4 +7,9 @@
   <include file="liquibase/postgres/v001/000_common.xml"/>
   <include file="liquibase/postgres/v001/001_person.xml"/>
   <include file="liquibase/postgres/v001/002_character.xml"/>
+  <include file="liquibase/postgres/v001/003_address.xml"/>
+  <include file="liquibase/postgres/v001/004_client_phone.xml"/>
+  <include file="liquibase/postgres/v001/005_client_account.xml"/>
+  <include file="liquibase/postgres/v001/006_client_account_transaction.xml"/>
+
 </databaseChangeLog>
