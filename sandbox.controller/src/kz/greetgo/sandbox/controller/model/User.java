@@ -1,5 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
+import java.util.Arrays;
+
 public class User {
     public String id;
     public String surname;
@@ -12,16 +14,18 @@ public class User {
     public Address registeredAddress;
 
     @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        String userstr = id+" "+surname+" "+name+" "+patronymic+" "+birthDate+ " "+charm+"\n";
-        StringBuilder phonestr = new StringBuilder();
-        for(Phone phone: phones){
-                phonestr.append(phone.toString()).append("\n");
-        }
-
-        sb.append(userstr).append(phonestr).append(factualAddress.toString()).append(registeredAddress);
-        return registeredAddress.toString();
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", surname='" + surname + '\'' +
+                ", name='" + name + '\'' +
+                ", patronymic='" + patronymic + '\'' +
+                ", birthDate=" + birthDate +
+                ", charm=" + charm +
+                ", phones=" + Arrays.toString(phones) +
+                ", factualAddress=" + factualAddress +
+                ", registeredAddress=" + registeredAddress +
+                '}';
     }
 }
 

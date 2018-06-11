@@ -2,6 +2,12 @@ import {Component, EventEmitter, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
+import {TableModel} from "../../model/TableModel";
+import {User} from "../../model/User";
+import {Phone} from "../../model/Phone";
+import {Address} from "../../model/Address";
+import {CharmType} from "../../model/CharmType";
+import {AddressType} from "../../model/AddressType";
 
 @Component({
   selector: 'main-form-component',
@@ -98,11 +104,87 @@ export class MainFormComponent {
       this.userInfo = null;
     });
   }
-
+  //table/create-test
   loadMockRequestClicked() {
-    this.httpService.get( "/mock-request").toPromise().then( result => {
-      this.mockRequest=result.json();
-      console.log(this.mockRequest);
-    })
+    // 'id':'1'
+    // this.httpService.get( "/table/get-table-data",{'skip':0,'limit':6,'sortDirection':'ascending','sortType':'MINBALANCE'}).toPromise().then( result => {
+    //   this.mockRequest=result.json().data;
+    //   console.log(this.mockRequest);
+    // });
+    let myjson="{\n" +
+        "      \"id\":\"4\",\n" +
+        "      \"surname\":\"oo1\",\n" +
+        "      \"name\":\"oo\",\n" +
+        "      \"birthDate\":123456,\n" +
+        "      \"charm\":\"BOI\",\n" +
+        "      \"phones\":[\n" +
+        "        {\n" +
+        "          \"number\":\"123456789\",\n" +
+        "          \"phoneType\":\"HOME\"\n" +
+        "        },\n" +
+        "        {\n" +
+        "          \"number\":\"123456789\",\n" +
+        "          \"phoneType\":\"MOBILE\"\n" +
+        "        }\n" +
+        "      ],\n" +
+        "      \"factualAddress\":{\n" +
+        "        \"flat\":\"12\",\n" +
+        "        \"house\":\"12\",\n" +
+        "        \"street\":\"12\",\n" +
+        "        \"addressType\":\"FACT\"\n" +
+        "      },\n" +
+        "      \"registeredAddress\":{\n" +
+        "        \"flat\":\"12\",\n" +
+        "        \"house\":\"12\",\n" +
+        "        \"street\":\"12\",\n" +
+        "        \"addressType\":\"REG\"\n" +
+        "      }\n" +
+        "    }";
+
+    let factAddress = new Address();
+    factAddress.street = "AkhanSeri";
+    factAddress.flat = "1324";
+    factAddress.house = "213";
+    factAddress.addressType = AddressType.FACT;
+    let regAddress = new Address();
+    regAddress.street = "AkhanSeri";
+    regAddress.flat = "1324";
+    regAddress.house = "213";
+    regAddress.addressType = AddressType.REG;
+
+    let user = User.copy({
+        id: "5",
+        surname: "Kali",
+        name: "Oesultan",
+        patronymic: "Amanzholuly",
+        birthDate: 8645134,
+        charm: CharmType.BATBOI,
+        phones: [new Phone("+7777446", PhoneType.MOBILE)],
+        factualAddress: factAddress,
+        registeredAddress: regAddress,
+    });
+
+
+      // this.httpService.post( "/table/create-user", {
+      //     user: JSON.stringify(user)
+      // }).toPromise().then( result => {
+      //     this.mockRequest=result.json();
+      //     console.log(this.mockRequest);
+      // });
+
+      this.httpService.post( "/table/change-user", {
+        user: JSON.stringify(user)
+      }).toPromise().then( result => {
+          this.mockRequest=result.json();
+          console.log(this.mockRequest);
+      });
+      // this.httpService.post( "/table/delete-user", {'userID':'6'}).toPromise().then( result => {
+      //     this.mockRequest=result.json();
+      //     console.log(this.mockRequest);
+      // });
+
+
+
+      // this.httpService
   }
 }

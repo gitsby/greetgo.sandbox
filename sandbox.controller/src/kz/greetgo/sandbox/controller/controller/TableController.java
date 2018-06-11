@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.ArrayUsers;
+import kz.greetgo.sandbox.controller.model.Table;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
@@ -19,29 +20,26 @@ public class TableController implements Controller{
     public BeanGetter<TableRegister> tableRegister;
     private String userID;
 
-
-    @AsIs
     @NoSecurity
     @ToJson
     @Mapping("/get-table-data")
-    public ArrayUsers getTableData(@Par("skip") int skipNumber, @Par("limit") int limit, @Par("sortDirection") char sortDirection, @Par("sortType") char sortType) {
+    public Table getTableData(@Par("skip") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
         System.out.println(skipNumber);
         System.out.println(limit);
         System.out.println(sortDirection);
         System.out.println(sortType);
-        return StandJsonDb.Users;
-//                tableRegister.get().getTableData( skipNumber, limit, sortDirection, sortType);
+//        StandJsonDb.Users;
+        return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
     }
 
-    @AsIs
     @NoSecurity
+    @ToJson
     @Mapping("/get-table-size")
     public int getTableSize(){
         return tableRegister.get().tableSize();
     }
 
 
-    @AsIs
     @NoSecurity
     @ToJson
     @Mapping("/get-exact-user")
@@ -50,28 +48,33 @@ public class TableController implements Controller{
     }
 
 
-    @AsIs
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
     @Mapping("/create-user")
-    public String createUser(@Par("user") User user) {
+    public String createUser(@Par("user") @Json User user) {
+        System.out.println(user.toString());
+     try{
         return tableRegister.get().createUser(user);
+    }catch (Exception e){
+         e.printStackTrace();
+     }
+     finally {
+         return "fuck you and your user";
+     }
     }
 
 
 
-    @AsIs
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
     @Mapping("/change-user")
-    public String changeUser(@Par("user") User user) {
+    public String changeUser(@Par("user") @Json User user) {
         return tableRegister.get().changeUser(user);
     }
 
 
-    @AsIs
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
@@ -81,7 +84,6 @@ public class TableController implements Controller{
     }
 
 
-    @AsIs
     @NoSecurity
     @ToJson
     @Mapping("/check-if-there-user")

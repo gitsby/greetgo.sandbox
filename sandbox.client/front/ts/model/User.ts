@@ -21,6 +21,15 @@ export class User {
         this.name = o.name;
         this.patronymic = o.patronymic;
         this.phones = o.phones;
+        this.charm = o.charm;
+        this.phones = [];
+        for (let key in o.phones) {
+            if (o.hasOwnProperty(key)) {
+                this.phones.push(Phone.copy(o.phones[key]));
+            }
+        }
+        this.factualAddress = o.factualAddress;
+        this.registeredAddress = o.registeredAddress;
         return this;
     }
 
