@@ -16,7 +16,7 @@ import static java.util.Calendar.*;
 public class ClientRegisterStand implements ClientRegister {
 
 
-  public BeanGetter<StandDb> db;
+  private BeanGetter<StandDb> db;
 
   @Override
   public boolean deleteClient(String clientId) {

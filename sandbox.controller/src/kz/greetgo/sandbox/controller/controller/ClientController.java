@@ -27,7 +27,7 @@ public class ClientController implements Controller {
   }
 
   @ToJson
-  @MethodFilter(RequestMethod.POST)
+  @MethodFilter({RequestMethod.POST, RequestMethod.GET})
   @Mapping("/save")
   public int save(@Json @Par("editedClient") EditClient editedClient) {
     return clientRegister.get().editedClient(editedClient);
