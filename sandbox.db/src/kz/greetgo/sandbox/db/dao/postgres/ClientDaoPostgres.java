@@ -1,4 +1,7 @@
 package kz.greetgo.sandbox.db.dao.postgres;
 
-public interface ClientDaoPostgres {
+import kz.greetgo.sandbox.db.dao.ClientDao;
+
+public interface ClientDaoPostgres extends ClientDao {
+
 }

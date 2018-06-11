@@ -117,6 +117,7 @@ public class StandDb implements HasAfterInject {
   private void appendAddresses() {
     for (int i = 0; i < 100; i++) {
       ClientAddress clientAddress = new ClientAddress();
+      clientAddress.id = i;
       clientAddress.type = 1 == random.nextInt(1) ? AddressType.FACT : AddressType.REG;
       clientAddress.street = RND.intStr(5);
       clientAddress.house = RND.intStr(5);
@@ -129,6 +130,7 @@ public class StandDb implements HasAfterInject {
   private void appendPhones() {
     for(int i = 0; i < 100; i++) {
       ClientPhone clientPhone = new ClientPhone();
+      clientPhone.id = i;
       clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
       clientPhone.number = RND.intStr(10);
       phones.add(clientPhone);
@@ -139,6 +141,7 @@ public class StandDb implements HasAfterInject {
   private void appendClientAccounts() {
     for (int i = 0; i < 100; i++) {
       ClientAccount clientAccount = new ClientAccount();
+      clientAccount.id = i;
       clientAccount.money = random.nextFloat()*random.nextInt(10000);
       clientAccount.number = RND.intStr(10);
       clientAccount.registered_at = null;
