@@ -24,7 +24,7 @@ export class MainFormComponent {
     this.loadUserInfo();
   }
 
-  switchBetweenUserAndClientButtonClicked (client: boolean) {
+  switchBetweenUserAndClientButtonClicked(client: boolean) {
     this.loadUserInfoButtonEnabled = !client;
     this.loadClientInfoListButtonEnable = client;
   }
@@ -45,7 +45,7 @@ export class MainFormComponent {
   close(listEdited: boolean) {
     this.editClientId = null;
     this.clientInfoFormComponentEnable = false;
-    if (listEdited==true) {
+    if (listEdited == true) {
       this.switchBetweenUserAndClientButtonClicked(false);
     }
   }

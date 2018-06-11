@@ -82,7 +82,7 @@ public class ClientRegisterStand implements ClientRegister {
     if (comparator != null) clientRecords.sort(comparator);
 
     if (clientFilter.sortDirection != null)
-    if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
+      if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
 
     if (clientFilter.to < 0) clientFilter.to = 0;
     if (clientFilter.from < 0) clientFilter.from = 0;

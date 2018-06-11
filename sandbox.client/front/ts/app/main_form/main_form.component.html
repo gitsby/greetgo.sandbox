@@ -3,10 +3,10 @@
     <button (click)="exit.emit()">
       Выход
     </button>
-    <button [ngClass]="{active:loadUserInfoButtonEnabled}" (click)="switchBetweenUserAndClientButtonClicked(false)" >
+    <button [ngClass]="{active:loadUserInfoButtonEnabled}" (click)="switchBetweenUserAndClientButtonClicked(false)">
       Данные пользователя
     </button>
-    <button [ngClass]="{active:loadClientInfoListButtonEnable}" (click)="switchBetweenUserAndClientButtonClicked(true)" >
+    <button [ngClass]="{active:loadClientInfoListButtonEnable}" (click)="switchBetweenUserAndClientButtonClicked(true)">
       Данные клентов
     </button>
     <button *ngIf="loadClientInfoListButtonEnable" (click)="openAddNewClientModal()">
@@ -83,7 +83,9 @@
     </table>
   </div>
 
-  <clients-list-form-component (editClient)="editClient($event)" *ngIf="loadClientInfoListButtonEnable"></clients-list-form-component>
-
-  <client-info-form-component [clientId]="editClientId" (onClose)="close($event)" *ngIf="clientInfoFormComponentEnable"></client-info-form-component>
+  <clients-list-form-component (editClient)="editClient($event)"
+                               *ngIf="loadClientInfoListButtonEnable"></clients-list-form-component>
+  <!--fixme client-info-form не должна быть в main_form, она не относиться к ней-->
+  <client-info-form-component [clientId]="editClientId" (onClose)="close($event)"
+                              *ngIf="clientInfoFormComponentEnable"></client-info-form-component>
 </div>
