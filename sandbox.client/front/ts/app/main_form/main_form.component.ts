@@ -3,7 +3,7 @@ import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {EditFormComponent} from "../edit_form/edit_form.component";
-import {ListFormComponent} from "../list_form/client_list.component";
+import {ClientListComponent} from "../list_form/client_list.component";
 import {RecordClient} from "../../model/RecordClient";
 
 @Component({
@@ -22,7 +22,7 @@ export class MainFormComponent {
     loadUserInfoError: string | null;
 
     @ViewChild(EditFormComponent) child;
-    @ViewChild(ListFormComponent) listForm;
+    @ViewChild(ClientListComponent) listForm;
 
     @Output() exit = new EventEmitter<void>();
 

@@ -18,8 +18,10 @@ import java.util.List;
 public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
+
   // FIXME: 6/8/18 Method filter обязателен
   @ToJson
+  @MethodFilter(RequestMethod.DELETE)
   @Mapping("/delete")
   public boolean delete(@Par("index") String index) {
     clientRegister.get().deleteClient(index);
@@ -27,7 +29,7 @@ public class ClientController implements Controller {
   }
 
   @ToJson
-  @MethodFilter({RequestMethod.POST, RequestMethod.GET})
+  @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
   public int save(@Json @Par("editedClient") EditClient editedClient) {
     return clientRegister.get().editedClient(editedClient);
