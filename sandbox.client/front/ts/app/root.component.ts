@@ -21,7 +21,7 @@ import {AuthInfo} from "../model/AuthInfo";
   `
 })
 export class RootComponent implements OnInit {
-  mode: string = "main-form";
+  mode: string = "login";
 
   constructor(private httpService: HttpService) {}
 
@@ -32,7 +32,7 @@ export class RootComponent implements OnInit {
 
   startApp() {
     if (!this.httpService.token) {
-      this.mode = 'main-form';
+      this.mode = 'login';
       return;
     }
 
