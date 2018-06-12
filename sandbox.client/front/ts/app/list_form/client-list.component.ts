@@ -101,7 +101,7 @@ export class ClientListComponent {
     }
 
     if (this.clientRecordPhilter.paginationPage >= this.paginationNum - 3 && this.paginationNum > 2) {
-      this.addToTemPagArray(this.paginationNum - 3, this.paginationNum)
+      this.addToTemPagArray(this.paginationNum - 3, this.paginationNum);
       this.loadClients();
     }
   }
@@ -172,10 +172,10 @@ export class ClientListComponent {
           cl.character = client.character;
           cl.name = client.name;
           cl.surname = client.surname;
-          cl.age = cl.age;
-          cl.maxBalance = cl.maxBalance;
-          cl.minBalance = cl.minBalance;
-          cl.accBalance = cl.accBalance;
+          cl.age = client.age;
+          cl.maxBalance = client.maxBalance;
+          cl.minBalance = client.minBalance;
+          cl.accBalance = client.accBalance;
         }
       }
     }
@@ -183,7 +183,6 @@ export class ClientListComponent {
 
   notExistedClient(id: number): Boolean {
     for (let client of this.clients) {
-      console.log(client.id + " " + id)
       if (client.id == id) {
         return false;
       }

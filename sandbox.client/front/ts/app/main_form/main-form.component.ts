@@ -3,7 +3,6 @@ import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {ClientListComponent} from "../list_form/client-list.component";
-import {RecordClient} from "../../model/RecordClient";
 
 @Component({
   selector: 'main-form-component',
@@ -13,7 +12,7 @@ import {RecordClient} from "../../model/RecordClient";
 
 export class MainFormComponent {
   clientsText = "Open Clients";
-  userInfoText = "Load User Data"
+  userInfoText = "Load User Data";
   openClient = null;
 
   userInfo: UserInfo | null = null;
@@ -32,10 +31,10 @@ export class MainFormComponent {
 
   openClients() {
     if (!this.openClient) {
-      this.clientsText = "Hide Clients"
+      this.clientsText = "Hide Clients";
       this.openClient = 'open';
     } else {
-      this.clientsText = "Open Clients"
+      this.clientsText = "Open Clients";
       this.openClient = null;
     }
   }
