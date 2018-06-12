@@ -6,7 +6,7 @@ import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
-import {ClientInfoFormComponent} from "./client_info_form/client_info_form.component";
+import {ClientEditFormComponent} from "./client_edit_form/client_edit_form.component";
 import {ClientsListFormComponent} from "./clients_list_form/clients_list_form.component";
 
 @NgModule({
@@ -14,7 +14,7 @@ import {ClientsListFormComponent} from "./clients_list_form/clients_list_form.co
     BrowserModule, HttpModule, JsonpModule, FormsModule
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent, ClientInfoFormComponent, ClientsListFormComponent,
+    RootComponent, LoginComponent, MainFormComponent, ClientEditFormComponent, ClientsListFormComponent,
   ],
   bootstrap: [RootComponent],
   providers: [HttpService],

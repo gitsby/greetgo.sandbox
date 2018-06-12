@@ -1,0 +1,227 @@
+<div #myModal class="modal" id="myModal">
+  <div class="modal-content">
+    <table style="width:100%">
+      <colgroup>
+        <col>
+        <col>
+      </colgroup>
+      <thead>
+      <tr class="tr-head">
+        <th style="width: 50%">
+          <h1>
+            {{title}}
+          </h1>
+        </th>
+        <th style="width: 50%">
+            <span *ngIf="wrongMessageEnable" class="red-text">
+              * - Заполните все обязательные поля
+            </span>
+        </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td colspan="2">
+          <hr>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="1">
+          <label>
+            <b>
+              Фамилия
+            </b>
+            <span class="red-text">
+                *
+              </span>
+          </label>
+          <div class="contain">
+            <input (keyup)="serializeInputText(1)" [(ngModel)]="clientToSave.surname" class="custom-input valid_input" id="surname" name="valid_input" type="text" placeholder="Фамилия" pattern="[a-zA-Z_]*" required>
+            <span class="validity">
+              </span>
+          </div>
+        </td>
+
+        <td colspan="1">
+          <label>
+            <b>
+              Имя
+            </b>
+            <span class="red-text">*</span></label>
+          <div class="contain">
+            <input (keyup)="serializeInputText(0)" [(ngModel)]="clientToSave.name" class="custom-input valid_input"  id="name" type="text" name="valid_input" placeholder="Имя" pattern="[a-zA-Z_]*" required>
+            <span class="validity">
+              </span>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <label>
+            <b>
+              Отчество
+            </b>
+          </label>
+          <div class="contain">
+            <input (keyup)="serializeInputText(2)" [(ngModel)]="clientToSave.patronymic" class="custom-input" id="patronymic" type="text" placeholder="Отчество" required>
+          </div>
+        </td>
+
+        <td>
+          <label>
+            <b>
+              День рождения
+            </b>
+            <span class="red-text">
+                *
+              </span>
+          </label>
+          <div class="contain">
+            <input #birthDayInput value="{{clientToSave.birth_day | date:'yyyy-MM-dd'}}" (blur)="setBDate($event.target.value)" format="dd/MM/yyyy" class="valid_input custom-input" id="birth_day" type="date" name="valid_input" placeholder="Возраст" max="2012-12-12" required>
+            <span class="validity">
+              </span>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <label>
+            <b>
+              Пол
+            </b>
+            <span class="red-text">
+                *
+              </span>
+          </label>
+          <br>
+          <div>
+            <label>
+              Мужчина
+              <input type="radio" [(ngModel)]="clientToSave.gender" value="MALE" aria-selected="true" style="width: 30px;">
+              Женщина
+              <input type="radio" [(ngModel)]="clientToSave.gender" value="FEMALE" style="width: 30px">
+            </label>
+            <span class="validity">
+              </span>
+          </div>
+        </td>
+
+        <td>
+          <label>
+            <b>
+              Характер
+            </b>
+            <span class="red-text">
+                *
+              </span>
+          </label>
+          <div class="contain">
+            <label>
+              <select class="valid_input" [(ngModel)]="clientToSave.charmId">
+                <option *ngFor="let charm of charms" value="{{charm.id}}">
+                  {{charm.name}}
+                </option>
+              </select>
+            </label>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <label>
+            <b>
+              Адрес регистрации
+            </b>
+            <span class="red-text">
+                *
+              </span>
+          </label>
+          <br>
+          <span>
+              Улица:
+            </span>
+          <input [(ngModel)]="clientToSave.addressReg.street" class="custom-input valid_input" id="ra_street" type="text" name="valid_input" placeholder="Улица" pattern="[a-zA-Z0-9_]+" required>
+          <span>
+              Дом:
+            </span>
+          <input [(ngModel)]="clientToSave.addressReg.house" class="custom-input valid_input" id="ra_house" type="text" name="valid_input" placeholder="Дом" pattern="[a-zA-Z0-9_]+" required>
+          <span>
+              Квартира:
+            </span>
+          <input [(ngModel)]="clientToSave.addressReg.flat" class="custom-input valid_input" id="ra_flat" type="text" name="valid_input" placeholder="Квартира" pattern="[a-zA-Z0-9_]+" required>
+        </td>
+
+        <td>
+          <label>
+            <b>
+              Адрес проживания
+            </b>
+          </label>
+          <br>
+          <span>
+              Улица:
+          </span>
+          <input [(ngModel)]="clientToSave.addressFact.street" class="custom-input" id="ha_street" type="text" placeholder="Улица" required>
+          <span>
+            Дом:
+            </span>
+          <input [(ngModel)]="clientToSave.addressFact.house" class="custom-input" id="ha_house" type="text" placeholder="Дом" required>
+          <span>
+              Квартира:
+          </span>
+          <input [(ngModel)]="clientToSave.addressFact.flat" class="custom-input" id="ha_flat" type="text" placeholder="Квартира" required>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <label>
+            <b>
+              Телефоны
+            </b>
+            <span class="red-text">
+                *
+              </span>
+            (номер должен состоять не менее чем из 8 цифр)
+          </label>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+            <span>
+              Домашний:
+            </span>
+          <input (keyup)="serializeInputNumber(0)" [(ngModel)]="clientToSave.homePhone.number" class="custom-input valid_input" id="home_phone" type="text" name="valid_input" placeholder="Домашний" pattern="[0-9]{1}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}" maxlength="15" required>
+          <span>
+               Рабочий:
+            </span>
+          <input (keyup)="serializeInputNumber(1)" [(ngModel)]="clientToSave.workPhone.number" class="custom-input valid_input" id="work_phone" type="text" name="valid_input" placeholder="Рабочий" pattern="[0-9]{1}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}" maxlength="15" required>
+          <span>
+              Мобильный:
+            </span>
+          <input (keyup)="serializeInputNumber(2)" [(ngModel)]="clientToSave.mobilePhone.number" class="custom-input valid_input" id="mobile_phone1" type="text" name="valid_input" placeholder="Мобильный" pattern="[0-9]{1}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}" maxlength="15" required>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <button type="button" class="cancel-btn" (click)="closeButtonClicked(false)">
+            Заткрыть
+          </button>
+
+        </td>
+        <td>
+          <button type="submit" class="sign-up-btn valid_button" (click)="saveButtonClicked()">
+            {{buttonTitle}}
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

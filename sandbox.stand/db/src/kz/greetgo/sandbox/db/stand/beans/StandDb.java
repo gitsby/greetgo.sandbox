@@ -9,7 +9,6 @@ import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.util.*;
 
 @Bean
@@ -21,11 +20,12 @@ public class StandDb implements HasAfterInject {
   public final List<ClientAddress> addresses = new ArrayList<>();
   public final List<ClientAccount> accounts = new ArrayList<>();
 
-  Random random = new Random();
+  private Random random = new Random();
 
   @Override
   public void afterInject() throws Exception {
     appendCharms();
+
     appendAddresses();
     appendPhones();
     appendClientAccounts();
@@ -117,6 +117,7 @@ public class StandDb implements HasAfterInject {
   private void appendAddresses() {
     for (int i = 0; i < 100; i++) {
       ClientAddress clientAddress = new ClientAddress();
+      clientAddress.id = i;
       clientAddress.type = 1 == random.nextInt(1) ? AddressType.FACT : AddressType.REG;
       clientAddress.street = RND.intStr(5);
       clientAddress.house = RND.intStr(5);
@@ -129,6 +130,7 @@ public class StandDb implements HasAfterInject {
   private void appendPhones() {
     for(int i = 0; i < 100; i++) {
       ClientPhone clientPhone = new ClientPhone();
+      clientPhone.id = i;
       clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
       clientPhone.number = RND.intStr(10);
       phones.add(clientPhone);
@@ -139,6 +141,7 @@ public class StandDb implements HasAfterInject {
   private void appendClientAccounts() {
     for (int i = 0; i < 100; i++) {
       ClientAccount clientAccount = new ClientAccount();
+      clientAccount.id = i;
       clientAccount.money = random.nextFloat()*random.nextInt(10000);
       clientAccount.number = RND.intStr(10);
       clientAccount.registered_at = null;
@@ -147,7 +150,7 @@ public class StandDb implements HasAfterInject {
   }
 
   @SuppressWarnings("unused")
-  private void appendClientDetailsList() throws ParseException {
+  private void appendClientDetailsList() {
     for (int i = 0; i < 100; i++) {
       ClientDot clientDot = new ClientDot();
       clientDot.id = i;
@@ -161,12 +164,12 @@ public class StandDb implements HasAfterInject {
       birth_day.setDate(random.nextInt(28));
       clientDot.birth_day = birth_day;
       clientDot.charmId = charms.get(random.nextInt(charms.size())).id;
-      clientDot.addressReg = addresses.get(random.nextInt(addresses.size()));
-      clientDot.addressFact = addresses.get(random.nextInt(addresses.size()));
-      clientDot.homePhone = phones.get(random.nextInt(phones.size()));
-      clientDot.workPhone = phones.get(random.nextInt(phones.size()));
-      clientDot.mobilePhone = phones.get(random.nextInt(phones.size()));
-      for (int g = 0; g < random.nextInt(9)+1; g++) clientDot.accounts.add(accounts.get(random.nextInt(accounts.size())));
+      clientDot.addressRegId = addresses.get(random.nextInt(addresses.size())).id;
+      clientDot.addressFactId = addresses.get(random.nextInt(addresses.size())).id;
+      clientDot.homePhoneId = phones.get(random.nextInt(phones.size())).id;
+      clientDot.workPhoneId = phones.get(random.nextInt(phones.size())).id;
+      clientDot.mobilePhoneId = phones.get(random.nextInt(phones.size())).id;
+      for (int g = 0; g < random.nextInt(9)+1; g++) clientDot.accountsId.add(accounts.get(random.nextInt(accounts.size())).id);
       clientsStorage.add(clientDot);
     }
   }
@@ -200,7 +203,7 @@ class NameGenerator {
 
   private static Random rand = new Random();
 
-  public static String generateName() {
+  static String generateName() {
 
     return Beginning[rand.nextInt(Beginning.length)] +
       Middle[rand.nextInt(Middle.length)]+

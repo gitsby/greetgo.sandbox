@@ -23,7 +23,7 @@ export class ClientsListFormComponent {
   clientRecords: ClientRecords[] = [];
   clientFilter: ClientFilter = new ClientFilter();
   currentPage: number = 1;
-  //TEST
+
   sortIndex: number = -1;
   numberOfItemInPage: number = 10;
 

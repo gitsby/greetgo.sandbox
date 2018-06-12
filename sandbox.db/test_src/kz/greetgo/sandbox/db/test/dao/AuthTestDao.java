@@ -24,8 +24,7 @@ public interface AuthTestDao {
   void insertUser(@Param("id") String id,
                   @Param("accountName") String accountName,
                   @Param("encryptedPassword") String encryptedPassword,
-                  @Param("blocked") int blocked
-  );
+                  @Param("blocked") int blocked);
 
   @Update("update Person set ${fieldName} = #{fieldValue} where id = #{id}")
   void updatePersonField(@Param("id") String id,
