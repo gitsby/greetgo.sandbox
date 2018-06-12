@@ -1,43 +1,45 @@
 package kz.greetgo.sandbox.controller.model;
 
-import java.util.Arrays;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Date;
 
 public class ClientToSave {
 
-    public int id;
+    public Integer id;
     public String name;
     public String surname;
     public String patronymic;
     public String gender;
     public Date birthDate;
 
-    public String snmn = "Empty";
-    public int age = 0;
+    public Integer charm;
 
-    public int charm;
+    public Address[] addedAddresses;
+    public Address[] editedAddresses;
+    public Address[] deletedAddresses;
 
-    // Addresses
-    // TODO: Change to ArrayList
-    public Address[] addresses;
-
-    // Phone numbers
-    public Phone[] phones;
+    public Phone[] addedPhones;
+    public Phone[] deletedPhones;
+    public Phone[] editedPhones;
 
     @Override
     public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", patronymic='" + patronymic + '\'' +
-                ", gender='" + gender + '\'' +
-                ", birthDate='" + birthDate + '\'' +
-                ", snmn='" + snmn + '\'' +
-                ", age=" + age +
-                ", charm=" + charm +
-                ", addresses=" + Arrays.toString(addresses) +
-                ", phones=" + Arrays.toString(phones) +
-                '}';
+        StringWriter stringWriter = new StringWriter();
+        String jsonString = "";
+        try {
+            JsonGenerator jsonGenerator = new JsonFactory().createGenerator(stringWriter);
+            jsonGenerator.setCodec(new ObjectMapper());
+            jsonGenerator.writeObject(this);
+            jsonGenerator.close();
+            jsonString = stringWriter.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonString;
     }
 }

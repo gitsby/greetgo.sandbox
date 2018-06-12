@@ -7,18 +7,14 @@ import {ClientDetails} from "../../model/ClientDetails";
 import {Address} from "../../model/Address";
 import {Phone} from "../../model/Phone";
 import {Character} from "../../model/Character";
-import {EditClient} from "../../model/EditClient";
+import {ClientToSave} from "../../model/ClientToSave";
 import {ClientInput} from "../../model/ClientInput";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {RecordClient} from "../../model/RecordClient";
 
-//FIXME эта переменная не должны быть глобальной
 let retrievedClient: ClientDetails;
 
-//FIXME Название компоненты не соответствует предназначению
-
 @Component({
-
   selector: 'edit-form-component',
   template: require('./edit_form.component.html'),
   styles: [require('./edit_form.component.css')],
@@ -28,7 +24,6 @@ export class EditFormComponent implements AfterViewInit {
 
   welcomeText = "Add new Client";
   clientInputForm: FormGroup;
-  //FIXME JavaScript тебе позволяет не ставить двоеточия, но лучше этим не пренебрегать
   characters: Character[] = []
   clientInput: ClientInput = new ClientInput();
   factAddress: Address = new Address();
@@ -92,7 +87,6 @@ export class EditFormComponent implements AfterViewInit {
   }
 
   saveClient() {
-    //fixme алерты для дебага нужно убирать!
     alert(this.homePhone.number);
     if (this.clientInputForm.controls['surname'].invalid || this.clientInputForm.controls['name'].invalid ||
       this.clientInputForm.controls['patronymic'].invalid ||
@@ -106,7 +100,7 @@ export class EditFormComponent implements AfterViewInit {
     this.mobilePhone1.number = this.mobilePhone1.number.replace(/\D/g, '');
     this.workingPhone.number = this.workingPhone.number.replace(/\D/g, '');
 
-    let editClient: EditClient = new EditClient();
+    let editClient: ClientToSave = new ClientToSave();
     if (this.clientId == null) { // When adding
       editClient.id = null;
       editClient.name = this.clientInput.name;
@@ -293,7 +287,7 @@ export class EditFormComponent implements AfterViewInit {
     }
     console.log(editClient.toString())
 
-    this.httpService.get("/client/edit", {editedClient: editClient.toString()}).toPromise().then(result => {
+    this.httpService.post("/client/save", {editedClient: editClient.toString()}).toPromise().then(result => {
       if (result.json() != -1) {
         editClient.id = result.json();
       }
@@ -305,7 +299,7 @@ export class EditFormComponent implements AfterViewInit {
     });
   }
 
-  outputResults(editClient: EditClient) {
+  outputResults(editClient: ClientToSave) {
     let recClient: RecordClient = new RecordClient();
     recClient.id = editClient.id;
     recClient.name = (editClient.name == undefined) ? retrievedClient.name : editClient.name;
@@ -374,7 +368,6 @@ export class EditFormComponent implements AfterViewInit {
         this.regAddress.flat = regAddress.flat;
       }
 
-      //fixme а если будет равен нулу, то сохраниться предыдущее значение?
       if (homePhone != null) {
         this.homePhone.number = homePhone.number;
       }
@@ -385,7 +378,7 @@ export class EditFormComponent implements AfterViewInit {
         this.mobilePhone1.number = mobilePhone.number;
       }
 
-//fixme консоль логи тоже желатьльно убирать
+
       console.log("GOT DATA");
     }, error => {
       alert("Error from retrieving " + error)
@@ -412,7 +405,6 @@ export class EditFormComponent implements AfterViewInit {
   }
 
   initElements() {
-    //fixme зачем нужен цикл?
     while (this.mobilePhonesInput.pop()) ;
     this.clientInput = new ClientInput();
     this.regAddress = new Address();

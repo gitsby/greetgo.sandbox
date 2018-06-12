@@ -17,7 +17,6 @@ public class StandServer implements HasAfterInject {
 
     public StandServer start() throws Exception {
         server.start();
-        System.out.println("ASDASDASD");
         System.err.println("[[[                                ]]]");
         System.err.println("[[[ Stand server has been launched ]]]");
         System.err.println("[[[                                ]]]");

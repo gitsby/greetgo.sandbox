@@ -1,0 +1,114 @@
+<div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-9">
+        <div class="col-lg-3">
+          <h3 class="col-lg-3">Clients</h3>
+        </div>
+        <div class="col-lg-4 options">
+          <input [(ngModel)]="searchWord" id="input" type="text" class="form-control"
+                 placeholder="Enter FIO">
+        </div>
+        <div class="col-lg-3 options">
+          <a (click)="searchClicked()" class="btn">Search</a>
+        </div>
+        <div class="col-lg-1 options">
+          <a class="btn" (click)="plusClick()">+</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <table>
+    <tbody>
+    <tr class="headers">
+      <th (click)="sortBy('surname')">
+
+        <p>Surname
+          Name Middle Name
+          <i class="down" *ngIf="currentColumnName=='surname'"></i>
+
+          <i class="up" *ngIf="currentColumnName=='-surname'"></i>
+        </p>
+      </th>
+      <th>
+        <p>
+          Character
+          <i class="down" *ngIf="currentColumnName==2"></i>
+
+          <i class="up" *ngIf="currentColumnName==-2"></i>
+        </p>
+      </th>
+      <th (click)="sortBy('age')">
+        <p>Age
+          <i class="down" *ngIf="currentColumnName=='age'"></i>
+
+          <i class="up" *ngIf="currentColumnName=='-age'"></i>
+        </p>
+      </th>
+      <th (click)="sortBy('total')">
+        <p>Total
+          <i class="down" *ngIf="currentColumnName=='total'"></i>
+
+          <i class="up" *ngIf="currentColumnName=='-total'"></i>
+        </p>
+      </th>
+      <th (click)="sortBy('max')">
+        <p>Max
+          <i class="down" *ngIf="currentColumnName=='max'"></i>
+
+          <i class="up" *ngIf="currentColumnName=='-max'"></i>
+        </p>
+      </th>
+      <th (click)="sortBy('min')">
+        <p>Min
+          <i class="down" *ngIf="currentColumnName=='min'"></i>
+
+          <i class="up" *ngIf="currentColumnName=='-min'"></i>
+        </p>
+      </th>
+      <th>Edit</th>
+      <th>Delete</th>
+    </tr>
+    <tr *ngFor="let client of clients; let i = index">
+      <td>{{client.name + " " +client.surname + " " + client.patronymic}}</td>
+      <td>{{client.character}}</td>
+      <td>{{client.age}}</td>
+      <td>{{client.accBalance}}</td>
+      <td>{{client.maxBalance}}</td>
+      <td>{{client.minBalance}}</td>
+      <td>
+        <a class="button" (click)="editClick(i)">...</a>
+      </td>
+      <td>
+        <a class="button" (click)="deleteClient(i)">-</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="center">
+  <div class="pagination">
+    <a (click)="decreaseCurrentPagination()"><<</a>
+    <a *ngIf="currentPagination>1 && paginationNum>3" (click)="loadClientSlice(0)">0</a>
+    <a *ngIf="currentPagination>2">...</a>
+    <a *ngFor="let pag of tempPaginationArray; let ind = index"
+       [ngStyle]="{background:pag==currentPagination?'#ddd':'#fff'}"
+       (click)="loadClientSlice(pag)">{{pag}}</a>
+    <!--<a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"-->
+    <!--[ngStyle]="{background:ind==currentPagination?'#ddd':'#fff'}"-->
+    <!--(click)="loadClientSlice(ind)">{{ind}}</a>-->
+    <a *ngIf="currentPagination<paginationNum-3">...</a>
+    <a (click)="loadClientSlice(paginationNum-1)"
+       *ngIf="currentPagination<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
+    <a (click)="increaseCurrentPagination()">>></a>
+    <select (change)="changed()" [(ngModel)]="sliceNum" class="selectSliceNum" placeholder="Select ">
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+    </select>
+  </div>
+
+</div>

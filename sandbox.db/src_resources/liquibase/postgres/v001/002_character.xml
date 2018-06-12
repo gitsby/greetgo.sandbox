@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="pompei" id="create-table-Charm">
+    <sql endDelimiter=";;"><![CDATA[
+      create table Characters (
+        id int not null primary key,
+        name varchar(30) not null,
+        description varchar(100),
+        energy float
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-table-Client">
+    <sql endDelimiter=";;">
+      <![CDATA[
+        create table Client(
+          id int not null primary key,
+          name varchar(30) not null,
+          surname varchar(30) not null,
+          patronymic varchar(30) not null,
+          gender varchar(10) not null,
+          birth_dat date,
+          charm int not null
+        )
+      ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="pompei-docs" id="create-foreign-ClientCharmFK">
+    <addForeignKeyConstraint baseColumnNames="charm"
+                             baseTableName="client"
+                             constraintName="fk_client_charm"
+                             deferrable="true"
+                             initiallyDeferred="true"
+                             onDelete="CASCADE"
+                             onUpdate="RESTRICT"
+                             referencedColumnNames="id"
+                             referencedTableName="characters"/>
+  </changeSet>
+
+</databaseChangeLog>

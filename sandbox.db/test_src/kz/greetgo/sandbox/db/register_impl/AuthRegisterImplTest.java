@@ -51,6 +51,11 @@ public class AuthRegisterImplTest extends ParentTestNg {
       .toArray(Object[][]::new);
   }
 
+  @Test
+  public void myTest(){
+    assertThat(12).isNull();
+  }
+
   @Test(dataProvider = "saveParam_DP")
   public void saveParam_notNull_insert(UserParamName paramName) throws Exception {
     String personId = RND.str(10);

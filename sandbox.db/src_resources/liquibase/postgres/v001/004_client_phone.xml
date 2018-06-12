@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="pompei" id="create-table-ClientPhone">
+    <sql endDelimiter=";;">
+      <![CDATA[
+        create table ClientPhone(
+          clientid int not null,
+          number varchar(10) not null,
+          type varchar(10) not null
+        )
+      ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-foreign-PhoneClientFK">
+    <addForeignKeyConstraint
+      baseColumnNames="clientid"
+      baseTableName="clientphone"
+      constraintName="fk_phone_client"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="client"/>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-primary-PhonePrimaryKey">
+    <addPrimaryKey
+      columnNames="clientid, number"
+      constraintName="pk_client_phone"
+      schemaName="public"
+      tableName="clientphone"/>
+  </changeSet>
+
+</databaseChangeLog>

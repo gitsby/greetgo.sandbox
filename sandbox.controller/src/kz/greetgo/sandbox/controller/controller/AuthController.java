@@ -8,6 +8,8 @@ import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
+import org.apache.log4j.Logger;
+
 
 /**
  * как составлять контроллеры написано
@@ -18,6 +20,7 @@ import kz.greetgo.sandbox.controller.util.Controller;
 public class AuthController implements Controller {
 
     public BeanGetter<AuthRegister> authRegister;
+
 
     @AsIs
     @NoSecurity

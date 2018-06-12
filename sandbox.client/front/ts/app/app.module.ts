@@ -7,22 +7,22 @@ import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
 import {EditFormComponent} from "./edit_form/edit_form.component";
-import {ListFormComponent} from "./list_form/list_form.component";
 import {TextMaskModule} from "angular2-text-mask";
+import {ClientListComponent} from "./list_form/client_list.component";
 
 @NgModule({
-    imports: [
-        TextMaskModule,
-        BrowserModule, HttpModule, JsonpModule, FormsModule,
-        ReactiveFormsModule
-    ],
-    declarations: [
-        RootComponent, LoginComponent, MainFormComponent, EditFormComponent,
-        ListFormComponent
-    ],
-    bootstrap: [RootComponent],
-    providers: [HttpService],
-    entryComponents: [],
+  imports: [
+    TextMaskModule,
+    BrowserModule, HttpModule, JsonpModule, FormsModule,
+    ReactiveFormsModule
+  ],
+  declarations: [
+    RootComponent, LoginComponent, MainFormComponent, EditFormComponent,
+    ClientListComponent
+  ],
+  bootstrap: [RootComponent],
+  providers: [HttpService],
+  entryComponents: [],
 })
 export class AppModule {
 }

@@ -1,8 +1,7 @@
 import {Address} from "./Address";
 import {Phone} from "./Phone";
 
-//fixme Название не правильное. Нужно исправить названия всех моделек
-export class EditClient {
+export class ClientToSave {
   public id: number;
   public name: string;
   public surname: string;
