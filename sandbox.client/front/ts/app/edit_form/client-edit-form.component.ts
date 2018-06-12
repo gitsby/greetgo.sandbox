@@ -21,7 +21,7 @@ export class ClientEditFormComponent implements AfterViewInit {
   retrievedClient: ClientDetails;
   welcomeText = "Add new Client";
   clientInputForm: FormGroup;
-  characters: Character[] = []
+  characters: Character[] = [];
 
   factAddress: Address = new Address();
   regAddress: Address = new Address();
@@ -81,7 +81,7 @@ export class ClientEditFormComponent implements AfterViewInit {
 
   saveClient() {
     if (this.clientInputForm.valid) {
-      alert("Fill all required fields")
+      alert("Fill all required fields");
       return;
     }
     this.homePhone.number = this.homePhone.number.replace(/\D/g, '');
@@ -155,7 +155,7 @@ export class ClientEditFormComponent implements AfterViewInit {
       this.validateAndPutPhone(this.homePhone,
         this.retrievedClient.phones[homeNum],
         this.clientInputForm.controls['homePhone'].valid,
-        homeNum)
+        homeNum);
 
       this.validateAndPutPhone(this.workingPhone,
         this.retrievedClient.phones[workingNum],
@@ -197,12 +197,10 @@ export class ClientEditFormComponent implements AfterViewInit {
   }
 
   addressesNotEqual(add1: Address, add2: Address): boolean {
-    if (add1.street != add2.street
+    return add1.street != add2.street
       || add1.house != add2.house
-      || add1.flat != add2.flat) {
-      return true;
-    }
-    return false;
+      || add1.flat != add2.flat;
+
   }
 
   public loadFromDatabase(clientId) {
