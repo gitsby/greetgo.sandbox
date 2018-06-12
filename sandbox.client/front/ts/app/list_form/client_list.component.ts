@@ -1,29 +1,26 @@
-import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
+import {Component, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {RecordClient} from "../../model/RecordClient";
 import {EditFormComponent} from "../edit_form/edit_form.component";
+import {ClientRecordPhilter} from "../../model/ClientRecordPhilter";
 
 @Component({
   selector: 'list-form-component',
   template: require("./client_list.component.html"),
   styles: [require('./client_list.component.css')],
 })
-//fixme Удали код, который не будет использоваться и сделай проще
 export class ClientListComponent {
-
-  @Output() openEditingForm = new EventEmitter<any>();
-
   @ViewChild(EditFormComponent) child;
 
-  editingClient = null;
+  openEditingClient: boolean = false;
 
-  currentColumnName = 'empty';
-  currentPagination = 0;
   paginationNum = 10;
 
   clients: RecordClient[] = [];
-  sliceNum = 10;
-  searchWord = '';
+
+  clientRecordPhilter: ClientRecordPhilter = new ClientRecordPhilter();
+
+  tempPaginationArray = [];
 
 
   constructor(private httpService: HttpService) {
@@ -32,7 +29,7 @@ export class ClientListComponent {
   }
 
   searchClicked() {
-    if (this.searchWord.length > 2 || this.searchWord.length == 0) {
+    if (this.clientRecordPhilter.searchName.length > 2 || this.clientRecordPhilter.searchName.length == 0) {
       this.loadClients();
       this.loadClientSlice(0);
     } else {
@@ -41,148 +38,128 @@ export class ClientListComponent {
   }
 
   plusClick() {
-    this.editingClient = ' ';
-    this.openEditingForm.emit(this.editingClient);
+    this.openEditingClient = true;
+  }
+
+  editClick(index: any) {
+    this.openEditingClient = true;
+    if (this.clients[index].id != null) {
+      this.child.loadFromDatabase(this.clients[index].id);
+    }
   }
 
   loadClients() {
-    console.log(this.currentPagination + " " + this.paginationNum)
     this.httpService.get("/client/getClients", {
-      columnName:
-      this.currentColumnName + "",
-      paginationPage:
-      this.currentPagination + "",
-      searchName:
-      this.searchWord + "",
-      sliceNum:
-      this.sliceNum,
+      philter: JSON.stringify(this.clientRecordPhilter)
     }).toPromise().then(result => {
-      this.clearClientsList();
+      this.clients = [];
       for (let res of result.json()) {
         this.clients.push(res);
       }
-      //this.pushToClientsList(clients);
-      // this.loadTotalNumberOfPaginationPage();
-      //
 
     }, error => {
       alert("Error   " + error.toString())
     });
   }
 
-  pagReceived: boolean = false;
+  closeEditingForm() {
+    this.openEditingClient = false;
+  }
 
   loadPaginationNum() {
     this.httpService.get("/client/getPaginationNum", {
-      searchText: this.searchWord,
-      sliceNum: this.sliceNum
+      philter: JSON.stringify(this.clientRecordPhilter)
     }).toPromise().then(result => {
-      this.pagReceived = true;
-      this.paginationNum = result.json();
+      this.paginationNum = this.calculateSliceNum(result.json());
       this.calculateChanges();
     }, error => {
       alert(error)
     })
   }
 
+  calculateSliceNum(num: number): number {
+    return num / this.clientRecordPhilter.sliceNum
+      + ((num % this.clientRecordPhilter.sliceNum == 0) ? 0 : 1)
+  }
+
   calculateChanges() {
-    //fixme this.tempPaginationArray = []; !?!
-    while (this.tempPaginationArray.pop()) ;
-    if ((this.currentPagination == 0 || this.currentPagination == 1) && this.paginationNum > 1) {
+    this.tempPaginationArray = [];
+    if ((this.clientRecordPhilter.paginationPage == 0 || this.clientRecordPhilter.paginationPage == 1) && this.paginationNum > 1) {
       let checkerNum = 3;
-      console.log("Current pag" + this.paginationNum);
       if (this.paginationNum == 2) {
         checkerNum = 2;
       }
-      for (let i = 0; i < checkerNum; i++) {
-
-        this.tempPaginationArray.push(i);
-      }
+      this.addToTemPagArray(0, checkerNum);
       this.loadClients();
-      this.pagReceived = false;
       return;
     }
 
-    if (this.currentPagination > 1 && this.currentPagination < this.paginationNum - 2) {
-
-      for (let i = this.currentPagination - 1; i <= this.currentPagination + 1; i++) {
-        this.tempPaginationArray.push(i)
-      }
+    if (this.clientRecordPhilter.paginationPage > 1 && this.clientRecordPhilter.paginationPage < this.paginationNum - 2) {
+      this.addToTemPagArray(this.clientRecordPhilter.paginationPage - 1, this.clientRecordPhilter.paginationPage + 2);
       this.loadClients();
-      this.pagReceived = false;
       return;
     }
 
-    if (this.currentPagination >= this.paginationNum - 3 && this.paginationNum > 2) {
-      for (let i = this.paginationNum - 3; i < this.paginationNum; i++) {
-        this.tempPaginationArray.push(i);
-      }
-      this.pagReceived = false;
+    if (this.clientRecordPhilter.paginationPage >= this.paginationNum - 3 && this.paginationNum > 2) {
+      this.addToTemPagArray(this.paginationNum - 3, this.paginationNum)
       this.loadClients();
     }
   }
 
-
-  clearClientsList() {
-    this.clients = [];
+  addToTemPagArray(from: number, to: number) {
+    for (let i = from; i < to; i++) {
+      this.tempPaginationArray.push(i);
+    }
   }
 
-  tempPaginationArray = [];
-
-  changed() {
+  sliceNumChanged() {
     this.loadClients();
     this.loadClientSlice(0);
   }
 
   loadClientSlice(pagination: number) {
     this.loadPaginationNum();
-    this.currentPagination = pagination;
+    this.clientRecordPhilter.paginationPage = pagination;
     this.calculateChanges();
 
   }
 
-  editClick(index: any) {
-    // this.child.client = this.clients[index].id;
-    this.editingClient = this.clients[index].id + "";
-    this.openEditingForm.emit(this.editingClient);
-  }
-
   sortBy(columnName: string) {
-    if (this.currentColumnName == columnName) {
-      this.currentColumnName = '-' + columnName;
-    } else if (this.currentColumnName == '-' + columnName) {
-      this.currentColumnName = 'empty';
+    if (this.clientRecordPhilter.columnName == columnName) {
+      this.clientRecordPhilter.columnName = '-' + columnName;
+    } else if (this.clientRecordPhilter.columnName == '-' + columnName) {
+      this.clientRecordPhilter.columnName = 'empty';
     } else {
-      this.currentColumnName = columnName;
+      this.clientRecordPhilter.columnName = columnName;
     }
-    this.loadClientSlice(this.currentPagination);
+    this.loadClientSlice(this.clientRecordPhilter.paginationPage);
   }
 
   deleteClient(deleteIndex: any) {
     this.httpService.delete("/client/delete", {
-      index: this.clients[deleteIndex].id + ""
+      index: this.clients[deleteIndex].id
     }).toPromise().then(result => {
       console.log(this.clients[deleteIndex].id);
-      this.loadClientSlice(this.currentPagination);
+      this.loadClientSlice(this.clientRecordPhilter.paginationPage);
     }, error => {
       alert(error)
     });
   }
 
   increaseCurrentPagination() {
-    this.currentPagination++;
-    if (this.currentPagination > this.paginationNum - 1) {
-      this.currentPagination = 0;
+    this.clientRecordPhilter.paginationPage++;
+    if (this.clientRecordPhilter.paginationPage > this.paginationNum - 1) {
+      this.clientRecordPhilter.paginationPage = 0;
     }
-    this.loadClientSlice(this.currentPagination);
+    this.loadClientSlice(this.clientRecordPhilter.paginationPage);
   }
 
   decreaseCurrentPagination() {
-    this.currentPagination--;
-    if (this.currentPagination < 0) {
-      this.currentPagination = this.paginationNum - 1;
+    this.clientRecordPhilter.paginationPage--;
+    if (this.clientRecordPhilter.paginationPage < 0) {
+      this.clientRecordPhilter.paginationPage = this.paginationNum - 1;
     }
-    this.loadClientSlice(this.currentPagination);
+    this.loadClientSlice(this.clientRecordPhilter.paginationPage);
   }
 
   addNewClient(client: RecordClient) {

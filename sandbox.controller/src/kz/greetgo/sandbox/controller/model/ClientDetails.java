@@ -12,8 +12,7 @@ public class ClientDetails {
   public String gender;
   public Date birthDate;
 
-  // FIXME: 6/12/18 Peremennie nigde ne ispolzuiutsya. Zachem oni tut?!
-  public String snmn = "Empty";
+
   public int age = 0;
 
   public int charm;
@@ -31,7 +30,6 @@ public class ClientDetails {
       ", patronymic='" + patronymic + '\'' +
       ", gender='" + gender + '\'' +
       ", birthDate='" + birthDate + '\'' +
-      ", snmn='" + snmn + '\'' +
       ", age=" + age +
       ", charm=" + charm +
       ", addresses=" + Arrays.toString(addresses) +

@@ -5,7 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.Character;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.RecordClient;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import org.apache.ibatis.jdbc.SQL;
@@ -18,12 +18,12 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
 
   @Override
-  public List<RecordClient> getClients(String columnNum, String paginationPage, String searchText, int sliceNum) {
-    throw new UnsupportedOperationException();
+  public List<ClientRecord> getClients(String columnNum, String paginationPage, String searchText, int sliceNum) {
+    throw new UnsupportedOperationException();L
   }
 
   @Override
-  public boolean deleteClient(String clientId) {
+  public boolean deleteClient(int clientId) {
     throw new UnsupportedOperationException();
   }
 
