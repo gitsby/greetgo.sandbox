@@ -10,13 +10,15 @@ import java.util.List;
  */
 public interface ClientRegister {
 
+  ClientInfo get(int clientId);
+
   /**
    * Предоставляет детальную информацию о клиенте
    *
    * @param clientId идентификатор клиента
    * @return детальная информация о клиенте
    */
-  ClientDetail get(int clientId);
+  ClientDetail detail(int clientId);
 
   /**
    * Сохраняет или изменяет информацию о клиенте

@@ -16,7 +16,8 @@
         addressFactId integer,
         homePhoneId integer,
         workPhoneId integer,
-        mobilePhoneId integer
+        mobilePhoneId integer,
+        actual smallint not null default 1
       )
     ]]></sql>
   </changeSet>
@@ -24,9 +25,11 @@
   <changeSet author="adilbek" id="create-table-ClientPhone">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientPhone (
-        id integer primary key,
+        client integer,
         type varchar(255),
-        number varchar(255)
+        number varchar(255),
+        primary key(client, number),
+        foreign key (client) references Client(id)
       )
     ]]></sql>
   </changeSet>
@@ -34,11 +37,13 @@
   <changeSet author="adilbek" id="create-table-ClientAddress">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAddress (
-        id integer primary key,
+        client integer,
         type varchar(255),
         street varchar(255),
         house varchar(255),
-        flat varchar(255)
+        flat varchar(255),
+        primary key(client, type),
+        foreign key (client) references Client(id)
       )
     ]]></sql>
   </changeSet>

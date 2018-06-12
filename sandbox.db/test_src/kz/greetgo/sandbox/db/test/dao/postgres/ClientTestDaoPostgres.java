@@ -1,4 +1,7 @@
 package kz.greetgo.sandbox.db.test.dao.postgres;
 
-public interface ClientTestDaoPostgres {
-}
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
+
+@Bean
+public interface ClientTestDaoPostgres extends ClientTestDao {}

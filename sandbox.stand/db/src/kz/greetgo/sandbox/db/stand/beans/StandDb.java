@@ -132,7 +132,7 @@ public class StandDb implements HasAfterInject {
       ClientPhone clientPhone = new ClientPhone();
       clientPhone.id = i;
       clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
-      clientPhone.number = RND.intStr(10);
+      clientPhone.number = RND.intStr(11);
       phones.add(clientPhone);
     }
   }

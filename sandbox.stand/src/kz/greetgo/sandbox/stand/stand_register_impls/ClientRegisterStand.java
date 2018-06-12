@@ -12,10 +12,15 @@ import java.util.*;
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
-  private BeanGetter<StandDb> db;
+  public BeanGetter<StandDb> db;
 
   @Override
-  public ClientDetail get(int clientId) {
+  public ClientInfo get(int clientId) {
+    return null;
+  }
+
+  @Override
+  public ClientDetail detail(int clientId) {
     ClientDot clientDot = getClient(clientId);
     return toClientDetail(clientDot);
   }
@@ -25,10 +30,11 @@ public class ClientRegisterStand implements ClientRegister {
     ClientDot clientDot;
     if (clientToSave.id == null) {
       clientDot = new ClientDot();
-      db.get().clientsStorage.add(clientDot);
+      db.get().clientsStorage.add(0, clientDot);
       clientDot.id = db.get().clientsStorage.size();
     }
     else clientDot = getClient(clientToSave.id);
+    System.out.println(clientToSave.birth_day);
     clientDot.name = clientToSave.name;
     clientDot.surname = clientToSave.surname;
     clientDot.patronymic = clientToSave.patronymic;
@@ -186,7 +192,7 @@ public class ClientRegisterStand implements ClientRegister {
     clientDetail.surname = clientDot.surname;
     clientDetail.patronymic = clientDot.patronymic;
     clientDetail.birth_day = clientDot.birth_day;
-    clientDetail.charmId = clientDot.charmId;
+    clientDetail.charm = getCharms().get(clientDot.charmId);
     clientDetail.addressFact = getClientAddress(clientDot.addressFactId);
     clientDetail.addressReg = getClientAddress(clientDot.addressRegId);
     clientDetail.homePhone = getClientPhone(clientDot.homePhoneId);

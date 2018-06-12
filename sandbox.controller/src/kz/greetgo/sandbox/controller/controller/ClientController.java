@@ -21,7 +21,7 @@ public class ClientController implements Controller {
   @MethodFilter(RequestMethod.GET)
   @Mapping("/detail")
   public ClientDetail detail(@Par("clientId") int clientId) {
-    return clientRegister.get().get(clientId);
+    return clientRegister.get().detail(clientId);
   }
 
 
