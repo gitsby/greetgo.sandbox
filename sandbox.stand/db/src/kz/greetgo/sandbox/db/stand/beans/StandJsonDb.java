@@ -67,10 +67,6 @@ public class StandJsonDb implements HasAfterInject{
             fw = new FileWriter(usersPath);
             bw = new BufferedWriter(fw);
             bw.write(jsonText);
-            jsonText = gson.toJson(accounts);
-            fw = new FileWriter(accountsPath);
-            bw = new BufferedWriter(fw);
-            bw.write(jsonText);
             tableCreate();
         }catch (IOException e){
             e.printStackTrace();
@@ -89,5 +85,30 @@ public class StandJsonDb implements HasAfterInject{
 
             }
         }
+        bw=null;
+        fw=null;
+        try {
+            String jsonText = gson.toJson(accounts);
+            fw = new FileWriter(accountsPath);
+            bw = new BufferedWriter(fw);
+            bw.write(jsonText);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        } finally {
+            try {
+
+                if (bw != null)
+                    bw.close();
+
+                if (fw != null)
+                    fw.close();
+
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+
+            }
     }
+}
 }
