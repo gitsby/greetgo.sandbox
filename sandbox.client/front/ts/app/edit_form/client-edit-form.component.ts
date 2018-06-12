@@ -35,7 +35,6 @@ export class ClientEditFormComponent implements AfterViewInit {
 
   public clientId: string = null;
 
-
   @Output() onClose = new EventEmitter<void>();
   @Output() returnChanges = new EventEmitter<any>();
 
@@ -108,13 +107,13 @@ export class ClientEditFormComponent implements AfterViewInit {
         this.toSave.addedPhones.push(this.workingPhone);
       }
 
-
-    } else {// When editing
+    } else {
       let factNum = -1;
       let regNum = 0;
       let homeNum = -1;
       let workingNum = -1;
       let mobilePhoneNum = -1;
+
       this.retrievedClient.phones.forEach((val, index) => {
         if (val.type == "MOBILE") {
           mobilePhoneNum = index;
@@ -125,7 +124,6 @@ export class ClientEditFormComponent implements AfterViewInit {
         if (val.type == "WORKING") {
           workingNum = index;
         }
-        console.log("Received type::" + typeof val)
       });
       this.retrievedClient.addresses.forEach((val, index) => {
         if (val.type == "FACT") {
@@ -154,27 +152,20 @@ export class ClientEditFormComponent implements AfterViewInit {
         this.toSave.editedAddresses.push(this.regAddress);
       }
 
-      if (homeNum != -1) {
-        this.phonesNotEqual(this.homePhone,
-          this.retrievedClient.phones[homeNum],
-          this.clientInputForm.controls['homePhone'].valid);
-      } else {
-        if (this.homePhone.number != null) {
-          this.toSave.addedPhones.push(this.homePhone);
-        }
-      }
+      this.validateAndPutPhone(this.homePhone,
+        this.retrievedClient.phones[homeNum],
+        this.clientInputForm.controls['homePhone'].valid,
+        homeNum)
 
-      if (workingNum != -1) {
+      this.validateAndPutPhone(this.workingPhone,
+        this.retrievedClient.phones[workingNum],
+        this.clientInputForm.controls['workingPhone'].valid,
+        workingNum);
 
-        this.phonesNotEqual(this.workingPhone,
-          this.retrievedClient.phones[workingNum],
-          this.clientInputForm.controls['workingPhone'].valid);
-      } else {
-        if (this.workingPhone.number != null) {
-          this.toSave.addedPhones.push(this.workingPhone);
-        }
-      }
-      this.phonesNotEqual(this.mobilePhone1, this.retrievedClient.phones[mobilePhoneNum], true);
+      this.validateAndPutPhone(this.mobilePhone1,
+        this.retrievedClient.phones[mobilePhoneNum],
+        true,
+        mobilePhoneNum);
     }
     this.httpService.post("/client/save", {editedClient: this.toSave.toString()}).toPromise().then(result => {
       this.returnChanges.emit(result.json());
@@ -184,18 +175,24 @@ export class ClientEditFormComponent implements AfterViewInit {
     });
   }
 
-  phonesNotEqual(phone1: Phone, phone2: Phone, valid: boolean) {
-    if (phone1.number.length != 0) {
-      if (phone1.number
-        != phone2.number
-        && valid) {
-        let number = phone1.number;
-        phone1.number = phone2.number;
-        phone1.editedTo = number;
-        this.toSave.editedPhones.push(phone1);
+  validateAndPutPhone(phone1: Phone, phone2: Phone, valid: boolean,phoneNum: number) {
+    if (phoneNum!=-1){
+      if (phone1.number.length != 0) {
+        if (phone1.number
+          != phone2.number
+          && valid) {
+          let number = phone1.number;
+          phone1.number = phone2.number;
+          phone1.editedTo = number;
+          this.toSave.editedPhones.push(phone1);
+        }
+      } else {
+        this.toSave.deletedPhones.push(phone2);
       }
     } else {
-      this.toSave.deletedPhones.push(phone2);
+      if (this.homePhone.number != null) {
+        this.toSave.addedPhones.push(phone1);
+      }
     }
   }
 
@@ -212,7 +209,7 @@ export class ClientEditFormComponent implements AfterViewInit {
     this.clientId = clientId;
     this.welcomeText = "Edit client";
     this.httpService.get("/client/getClientWithId",
-      {clientId: this.clientId + ""}).toPromise().then(result => {
+      {clientId: this.clientId}).toPromise().then(result => {
       this.retrievedClient = result.json();
 
       this.toSave.id = this.retrievedClient.id;

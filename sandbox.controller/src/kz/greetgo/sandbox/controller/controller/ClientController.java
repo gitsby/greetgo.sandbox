@@ -49,8 +49,8 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getClientWithId")
-  public ClientDetails getClientById(@Par("clientId") String clientId) {
-    return clientRegister.get().getClientById(Integer.parseInt(clientId));
+  public ClientDetails getClientById(@Par("clientId") int clientId) {
+    return clientRegister.get().getClientById(clientId);
   }
 
   @ToJson
