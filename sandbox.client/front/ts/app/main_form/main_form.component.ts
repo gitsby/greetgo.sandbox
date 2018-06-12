@@ -15,10 +15,7 @@ export class MainFormComponent {
   userInfo: UserInfo | null = null;
 
   loadUserInfoButtonEnabled: boolean = false;
-  clientInfoFormComponentEnable: boolean = false;
   loadClientInfoListButtonEnable: boolean = false;
-
-  editClientId: number | null = null;
 
   constructor(private httpService: HttpService) {
     this.loadUserInfo();
@@ -35,23 +32,5 @@ export class MainFormComponent {
     }, error => {
       this.userInfo = null;
     });
-  }
-
-  openAddNewClientModal() {
-    this.editClientId = null;
-    this.clientInfoFormComponentEnable = true;
-  }
-
-  close(listEdited: boolean) {
-    this.editClientId = null;
-    this.clientInfoFormComponentEnable = false;
-    if (listEdited == true) {
-      this.switchBetweenUserAndClientButtonClicked(false);
-    }
-  }
-
-  editClient(clientId: number) {
-    this.editClientId = clientId;
-    this.clientInfoFormComponentEnable = true;
   }
 }

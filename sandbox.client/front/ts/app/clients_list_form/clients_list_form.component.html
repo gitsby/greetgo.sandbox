@@ -125,10 +125,13 @@
 
         <td colspan="8" style="background: #e9e9e9">
           <div class="pagination custom-button">
-            <button class="no-select" style="float: right;" (click)="filterPage()">
+            <button class="no-select" style="float: right; height: 50px" (click)="editClientButtonClicked(null)">
+              +
+            </button>
+            <button class="no-select" style="float: right; height: 50px" (click)="filterPage()">
               Поиск
             </button>
-            <input #searchInput id="searchInput" type="text" placeholder="Поиск..">
+            <input id="searchInput" type="text" style="height: 50px" placeholder="Поиск.." [(ngModel)]="searchInputText">
           </div>
 
           <div class="float_center" *ngIf="pagesCount()>1">
@@ -169,7 +172,9 @@
                 </span>
               </li>
             </div>
-
+            <label>
+              Общее количество клиентов = {{clientRecordsCount}}
+            </label>
           </div>
 
           <div style="float: right;">
@@ -181,9 +186,10 @@
           </div>
 
         </td>
-
       </tr>
-
     </tfoot>
   </table>
+
+  <client-info-form-component [clientId]="editClientId" (onClose)="close($event)"
+                              *ngIf="clientInfoFormComponentEnable"></client-info-form-component>
 </div>

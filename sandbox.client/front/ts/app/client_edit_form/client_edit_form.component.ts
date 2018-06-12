@@ -49,6 +49,7 @@ export class ClientEditFormComponent implements OnInit{
       for (let res of result.json())
         this.charms.push(Charm.copy(res));
       console.log(this.charms);
+
     })
   }
 
