@@ -5,36 +5,37 @@ import java.util.Date;
 
 public class ClientDetails {
 
-    public int id;
-    public String name;
-    public String surname;
-    public String patronymic;
-    public String gender;
-    public Date birthDate;
+  public int id;
+  public String name;
+  public String surname;
+  public String patronymic;
+  public String gender;
+  public Date birthDate;
 
-    public String snmn = "Empty";
-    public int age = 0;
+  // FIXME: 6/12/18 Peremennie nigde ne ispolzuiutsya. Zachem oni tut?!
+  public String snmn = "Empty";
+  public int age = 0;
 
-    public int charm;
+  public int charm;
 
-    public Address[] addresses;
+  public Address[] addresses;
 
-    public Phone[] phones;
+  public Phone[] phones;
 
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", patronymic='" + patronymic + '\'' +
-                ", gender='" + gender + '\'' +
-                ", birthDate='" + birthDate + '\'' +
-                ", snmn='" + snmn + '\'' +
-                ", age=" + age +
-                ", charm=" + charm +
-                ", addresses=" + Arrays.toString(addresses) +
-                ", phones=" + Arrays.toString(phones) +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "Client{" +
+      "id=" + id +
+      ", name='" + name + '\'' +
+      ", surname='" + surname + '\'' +
+      ", patronymic='" + patronymic + '\'' +
+      ", gender='" + gender + '\'' +
+      ", birthDate='" + birthDate + '\'' +
+      ", snmn='" + snmn + '\'' +
+      ", age=" + age +
+      ", charm=" + charm +
+      ", addresses=" + Arrays.toString(addresses) +
+      ", phones=" + Arrays.toString(phones) +
+      '}';
+  }
 }

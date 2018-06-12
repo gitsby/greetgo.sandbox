@@ -19,7 +19,6 @@ let retrievedClient: ClientDetails;
   template: require('./edit_form.component.html'),
   styles: [require('./edit_form.component.css')],
 })
-
 export class EditFormComponent implements AfterViewInit {
 
   welcomeText = "Add new Client";

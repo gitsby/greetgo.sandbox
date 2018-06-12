@@ -8,11 +8,10 @@ import {EditFormComponent} from "../edit_form/edit_form.component";
   template: require("./client_list.component.html"),
   styles: [require('./client_list.component.css')],
 })
-
-
+//fixme Удали код, который не будет использоваться и сделай проще
 export class ClientListComponent {
 
-  @Output() openEditingForm = new EventEmitter<any>()
+  @Output() openEditingForm = new EventEmitter<any>();
 
   @ViewChild(EditFormComponent) child;
 
@@ -87,7 +86,7 @@ export class ClientListComponent {
   }
 
   calculateChanges() {
-
+    //fixme this.tempPaginationArray = []; !?!
     while (this.tempPaginationArray.pop()) ;
     if ((this.currentPagination == 0 || this.currentPagination == 1) && this.paginationNum > 1) {
       let checkerNum = 3;

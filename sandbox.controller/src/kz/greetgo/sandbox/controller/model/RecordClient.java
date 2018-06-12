@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
+// FIXME: 6/12/18 ClientRecord
 public class RecordClient {
     public int id;
     public String name;
