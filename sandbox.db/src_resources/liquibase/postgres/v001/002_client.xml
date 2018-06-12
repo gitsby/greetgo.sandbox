@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="adilbek" id="create-table-Client">
+    <sql endDelimiter=";;"><![CDATA[
+      create table Client (
+        id integer primary key,
+        surname varchar(255),
+        name varchar(255),
+        patronymic varchar(255),
+        gender varchar(255),
+        birth_day date,
+        addressRegId integer,
+        addressFactId integer,
+        homePhoneId integer,
+        workPhoneId integer,
+        mobilePhoneId integer
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="adilbek" id="create-table-ClientPhone">
+    <sql endDelimiter=";;"><![CDATA[
+      create table ClientPhone (
+        id integer primary key,
+        type varchar(255),
+        number varchar(255)
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="adilbek" id="create-table-ClientAddress">
+    <sql endDelimiter=";;"><![CDATA[
+      create table ClientAddress (
+        id integer primary key,
+        type varchar(255),
+        street varchar(255),
+        house varchar(255),
+        flat varchar(255)
+      )
+    ]]></sql>
+  </changeSet>
+
+</databaseChangeLog>
