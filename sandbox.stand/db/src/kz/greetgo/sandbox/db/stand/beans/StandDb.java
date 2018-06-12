@@ -159,9 +159,10 @@ public class StandDb implements HasAfterInject {
       clientDot.gender = random.nextInt(1) == 0 ? Gender.FEMALE : Gender.MALE;
       clientDot.patronymic = NameGenerator.generateName();
       Date birth_day = new Date();
-      birth_day.setYear(random.nextInt(50)+1950);
+      birth_day.setYear(random.nextInt(70)+30);
       birth_day.setMonth(random.nextInt(12));
       birth_day.setDate(random.nextInt(28));
+      System.out.println(birth_day);
       clientDot.birth_day = birth_day;
       clientDot.charmId = charms.get(random.nextInt(charms.size())).id;
       clientDot.addressRegId = addresses.get(random.nextInt(addresses.size())).id;

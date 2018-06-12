@@ -120,8 +120,7 @@ public class ClientRegisterStand implements ClientRegister {
     for(ClientDot clientDot : temp) {
       if (clientFilter != null && clientFilter.fio != null) {
         if ((clientDot.name.contains(clientFilter.fio))
-          || (clientDot.surname.contains(clientFilter.fio))
-          || (clientDot.patronymic.contains(clientFilter.fio))) {
+          || (clientDot.surname.contains(clientFilter.fio))) {
           clientRecords.add(toClientRecords(clientDot));
         }
       }
@@ -192,7 +191,7 @@ public class ClientRegisterStand implements ClientRegister {
     clientDetail.surname = clientDot.surname;
     clientDetail.patronymic = clientDot.patronymic;
     clientDetail.birth_day = clientDot.birth_day;
-    clientDetail.charm = getCharms().get(clientDot.charmId);
+    clientDetail.charm = getCharm(clientDot.charmId);
     clientDetail.addressFact = getClientAddress(clientDot.addressFactId);
     clientDetail.addressReg = getClientAddress(clientDot.addressRegId);
     clientDetail.homePhone = getClientPhone(clientDot.homePhoneId);
@@ -200,6 +199,10 @@ public class ClientRegisterStand implements ClientRegister {
     clientDetail.workPhone = getClientPhone(clientDot.workPhoneId);
     clientDetail.gender = clientDot.gender;
     return clientDetail;
+  }
+
+  private Charm getCharm(int clientCharmId) {
+    return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get();
   }
 
   private ClientAccount getClientAccount(int clientAccountId) {

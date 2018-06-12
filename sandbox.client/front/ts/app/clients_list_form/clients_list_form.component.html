@@ -78,7 +78,15 @@
 
     </thead>
 
-    <tbody>
+    <tbody *ngIf="clientRecords.length == 0">
+      <tr>
+        <td colspan="8">
+          <label style="width: 100%; text-align: center; font-size: 30px">Не найдено ни одного клиента !</label>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody *ngIf="clientRecords.length != 0">
 
     <tr *ngFor="let client of clientRecords">
         <td scope="col">
@@ -121,19 +129,24 @@
     </tbody>
     <tfoot>
 
-      <tr>
+    <tr style="background: #e9e9e9;">
+      <td colspan="8">
+        <table style="width: 100%;">
+          <thead>
+      <th>
 
-        <td colspan="8" style="background: #e9e9e9">
-          <div class="pagination custom-button">
+        <div class="custom-button">
             <button class="no-select" style="float: right; height: 50px" (click)="editClientButtonClicked(null)">
               +
             </button>
-            <button class="no-select" style="float: right; height: 50px" (click)="filterPage()">
+          <button class="no-select" style="float: right; height: 50px" (click)="filterPage()">
               Поиск
             </button>
             <input id="searchInput" type="text" style="height: 50px" placeholder="Поиск.." [(ngModel)]="searchInputText">
           </div>
 
+        </th>
+      <th>
           <div class="float_center" *ngIf="pagesCount()>1">
             <div class="pagination">
               <li>
@@ -176,7 +189,8 @@
               Общее количество клиентов = {{clientRecordsCount}}
             </label>
           </div>
-
+        </th>
+      <th>
           <div style="float: right;">
             <select [(ngModel)]="numberOfItemInPage" class="pagination selector" (change)="loadClientRecordsList(currentPage)">
               <option *ngFor="let i of range(10, 31, 10)" value="{{i}}">
@@ -185,7 +199,10 @@
             </select>
           </div>
 
-        </td>
+        </th>
+          </thead>
+        </table>
+      </td>
       </tr>
     </tfoot>
   </table>

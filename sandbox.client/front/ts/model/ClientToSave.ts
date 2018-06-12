@@ -23,7 +23,7 @@ export class ClientToSave {
     this.patronymic = o.patronymic;
     this.gender = o.gender;
     this.birth_day = new Date(o.birth_day);
-    this.charmId = o.charmId;
+    this.charmId = o.charm.id;
     this.addressFact = o.addressFact;
     this.addressReg = o.addressReg;
     this.homePhone = o.homePhone;

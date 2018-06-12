@@ -34,6 +34,7 @@ export class ClientEditFormComponent implements OnInit{
       this.httpService.get("/client/detail", {"clientId": clientId}).toPromise().then(result => {
         this.clientToSave = ClientToSave.copy(result.json());
         this.serializeAllNumber();
+        console.log(this.clientToSave)
       })
     }
     else {
@@ -185,7 +186,9 @@ export class ClientEditFormComponent implements OnInit{
 
     let number = clientNumber.replace(/[\W\s._\-a-zA-Z]+/g, '');
 
-    if (number.length > 11) number = number.substr(0, 12);
+    if (number.length > 11) {
+      number = number.substr(0, 11);
+    }
     let split = 4;
     let chunk = [];
     for (let i = 0, len = number.length; i < len; i += split) {
