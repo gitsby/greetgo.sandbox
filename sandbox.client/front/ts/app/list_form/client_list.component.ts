@@ -163,6 +163,7 @@ export class ClientListComponent {
   }
 
   addNewClient(client: RecordClient) {
+    alert(client.name)
     if (this.notExistedClient(client.id)) {
       this.clients.pop();
       this.clients.unshift(client)
@@ -170,6 +171,12 @@ export class ClientListComponent {
       for (let cl of this.clients) {
         if (cl.id == client.id) {
           cl.character = client.character;
+          cl.name = client.name;
+          cl.surname = client.surname;
+          cl.age = cl.age;
+          cl.maxBalance = cl.maxBalance;
+          cl.minBalance = cl.minBalance;
+          cl.accBalance = cl.accBalance;
         }
       }
     }

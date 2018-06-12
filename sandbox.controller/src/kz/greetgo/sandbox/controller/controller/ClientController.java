@@ -20,15 +20,14 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.DELETE)
   @Mapping("/delete")
-  public boolean delete(@Par("index") int index) {
+  public void delete(@Par("index") int index) {
     clientRegister.get().deleteClient(index);
-    return false;
   }
 
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public int save(@Json @Par("editedClient") ClientToSave editedClient) {
+  public ClientRecord save(@Json @Par("editedClient") ClientToSave editedClient) {
     return clientRegister.get().editedClient(editedClient);
   }
 

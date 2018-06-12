@@ -9,13 +9,11 @@ public interface ClientRegister {
 
   List<ClientRecord> getClients(ClientRecordPhilter clientRecordPhilter);
 
-  boolean deleteClient(int clientId);
+  void deleteClient(int clientId);
 
   ClientDetails getClientById(int clientId);
 
-  // Возвращает id добавленого клиента для того чтобы потом добавить его в список клиентов
-  // для возможного следующего редактирования
-  int editedClient(ClientToSave editedClient);
+  ClientRecord editedClient(ClientToSave editedClient);
 
   List<Character> getCharacters();
 

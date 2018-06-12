@@ -19,13 +19,12 @@ public class ClientRegisterStand implements ClientRegister {
   public BeanGetter<StandDb> db;
 
   @Override
-  public boolean deleteClient(int clientId) {
+  public void deleteClient(int clientId) {
     if (clientId == -1) {
       System.out.println("NULL");
-      return false;
+      return;
     }
     db.get().getClientDot().removeIf(client -> clientId == client.id);
-    return true;
   }
 
   @Override
@@ -85,13 +84,23 @@ public class ClientRegisterStand implements ClientRegister {
     return addressDots;
   }
 
+  private ClientRecord getRecordClientById(int id){
+    List<ClientRecord> sortedList = searchClient("");
+    for (ClientRecord clientRecord : sortedList){
+      if (clientRecord.id==id){
+        return clientRecord;
+      }
+    }
+    return null;
+  }
+
   @Override
-  public int editedClient(ClientToSave editedClient) {
+  public ClientRecord editedClient(ClientToSave editedClient) {
     System.out.println("HERE IT GOES");
     System.out.println(editedClient.id);
     if (editedClient.id == null) {
       createNewClient(editedClient);
-      return editedClient.id;
+      return getRecordClientById(editedClient.id);
     }
     if (editedClient.name != null) {
       if (!editedClient.name.equals(Objects.requireNonNull(getClientDot(editedClient.id)).name)) {
@@ -194,7 +203,7 @@ public class ClientRegisterStand implements ClientRegister {
         }
       }
     }
-    return -1;
+    return getRecordClientById(editedClient.id);
   }
 
   private AddressDot getAddressWithId(int id) {

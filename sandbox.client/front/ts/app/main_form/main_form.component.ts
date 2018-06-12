@@ -42,10 +42,6 @@ export class MainFormComponent {
     }
   }
 
-  applyChanges(editedClient: RecordClient) {
-    this.listForm.addNewClient(editedClient);
-  }
-
   loadUserInfoButtonClicked() {
     this.loadUserInfoError = null;
     if (this.userInfo != null) {

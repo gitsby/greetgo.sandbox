@@ -10,7 +10,6 @@ import {Character} from "../../model/Character";
 import {ClientToSave} from "../../model/ClientToSave";
 import {ClientInput} from "../../model/ClientInput";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {RecordClient} from "../../model/RecordClient";
 
 let retrievedClient: ClientDetails;
 
@@ -86,7 +85,6 @@ export class EditFormComponent implements AfterViewInit {
   }
 
   saveClient() {
-    alert(this.homePhone.number);
     if (this.clientInputForm.controls['surname'].invalid || this.clientInputForm.controls['name'].invalid ||
       this.clientInputForm.controls['patronymic'].invalid ||
       this.clientInputForm.controls['dateBirth'].invalid || (this.clientInput.character == null || this.clientInput.character == -1) ||
@@ -287,29 +285,12 @@ export class EditFormComponent implements AfterViewInit {
     console.log(editClient.toString())
 
     this.httpService.post("/client/save", {editedClient: editClient.toString()}).toPromise().then(result => {
-      if (result.json() != -1) {
-        editClient.id = result.json();
-      }
-
-      this.outputResults(editClient);
+      this.returnChanges.emit(result.json());
+      alert(result.json())
       this.closeModalForm();
     }, error => {
       alert(error);
     });
-  }
-
-  outputResults(editClient: ClientToSave) {
-    let recClient: RecordClient = new RecordClient();
-    recClient.id = editClient.id;
-    recClient.name = (editClient.name == undefined) ? retrievedClient.name : editClient.name;
-    recClient.surname = (editClient.surname == undefined) ? retrievedClient.surname : editClient.surname;
-    recClient.patronymic = (editClient.patronymic == undefined) ? retrievedClient.patronymic : editClient.patronymic;
-
-    console.log("CHARM" + editClient.charm + " " + retrievedClient.charm);
-    console.log((editClient.charm == undefined));
-    recClient.character = (editClient.charm == undefined) ? this.characters[retrievedClient.charm].name : this.characters[editClient.charm].name;
-
-    this.returnChanges.emit(recClient);
   }
 
   public loadFromDatabase(clientId) {

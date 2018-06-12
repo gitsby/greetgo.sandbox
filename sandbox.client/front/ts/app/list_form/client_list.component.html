@@ -100,7 +100,8 @@
     <a (click)="loadClientSlice(paginationNum-1)"
        *ngIf="this.clientRecordPhilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
     <a (click)="increaseCurrentPagination()">>></a>
-    <select (change)="sliceNumChanged()" [(ngModel)]="clientRecordPhilter.sliceNum" class="selectSliceNum" placeholder="Select ">
+    <select (change)="sliceNumChanged()" [(ngModel)]="clientRecordPhilter.sliceNum" class="selectSliceNum"
+            placeholder="Select ">
       <option value="10">10</option>
       <option value="15">15</option>
       <option value="20">20</option>
@@ -110,5 +111,5 @@
 </div>
 
 <edit-form-component (onClose)="closeEditingForm()" [ngStyle]="{display:openEditingClient ? 'block': 'none'}"
-                     (returnChanges)="applyChanges($event)"></edit-form-component>
+                     (returnChanges)="addNewClient($event)"></edit-form-component>
 
