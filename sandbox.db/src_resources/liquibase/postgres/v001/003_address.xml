@@ -6,7 +6,7 @@
   <changeSet author="pompei" id="create-table-ClientAddr">
     <sql endDelimiter=";;">
       <![CDATA[
-        create table ClientAddress(
+        create table Client_Address(
           clientId int not null,
           type varchar(10) not null,
           street varchar(100) not null,
@@ -20,7 +20,7 @@
   <changeSet author="pompei" id="create-foreign-AddressClientFK">
     <addForeignKeyConstraint
       baseColumnNames="clientid"
-      baseTableName="clientaddress"
+      baseTableName="client_address"
       constraintName="fk_address_client"
       deferrable="true"
       initiallyDeferred="true"
@@ -35,7 +35,7 @@
       columnNames="clientid, type"
       constraintName="pk_client_addr"
       schemaName="public"
-      tableName="clientaddress"/>
+      tableName="client_address"/>
   </changeSet>
 
 </databaseChangeLog>

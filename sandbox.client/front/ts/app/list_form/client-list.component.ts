@@ -1,16 +1,16 @@
 import {Component, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {RecordClient} from "../../model/RecordClient";
-import {EditFormComponent} from "../edit_form/edit_form.component";
+import {ClientEditFormComponent} from "../edit_form/client-edit-form.component";
 import {ClientRecordPhilter} from "../../model/ClientRecordPhilter";
 
 @Component({
   selector: 'list-form-component',
-  template: require("./client_list.component.html"),
-  styles: [require('./client_list.component.css')],
+  template: require("./client-list.component.html"),
+  styles: [require('./client-list.component.css')],
 })
 export class ClientListComponent {
-  @ViewChild(EditFormComponent) child;
+  @ViewChild(ClientEditFormComponent) child;
 
   openEditingClient: boolean = false;
 
@@ -70,7 +70,7 @@ export class ClientListComponent {
     this.httpService.get("/client/getPaginationNum", {
       philter: JSON.stringify(this.clientRecordPhilter)
     }).toPromise().then(result => {
-      this.paginationNum = this.calculateSliceNum(result.json());
+      this.paginationNum = Math.round(this.calculateSliceNum(result.json()));
       this.calculateChanges();
     }, error => {
       alert(error)
@@ -163,7 +163,6 @@ export class ClientListComponent {
   }
 
   addNewClient(client: RecordClient) {
-    alert(client.name)
     if (this.notExistedClient(client.id)) {
       this.clients.pop();
       this.clients.unshift(client)

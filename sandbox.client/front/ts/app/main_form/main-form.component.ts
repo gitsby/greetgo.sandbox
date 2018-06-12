@@ -2,26 +2,24 @@ import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {EditFormComponent} from "../edit_form/edit_form.component";
-import {ClientListComponent} from "../list_form/client_list.component";
+import {ClientListComponent} from "../list_form/client-list.component";
 import {RecordClient} from "../../model/RecordClient";
 
 @Component({
   selector: 'main-form-component',
-  template: require("./main_form.component.html"),
-  styles: [require('./main_form.component.css')],
+  template: require("./main-form.component.html"),
+  styles: [require('./main-form.component.css')],
 })
 
 export class MainFormComponent {
   clientsText = "Open Clients";
   userInfoText = "Load User Data"
   openClient = null;
-  editingClient = null;
+
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  @ViewChild(EditFormComponent) child;
   @ViewChild(ClientListComponent) listForm;
 
   @Output() exit = new EventEmitter<void>();
