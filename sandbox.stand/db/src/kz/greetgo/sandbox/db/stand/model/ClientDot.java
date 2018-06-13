@@ -13,12 +13,11 @@ public class ClientDot {
   public String patronymic;
   public Gender gender;
   public Date birth_day;
-  public int charmId;
-  public int addressFactId;
-  public int addressRegId;
-  public int homePhoneId;
-  public int workPhoneId;
-  public int mobilePhoneId;
+  public Integer charmId;
+  public Integer addressFactId;
+  public Integer addressRegId;
+  public Integer homePhoneId;
+  public Integer workPhoneId;
+  public Integer mobilePhoneId;
   public List<Integer> accountsId = new ArrayList<>();
-
 }

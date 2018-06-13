@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, Output, ViewChild} from "@angular/core";
+import {Component, ElementRef, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientRecords} from "../../model/ClientRecords";
 import {SortBy} from "../../model/SortBy";
@@ -10,14 +10,14 @@ import {SortDirection} from "../../model/SortDirection";
   template: require('./clients_list_form.component.html'),
   styles: [require('./clients_list_form.component.css')],
 })
-//fixme при переходе на последнюю страницу, появляется страница 0, которая не работает
+
 export class ClientsListFormComponent {
-  @Output() editClient = new EventEmitter<number>();
   @ViewChild('myModule') module: ElementRef;
-  //FIXME use ngModel
-  @ViewChild('searchInput') searchInput: ElementRef;
-  //fixme удали если не используется
-  @ViewChild('numberOfItemInPageSelector') numberOfItemInPageSelector: ElementRef;
+
+  searchInputText: string = "";
+  editClientId: number | null = null;
+
+  clientInfoFormComponentEnable: boolean = false;
 
   clientRecordsCount: number = 1;
   clientRecords: ClientRecords[] = [];
@@ -66,9 +66,8 @@ export class ClientsListFormComponent {
   }
 
   filterPage() {
-    let search_text: string = this.searchInput.nativeElement.value;
-    if (search_text == "") this.clientFilter.fio = null;
-    else this.clientFilter.fio = search_text;
+    if (this.searchInputText == "") this.clientFilter.fio = null;
+    else this.clientFilter.fio = this.searchInputText;
     this.currentPage = 1;
     this.loadRecordsCount();
   }
@@ -146,7 +145,15 @@ export class ClientsListFormComponent {
     });
   }
 
-  editClientButtonClicked(clientId: number) {
-    this.editClient.emit(clientId);
+  editClientButtonClicked(clientId: number | null) {
+    this.editClientId = clientId;
+    this.clientInfoFormComponentEnable = true;
+  }
+
+  close(listEdited: boolean) {
+    this.editClientId = null;
+    this.clientInfoFormComponentEnable = false;
+    this.loadRecordsCount();
+    this.loadPage();
   }
 }

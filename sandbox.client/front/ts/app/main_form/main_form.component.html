@@ -9,9 +9,7 @@
     <button [ngClass]="{active:loadClientInfoListButtonEnable}" (click)="switchBetweenUserAndClientButtonClicked(true)">
       Данные клентов
     </button>
-    <button *ngIf="loadClientInfoListButtonEnable" (click)="openAddNewClientModal()">
-      Добавить новый клент
-    </button>
+
   </div>
 
   <div *ngIf="loadUserInfoButtonEnabled">
@@ -85,7 +83,5 @@
 
   <clients-list-form-component (editClient)="editClient($event)"
                                *ngIf="loadClientInfoListButtonEnable"></clients-list-form-component>
-  <!--fixme client-info-form не должна быть в main_form, она не относиться к ней-->
-  <client-info-form-component [clientId]="editClientId" (onClose)="close($event)"
-                              *ngIf="clientInfoFormComponentEnable"></client-info-form-component>
+
 </div>
