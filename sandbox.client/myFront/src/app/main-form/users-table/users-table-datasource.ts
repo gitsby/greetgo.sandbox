@@ -16,21 +16,7 @@ const EXAMPLE_DATA: UsersTableItem[] = [
   {id: 3, name: 'Lithium'},
   {id: 4, name: 'Beryllium'},
   {id: 5, name: 'Boron'},
-  {id: 6, name: 'Carbon'},
-  {id: 7, name: 'Nitrogen'},
-  {id: 8, name: 'Oxygen'},
-  {id: 9, name: 'Fluorine'},
-  {id: 10, name: 'Neon'},
-  {id: 11, name: 'Sodium'},
-  {id: 12, name: 'Magnesium'},
-  {id: 13, name: 'Aluminum'},
-  {id: 14, name: 'Silicon'},
-  {id: 15, name: 'Phosphorus'},
-  {id: 16, name: 'Sulfur'},
-  {id: 17, name: 'Chlorine'},
-  {id: 18, name: 'Argon'},
-  {id: 19, name: 'Potassium'},
-  {id: 20, name: 'Calcium'},
+  {id: 6, name: 'Carbon'}
 ];
 
 /**
@@ -50,9 +36,11 @@ export class UsersTableDataSource extends DataSource<UsersTableItem> {
    * the returned stream emits new items.
    * @returns A stream of the items to be rendered.
    */
+
   connect(): Observable<UsersTableItem[]> {
     // Combine everything that affects the rendered data into one update
     // stream for the data-table to consume.
+
     const dataMutations = [
       observableOf(this.data),
       this.paginator.page,

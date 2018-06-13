@@ -11,11 +11,14 @@ export class UsersTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: UsersTableDataSource;
-
-  /** Columns displayed in the table. Columns IDs can be added, removed, or reordered. */
-  displayedColumns = ['id', 'name'];
+  displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
 
   ngOnInit() {
     this.dataSource = new UsersTableDataSource(this.paginator, this.sort);
+  }
+
+  onRowSelected(row) {
+    console.log("Row clicked: ", row);
+
   }
 }

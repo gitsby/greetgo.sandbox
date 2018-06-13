@@ -1,26 +1,47 @@
 <div class="mat-elevation-z8">
   <mat-table #table [dataSource]="dataSource" matSort aria-label="Elements">
 
-    <!-- Id Column -->
-    <ng-container matColumnDef="id">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Id</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{row.id}}</mat-cell>
+    <ng-container matColumnDef="fullName">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Full Name</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.fullName}}</mat-cell>
     </ng-container>
 
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{row.name}}</mat-cell>
+    <ng-container matColumnDef="age">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Age</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.age}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="charm">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Charm</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.charm}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="totalBalance">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Total Balance</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.totalBalance}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="maxBalance">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Max Balance</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.maxBalance}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="minBalance">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Min Balance</mat-header-cell>
+      <mat-cell *matCellDef="let tableModel">{{tableModel.minBalance}}</mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"
+      (click)="onRowSelected(row)"
+
+    ></mat-row>
   </mat-table>
 
   <mat-paginator #paginator
     [length]="dataSource.data.length"
     [pageIndex]="0"
-    [pageSize]="50"
-    [pageSizeOptions]="[25, 50, 100, 250]">
+    [pageSize]="3"
+    [pageSizeOptions]="[3, 6, 9, 12]">
   </mat-paginator>
 </div>
