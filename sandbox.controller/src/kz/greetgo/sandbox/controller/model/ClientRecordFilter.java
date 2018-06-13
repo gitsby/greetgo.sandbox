@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-public class ClientRecordPhilter {
+public class ClientRecordFilter {
 
   public String searchName;
   public String columnName;

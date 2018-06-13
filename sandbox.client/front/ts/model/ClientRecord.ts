@@ -1,5 +1,4 @@
-//fixme ClientRecord
-export class RecordClient {
+export class ClientRecord {
 
   public id: number;
   public name: string;

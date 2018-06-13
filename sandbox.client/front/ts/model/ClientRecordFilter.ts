@@ -1,4 +1,4 @@
-export class ClientRecordPhilter {
+export class ClientRecordFilter {
 
   public searchName: string = "";
   public columnName: string = "empty";

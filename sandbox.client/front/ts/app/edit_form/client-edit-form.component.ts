@@ -10,8 +10,6 @@ import {Character} from "../../model/Character";
 import {ClientToSave} from "../../model/ClientToSave";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
-//fixme сохранение происходит даже если форма не валидная
-//fixme gender - gorizontalno
 @Component({
   selector: 'edit-form-component',
   template: require('./client-edit-form.component.html'),
@@ -75,16 +73,18 @@ export class ClientEditFormComponent implements AfterViewInit {
 
   closeModalForm() {
     this.clientId = null;
-    this.initElements();
+    this.nullifyToSave();
     this.onClose.emit();
     this.welcomeText = "Add new Client";
   }
 
   saveClient() {
-    if (this.clientInputForm.valid) {
+    console.log(this.clientInputForm.getRawValue())
+    if (this.clientInputForm.invalid) {
       alert("Fill all required fields");
       return;
     }
+
     this.homePhone.number = this.homePhone.number.replace(/\D/g, '');
     this.mobilePhone1.number = this.mobilePhone1.number.replace(/\D/g, '');
     this.workingPhone.number = this.workingPhone.number.replace(/\D/g, '');
@@ -154,21 +154,18 @@ export class ClientEditFormComponent implements AfterViewInit {
       }
 
       this.validateAndPutPhone(this.homePhone,
-        this.retrievedClient.phones[homeNum],
         this.clientInputForm.controls['homePhone'].valid,
         homeNum);
 
       this.validateAndPutPhone(this.workingPhone,
-        this.retrievedClient.phones[workingNum],
         this.clientInputForm.controls['workingPhone'].valid,
         workingNum);
-
+      console.log("Changed:" + this.mobilePhone1.number + " " + this.retrievedClient.phones[mobilePhoneNum].number)
       this.validateAndPutPhone(this.mobilePhone1,
-        this.retrievedClient.phones[mobilePhoneNum],
         true,
         mobilePhoneNum);
     }
-    this.httpService.post("/client/save", {editedClient: this.toSave.toString()}).toPromise().then(result => {
+    this.httpService.post("/client/save", {editedClient: JSON.stringify(this.toSave)}).toPromise().then(result => {
       this.returnChanges.emit(result.json());
       this.closeModalForm();
     }, error => {
@@ -176,19 +173,19 @@ export class ClientEditFormComponent implements AfterViewInit {
     });
   }
 
-  validateAndPutPhone(phone1: Phone, phone2: Phone, valid: boolean, phoneNum: number) {
+  validateAndPutPhone(phone1: Phone, valid: boolean, phoneNum: number) {
     if (phoneNum != -1) {
       if (phone1.number.length != 0) {
         if (phone1.number
-          != phone2.number
+          != this.retrievedClient.phones[phoneNum].number
           && valid) {
           let number = phone1.number;
-          phone1.number = phone2.number;
+          phone1.number = this.retrievedClient.phones[phoneNum].number;
           phone1.editedTo = number;
           this.toSave.editedPhones.push(phone1);
         }
       } else {
-        this.toSave.deletedPhones.push(phone2);
+        this.toSave.deletedPhones.push(this.retrievedClient.phones[phoneNum]);
       }
     } else {
       if (this.homePhone.number != null) {
@@ -207,7 +204,7 @@ export class ClientEditFormComponent implements AfterViewInit {
   public loadFromDatabase(clientId) {
     this.clientId = clientId;
     this.welcomeText = "Edit client";
-    this.httpService.get("/client/getClientWithId",
+    this.httpService.get("/client/details",
       {clientId: this.clientId}).toPromise().then(result => {
       this.retrievedClient = result.json();
 
@@ -217,25 +214,24 @@ export class ClientEditFormComponent implements AfterViewInit {
       this.toSave.surname = this.retrievedClient.surname;
       this.toSave.patronymic = this.retrievedClient.patronymic;
       this.toSave.charm = this.characters[this.retrievedClient.charm].id;
-      this.toSave.gender = "MALE";
+      this.toSave.gender = this.retrievedClient.gender;
       this.toSave.birthDate = this.retrievedClient.birthDate;
 
       for (let phone of this.retrievedClient.phones) {
         if (phone.type == "HOME") {
-          this.homePhone = phone;
+          this.homePhone = Phone.createNewPhone(phone);
         } else if (phone.type == "WORKING") {
-          this.workingPhone = phone;
+          this.workingPhone = Phone.createNewPhone(phone);
         } else if (phone.type == "MOBILE") {
-          this.mobilePhone1 = phone;
+          this.mobilePhone1 = Phone.createNewPhone(phone);
         }
       }
 
       for (let address of this.retrievedClient.addresses) {
         if (address.type == "FACT") {
-          console.log("Address " + address.id);
-          this.factAddress = address;
+          this.factAddress = Address.createNewAddress(address);
         } else if (address.type == "REG") {
-          this.regAddress = address;
+          this.regAddress = Address.createNewAddress(address);
         }
       }
     }, error => {
@@ -244,11 +240,10 @@ export class ClientEditFormComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.initElements();
+    this.nullifyToSave();
   }
 
-  //fixme name: nullifyToSave
-  initElements() {
+  nullifyToSave() {
     this.toSave = new ClientToSave();
     this.regAddress = new Address();
     this.factAddress = new Address();

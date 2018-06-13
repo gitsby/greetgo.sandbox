@@ -7,15 +7,15 @@ import java.util.List;
 
 public interface ClientRegister {
 
-  List<ClientRecord> getClients(ClientRecordPhilter clientRecordPhilter);
+  List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter);
 
   void deleteClient(int clientId);
 
-  ClientDetails getClientById(int clientId);
+  ClientDetails getClientDetails(int clientId);
 
-  ClientRecord editedClient(ClientToSave editedClient);
+  ClientRecord save(ClientToSave editedClient);
 
   List<Character> getCharacters();
 
-  int getRequestedPaginationNum(ClientRecordPhilter clientRecordPhilter);
+  int getClientCount(ClientRecordFilter clientRecordFilter);
 }

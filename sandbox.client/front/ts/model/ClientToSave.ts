@@ -19,8 +19,4 @@ export class ClientToSave {
   public deletedPhones: Phone[] = [];
   public editedPhones: Phone[] = [];
 
-  //fixme ispolzui na meste JSON.stringify
-  public toString = (): string => {
-    return JSON.stringify(this);
-  }
 }

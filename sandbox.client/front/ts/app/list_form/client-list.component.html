@@ -1,5 +1,3 @@
-
-
 <!--Нужно показывать количество клиентов-->
 <div>
   <div class="container">
@@ -9,14 +7,14 @@
           <h3 class="col-lg-3">Clients</h3>
         </div>
         <div class="col-lg-4 options">
-          <input [(ngModel)]="clientRecordPhilter.searchName" id="input" type="text" class="form-control"
+          <input [(ngModel)]="clientRecordFilter.searchName" id="input" type="text" class="form-control"
                  placeholder="Enter FIO">
         </div>
         <div class="col-lg-3 options">
           <a (click)="searchClicked()" class="btn">Search</a>
         </div>
         <div class="col-lg-1 options">
-          <a class="btn" (click)="plusClick()">+</a>
+          <a class="btn" (click)="addNewClientClicked()">+</a>
         </div>
       </div>
 
@@ -29,45 +27,45 @@
 
         <p>Surname
           Name Middle Name
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='surname'"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName=='surname'"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-surname'"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName=='-surname'"></i>
         </p>
       </th>
       <th>
         <p>
           Character
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName==2"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName==2"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName==-2"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName==-2"></i>
         </p>
       </th>
       <th (click)="sortBy('age')">
         <p>Age
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='age'"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName=='age'"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-age'"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName=='-age'"></i>
         </p>
       </th>
       <th (click)="sortBy('total')">
         <p>Total
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='total'"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName=='total'"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-total'"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName=='-total'"></i>
         </p>
       </th>
       <th (click)="sortBy('max')">
         <p>Max
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='max'"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName=='max'"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-max'"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName=='-max'"></i>
         </p>
       </th>
       <th (click)="sortBy('min')">
         <p>Min
-          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='min'"></i>
+          <i class="down" *ngIf="this.clientRecordFilter.columnName=='min'"></i>
 
-          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-min'"></i>
+          <i class="up" *ngIf="this.clientRecordFilter.columnName=='-min'"></i>
         </p>
       </th>
       <th>Edit</th>
@@ -94,16 +92,16 @@
 <div class="center">
   <div class="pagination">
     <a (click)="decreaseCurrentPagination()"><<</a>
-    <a *ngIf="this.clientRecordPhilter.paginationPage>1 && paginationNum>3" (click)="loadClientSlice(0)">0</a>
-    <a *ngIf="this.clientRecordPhilter.paginationPage>2">...</a>
-    <a *ngFor="let pag of tempPaginationArray"
-       [ngStyle]="{background:pag==this.clientRecordPhilter.paginationPage?'#ddd':'#fff'}"
-       (click)="loadClientSlice(pag)">{{pag}}</a>
-    <a *ngIf="this.clientRecordPhilter.paginationPage<paginationNum-3">...</a>
-    <a (click)="loadClientSlice(paginationNum-1)"
-       *ngIf="this.clientRecordPhilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
+    <a *ngIf="this.clientRecordFilter.paginationPage>1 && paginationNum>3" (click)="pageChanged(0)">0</a>
+    <a *ngIf="this.clientRecordFilter.paginationPage>2">...</a>
+    <a *ngFor="let pag of pagesList"
+       [ngStyle]="{background:pag==this.clientRecordFilter.paginationPage?'#ddd':'#fff'}"
+       (click)="pageChanged(pag)">{{pag}}</a>
+    <a *ngIf="this.clientRecordFilter.paginationPage<paginationNum-3">...</a>
+    <a (click)="pageChanged(paginationNum-1)"
+       *ngIf="this.clientRecordFilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
     <a (click)="increaseCurrentPagination()">>></a>
-    <select (change)="sliceNumChanged()" [(ngModel)]="clientRecordPhilter.sliceNum" class="selectSliceNum"
+    <select (change)="pageSizeChanged()" [(ngModel)]="clientRecordFilter.sliceNum" class="selectSliceNum"
             placeholder="Select ">
       <option value="10">10</option>
       <option value="15">15</option>
