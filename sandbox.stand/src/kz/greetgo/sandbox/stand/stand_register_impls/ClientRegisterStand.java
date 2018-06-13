@@ -22,6 +22,7 @@ public class ClientRegisterStand implements ClientRegister {
     if (filter.searchName == null) {
       return getClientSlice(db.get().clientDots, 0, filter.sliceNum);
     }
+    //fixme searchname trim
     filter.searchName = filter.searchName.toLowerCase();
     List<ClientDot> clientDots = db.get().getClientDot().stream()
       .filter(clientDot -> filter.searchName == null ||
