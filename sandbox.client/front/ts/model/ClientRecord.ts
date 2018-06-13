@@ -1,12 +1,10 @@
-//fixme ClientRecord
-export class RecordClient {
+export class ClientRecord {
 
   public id: number;
   public name: string;
   public surname: string;
   public patronymic: string;
   public character: string = "";
-  public paginationNum: number;
 
   public age: number = 0;
   public accBalance: number = 10;

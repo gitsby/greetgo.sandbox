@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.ClientRecordPhilter;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
@@ -26,43 +26,64 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void getClientWithNullId() {
-    int clientId = -1;
-    assertThat(clientRegister.get().getClientById(clientId)).isNull();
+    Integer clientId = null;
+    assertThat(clientRegister.get().getClientDetails(clientId)).isNull();
   }
 
   @Test
   public void searchForEmptyName() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "surname";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+    clientRecordFilter.searchName = "a";
 
-    ClientRecordPhilter clientRecordPhilter = new ClientRecordPhilter();
-    clientRecordPhilter.columnName = "empty";
-    clientRecordPhilter.paginationPage = 0;
-    clientRecordPhilter.sliceNum = 10;
-    clientRecordPhilter.searchName = null;
+    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    System.out.println(clientRegister.get().getClients(clientRecordFilter).size());
+  }
 
-    assertThat(clientRegister.get().getClients(clientRecordPhilter));
+  @Test
+  public void testInvalidSliceNum() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "empty";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = -1;
+    clientRecordFilter.searchName = null;
 
+    assertThat(clientRegister.get().getClients(clientRecordFilter));
   }
 
   @Test
   public void tooBigSliceNum() {
-    ClientRecordPhilter clientRecordPhilter = new ClientRecordPhilter();
-    clientRecordPhilter.columnName = "empty";
-    clientRecordPhilter.paginationPage = 0;
-    clientRecordPhilter.sliceNum = 1000000000;
-    clientRecordPhilter.searchName = "";
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "empty";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 1000000000;
+    clientRecordFilter.searchName = "";
 
-    assertThat(clientRegister.get().getClients(clientRecordPhilter));
+    assertThat(clientRegister.get().getClients(clientRecordFilter));
+  }
+
+  @Test
+  public void invalidPaginationPage() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "empty";
+    clientRecordFilter.paginationPage = -1;
+    clientRecordFilter.sliceNum = 10;
+    clientRecordFilter.searchName = "";
+
+    assertThat(clientRegister.get().getClients(clientRecordFilter));
   }
 
   @Test
   public void getNonExistingPaginationPage() {
-    ClientRecordPhilter clientRecordPhilter = new ClientRecordPhilter();
-    clientRecordPhilter.columnName = "empty";
-    clientRecordPhilter.paginationPage = 900;
-    clientRecordPhilter.sliceNum = 10;
-    clientRecordPhilter.searchName = "";
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "empty";
+    clientRecordFilter.paginationPage = 900;
+    clientRecordFilter.sliceNum = 10;
+    clientRecordFilter.searchName = "";
 
-    assertThat(clientRegister.get().getClients(clientRecordPhilter));
+    assertThat(clientRegister.get().getClients(clientRecordFilter));
   }
 
 
@@ -74,16 +95,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.patronymic = RND.str(10);
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
-    clientToSave.id=-1;
+    clientToSave.id = -1;
 
     clientToSave.charm = 1;
     // Send new client
 
-    assertThat(clientRegister.get().editedClient(clientToSave));
+    assertThat(clientRegister.get().save(clientToSave));
   }
 
   @Test
-  public void testCreateClientWithNotExistingCharacter(){
+  public void testCreateClientWithNotExistingCharacter() {
 
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
@@ -91,17 +112,28 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.patronymic = RND.str(10);
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
-    clientToSave.id=null;
+    clientToSave.id = null;
 
     clientToSave.charm = -1;
     // Send new client
 
-    assertThat(clientRegister.get().editedClient(clientToSave));
+    assertThat(clientRegister.get().save(clientToSave));
   }
 
   @Test
-  public void testInvalidSliceNum() {
-    // Make negative slice num
+  public void testCreateClientWithNonExistingGender() {
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.name = RND.str(10);
+    clientToSave.surname = RND.str(10);
+    clientToSave.patronymic = RND.str(10);
+    clientToSave.gender = "OTHER";
+    clientToSave.birthDate = new Date();
+    clientToSave.id = null;
+
+    clientToSave.charm = -1;
+    // Send new client
+
+    assertThat(clientRegister.get().save(clientToSave));
   }
 
   @Test

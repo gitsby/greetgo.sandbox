@@ -7,7 +7,6 @@ import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.util.*;
 
 @Bean
@@ -16,29 +15,12 @@ public class StandDb implements HasAfterInject {
 
   public final Map<String, PersonDot> personStorage = new HashMap<>();
 
-  // FIXME: 6/13/18 можно делать паблик
-  List<ClientDot> clientDots = new ArrayList<>();
-  List<PhoneDot> phoneDots = new ArrayList<>();
-  List<AddressDot> addressDots = new ArrayList<>();
-  List<ClientAccountDot> clientAccountDots = new ArrayList<>();
-
-  public List<PhoneDot> getPhoneDots() {
-    return phoneDots;
-  }
-
-  public List<AddressDot> getAddressDots() {
-    return addressDots;
-  }
+  public List<ClientDot> clientDots = new ArrayList<>();
+  public List<PhoneDot> phoneDots = new ArrayList<>();
+  public List<AddressDot> addressDots = new ArrayList<>();
+  public List<ClientAccountDot> clientAccountDots = new ArrayList<>();
 
   public List<CharacterDot> characterDots = new ArrayList<>();
-
-  public List<CharacterDot> getCharacterDots() {
-    return characterDots;
-  }
-
-  public List<ClientAccountDot> getClientAccountDots() {
-    return clientAccountDots;
-  }
 
   String[] randomName = {"Jason", "Steven", "Delphi", "Tomas", "Fred", "Pindre", "Andro"
     , "Ford", "Klinton", "George", "Mikael", "Alden", "Frank", "Sebastian", "Pupy", "Maximus",
@@ -55,7 +37,6 @@ public class StandDb implements HasAfterInject {
     initClientPhones();
     initClientAccs();
 
-    System.out.println("Size: " + getCharacterDots().size());
     try (BufferedReader br = new BufferedReader(
       new InputStreamReader(getClass().getResourceAsStream("StandDbInitData.txt"), "UTF-8"))) {
 
@@ -110,26 +91,6 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public List<PhoneDot> getPhoneDotsWithId(int clientId) {
-    List<PhoneDot> phones = new ArrayList<>();
-    for (PhoneDot phoneDot : phoneDots) {
-      if (phoneDot.client == clientId) {
-        phones.add(phoneDot);
-      }
-    }
-    return phones;
-  }
-
-  public List<AddressDot> getAddressDotsWithId(int clientId) {
-    List<AddressDot> addresses = new ArrayList<>();
-    for (AddressDot addressDot : addressDots) {
-      if (addressDot.clientId == clientId) {
-        addresses.add(addressDot);
-      }
-    }
-    return addresses;
-  }
-
   private void initClientAddresses() {
     int id = 0;
     for (int i = 0; i < 100; i++) {
@@ -157,7 +118,7 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  private void initClientDots() throws ParseException {
+  private void initClientDots() {
     for (int i = 0; i < 100; i++) {
       ClientDot clientDot = new ClientDot();
       clientDot.id = i;

@@ -10,7 +10,6 @@
           <input [(ngModel)]="toSave.surname" formControlName="surname" id="surnameInput"
                  class="form-control"
                  type="text"
-                 placeholder="Required"
                  required>
           <p>Name:</p>
           <input [(ngModel)]="toSave.name" formControlName="name" class="form-control"
@@ -34,9 +33,9 @@
           </select>
           <p>Gender: *</p>
           <input type="radio" [(ngModel)]="toSave.gender" [ngModelOptions]="{standalone: true}"
-                 value="MALE">Male<br>
+                 value="MALE">Male
           <input type="radio" [(ngModel)]="toSave.gender" [ngModelOptions]="{standalone: true}"
-                 value="FEMALE">Female<br>
+                 value="FEMALE">Female
 
         </div>
         <div class="col-lg-3 form-group">
@@ -70,10 +69,8 @@
           <input (keypress)="omit_special_char($event)"
                  placeholder="+1 (123) 456-7890"
                  [textMask]="{mask: phoneMask}"
-                 pattern="\+\d \(\d{3}\) \d{3}-\d{4}"
                  [(ngModel)]="homePhone.number" formControlName="homePhone" #homePhoneInput
                  id="homePhoneInput" class="form-control"
-                 text
                  type="tel">
 
           <p>Working</p>

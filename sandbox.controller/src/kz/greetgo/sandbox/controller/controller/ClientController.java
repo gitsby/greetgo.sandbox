@@ -15,8 +15,6 @@ import java.util.List;
 @Mapping("/client")
 public class ClientController implements Controller {
 
-  // FIXME: 6/13/18 mappery doljni bit' cherez tire: get-pagination-num
-
   public BeanGetter<ClientRegister> clientRegister;
 
   @ToJson
@@ -30,31 +28,28 @@ public class ClientController implements Controller {
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
   public ClientRecord save(@Json @Par("editedClient") ClientToSave editedClient) {
-    return clientRegister.get().editedClient(editedClient);
+    return clientRegister.get().save(editedClient);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/getPaginationNum")
-  // FIXME: 6/13/18 getCount
-  public int getPaginationNum(@Json @Par("philter") ClientRecordPhilter clientRecordPhilter) {
-    return clientRegister.get().getRequestedPaginationNum(clientRecordPhilter);
+  @Mapping("/get-client-count")
+  public int getClientCount(@Json @Par("filter") ClientRecordFilter clientRecordFilter) {
+    return clientRegister.get().getClientCount(clientRecordFilter);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/getClients")
-  public List<ClientRecord> getClients(
-    @Json @Par("philter") ClientRecordPhilter philter) {
+  @Mapping("/get-clients")
+  public List<ClientRecord> getClients(@Json @Par("filter") ClientRecordFilter philter) {
     return clientRegister.get().getClients(philter);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  // FIXME: 6/13/18 details
-  @Mapping("/getClientWithId")
-  public ClientDetails getClientById(@Par("clientId") int clientId) {
-    return clientRegister.get().getClientById(clientId);
+  @Mapping("/details")
+  public ClientDetails getClientDetails(@Par("clientId") int clientId) {
+    return clientRegister.get().getClientDetails(clientId);
   }
 
   @ToJson

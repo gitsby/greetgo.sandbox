@@ -15,8 +15,42 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
 
   @Override
-  public List<ClientRecord> getClients(ClientRecordPhilter clientRecordPhilter) {
-    return null;
+  public List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
+    if (clientRecordFilter.searchName != null) {
+      // Without where like
+      if (clientRecordFilter.searchName.length() == 0) {
+
+      }
+
+    }
+
+    System.out.println("EXECUTING");
+    switch (clientRecordFilter.columnName) {
+      case "surname":
+        clientRecordFilter.searchName = "client.name";
+        break;
+      case "age":
+        break;
+      case "total":
+        break;
+      case "max":
+        break;
+      case "min":
+        break;
+      case "-surname":
+        break;
+      case "-age":
+        break;
+      case "-total":
+        break;
+      case "-max":
+        break;
+      case "-min":
+        break;
+    }
+
+    List<ClientRecord> clientRecords = clientDao.get().getClientRecords(clientRecordFilter);
+    return clientRecords;
   }
 
   @Override
@@ -25,12 +59,12 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public ClientDetails getClientById(int clientId) {
+  public ClientDetails getClientDetails(int clientId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ClientRecord editedClient(ClientToSave editedClient) {
+  public ClientRecord save(ClientToSave editedClient) {
     if (editedClient.id != null) {
       System.out.println("INSERTING INTO");
 
@@ -44,7 +78,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public int getRequestedPaginationNum(ClientRecordPhilter clientRecordPhilter) {
+  public int getClientCount(ClientRecordFilter clientRecordFilter) {
     return 0;
   }
 
