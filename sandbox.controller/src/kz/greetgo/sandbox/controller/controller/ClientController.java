@@ -15,6 +15,8 @@ import java.util.List;
 @Mapping("/client")
 public class ClientController implements Controller {
 
+  // FIXME: 6/13/18 mappery doljni bit' cherez tire: get-pagination-num
+
   public BeanGetter<ClientRegister> clientRegister;
 
   @ToJson
@@ -34,6 +36,7 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getPaginationNum")
+  // FIXME: 6/13/18 getCount
   public int getPaginationNum(@Json @Par("philter") ClientRecordPhilter clientRecordPhilter) {
     return clientRegister.get().getRequestedPaginationNum(clientRecordPhilter);
   }
@@ -48,6 +51,7 @@ public class ClientController implements Controller {
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
+  // FIXME: 6/13/18 details
   @Mapping("/getClientWithId")
   public ClientDetails getClientById(@Par("clientId") int clientId) {
     return clientRegister.get().getClientById(clientId);

@@ -16,6 +16,7 @@ public class StandDb implements HasAfterInject {
 
   public final Map<String, PersonDot> personStorage = new HashMap<>();
 
+  // FIXME: 6/13/18 можно делать паблик
   List<ClientDot> clientDots = new ArrayList<>();
   List<PhoneDot> phoneDots = new ArrayList<>();
   List<AddressDot> addressDots = new ArrayList<>();

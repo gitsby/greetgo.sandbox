@@ -10,7 +10,8 @@ import {Character} from "../../model/Character";
 import {ClientToSave} from "../../model/ClientToSave";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
-
+//fixme сохранение происходит даже если форма не валидная
+//fixme gender - gorizontalno
 @Component({
   selector: 'edit-form-component',
   template: require('./client-edit-form.component.html'),
@@ -175,8 +176,8 @@ export class ClientEditFormComponent implements AfterViewInit {
     });
   }
 
-  validateAndPutPhone(phone1: Phone, phone2: Phone, valid: boolean,phoneNum: number) {
-    if (phoneNum!=-1){
+  validateAndPutPhone(phone1: Phone, phone2: Phone, valid: boolean, phoneNum: number) {
+    if (phoneNum != -1) {
       if (phone1.number.length != 0) {
         if (phone1.number
           != phone2.number
@@ -246,6 +247,7 @@ export class ClientEditFormComponent implements AfterViewInit {
     this.initElements();
   }
 
+  //fixme name: nullifyToSave
   initElements() {
     this.toSave = new ClientToSave();
     this.regAddress = new Address();

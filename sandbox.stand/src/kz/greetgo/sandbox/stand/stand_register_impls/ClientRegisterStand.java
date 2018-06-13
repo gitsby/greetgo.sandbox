@@ -16,6 +16,9 @@ import static java.util.Calendar.*;
 public class ClientRegisterStand implements ClientRegister {
 
 
+  //private List<ClientDot> filter(ClientRecordPhilter filter) { }
+  //private ClientRecord dotToRecord(ClientDot clientDot) {}
+
   public BeanGetter<StandDb> db;
 
   @Override
@@ -29,6 +32,8 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public ClientDetails getClientById(int clientId) {
+    //ClientDot clientDot1 = db.get().getClientDot().stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
+
     for (ClientDot clientDot : db.get().getClientDot()) {
       if (clientDot.id == clientId) {
         ClientDetails foundClient = new ClientDetails();
@@ -84,10 +89,13 @@ public class ClientRegisterStand implements ClientRegister {
     return addressDots;
   }
 
-  private ClientRecord getRecordClientById(int id){
+  //ne nujen
+  private ClientRecord getRecordClientById(int id) {
+    // FIXME: 6/13/18 можно же сразу из дб вытащить
+
     List<ClientRecord> sortedList = searchClient("");
-    for (ClientRecord clientRecord : sortedList){
-      if (clientRecord.id==id){
+    for (ClientRecord clientRecord : sortedList) {
+      if (clientRecord.id == id) {
         return clientRecord;
       }
     }
@@ -98,7 +106,10 @@ public class ClientRegisterStand implements ClientRegister {
   public ClientRecord editedClient(ClientToSave editedClient) {
     System.out.println("HERE IT GOES");
     System.out.println(editedClient.id);
+    // FIXME: 6/13/18 ClientDot clientDot;
+    //if editedClient.id == null clientDot = new ClientDot() и add to list, if not clientDot = from list
     if (editedClient.id == null) {
+      //createNewClient ne nujen
       createNewClient(editedClient);
       return getRecordClientById(editedClient.id);
     }
@@ -112,6 +123,8 @@ public class ClientRegisterStand implements ClientRegister {
         Objects.requireNonNull(getClientDot(editedClient.id)).surname = editedClient.surname;
       }
     }
+
+    // FIXME: 6/13/18 patronimic name can be null
     if (editedClient.patronymic != null) {
       if (!editedClient.patronymic.equals
         (Objects.requireNonNull(getClientDot(editedClient.id)).patronymic)) {
@@ -203,6 +216,8 @@ public class ClientRegisterStand implements ClientRegister {
         }
       }
     }
+    //return dotToRecord(clientDot);
+
     return getRecordClientById(editedClient.id);
   }
 
@@ -237,6 +252,7 @@ public class ClientRegisterStand implements ClientRegister {
     return characters;
   }
 
+  //ne nujen
   private void createNewClient(ClientToSave client) {
     for (ClientDot clientDot : db.get().getClientDot()) {
       System.out.println("BEFORE:" + clientDot.id);
@@ -278,9 +294,18 @@ public class ClientRegisterStand implements ClientRegister {
     db.get().getClientAccountDots().add(clientAccountDot);
   }
 
-
+  //ne nujen
   private List<ClientRecord> searchClient(String searchName) {
+
+    /*
+    db.get().getClientDot().stream()
+      .filter(clientDot -> searchName == null || (clientDot.surname + " " + clientDot.name + " " + clientDot.patronymic).toLowerCase().contains(searchName))
+      .collect(Collectors.toList());
+*/
+
+
     List<ClientRecord> searchClients = new ArrayList<>();
+    // FIXME: 6/13/18 pager ne uchitivaetsya
     if (searchName == null) {
       return getClientSlice(createRecordList(), 0, 10);
     }
@@ -328,9 +353,11 @@ public class ClientRegisterStand implements ClientRegister {
         return characterDot.name;
       }
     }
+    //fixme not ok
     return "Undefined";
   }
 
+  //ClientRecord -> ClientDot
   private List<ClientRecord> getClientSlice(List<ClientRecord> clientRecords, int paginationPage, int sliceNum) {
     List<ClientRecord> clients;
     int startSlice = paginationPage * sliceNum;
@@ -394,6 +421,7 @@ public class ClientRegisterStand implements ClientRegister {
     return records.size();
   }
 
+  //ne nujen
   private List<ClientRecord> createRecordList() {
     List<ClientRecord> clientRecords = new ArrayList<>();
     for (ClientDot clientDot : db.get().getClientDot()) {
@@ -414,6 +442,4 @@ public class ClientRegisterStand implements ClientRegister {
     }
     return clientRecords;
   }
-
-
 }
