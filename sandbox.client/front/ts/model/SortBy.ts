@@ -1,3 +1,4 @@
+//fixme SortByEnum
 export enum SortBy {
   NONE = "NONE",
   NAME = "NAME",

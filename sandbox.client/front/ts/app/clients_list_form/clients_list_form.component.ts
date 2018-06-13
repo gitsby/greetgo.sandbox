@@ -12,6 +12,10 @@ import {SortDirection} from "../../model/SortDirection";
 })
 
 export class ClientsListFormComponent {
+  //fixme pager ne pravilni pri smene page size
+  //fixme nujen clear button
+
+  //fixme не используется
   @ViewChild('myModule') module: ElementRef;
 
   searchInputText: string = "";
@@ -28,6 +32,7 @@ export class ClientsListFormComponent {
   numberOfItemInPage: number = 10;
 
   constructor(private httpService: HttpService) {
+    //fixme вынеси из конструктора - не обязательно
     this.loadRecordsCount();
   }
 

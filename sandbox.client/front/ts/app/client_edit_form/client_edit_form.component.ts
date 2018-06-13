@@ -9,7 +9,9 @@ import {Gender} from "../../model/Gender";
   template: require('./client_edit_form.component.html'),
   styles: [require('./client_edit_form.component.css')],
 })
-export class ClientEditFormComponent implements OnInit{
+export class ClientEditFormComponent implements OnInit {
+  //fixme есть проблемы с датой рождения. если год большой, то возраст становиться отрицательным или нул пойнтер на сервере
+  //fixme s kirilicoi ne rabotaet
   @Input() clientId: number;
   @Output() onClose = new EventEmitter<boolean>();
 
@@ -31,10 +33,11 @@ export class ClientEditFormComponent implements OnInit{
       this.title = "Изменить данные клиента";
       this.buttonTitle = "Изменить";
       let clientId = this.clientId as number;
+
       this.httpService.get("/client/detail", {"clientId": clientId}).toPromise().then(result => {
         this.clientToSave = ClientToSave.copy(result.json());
         this.serializeAllNumber();
-        console.log(this.clientToSave)
+        console.log(this.clientToSave);
       })
     }
     else {
@@ -66,7 +69,7 @@ export class ClientEditFormComponent implements OnInit{
     return false;
   }
 
-  checkClientAddresse(): boolean{
+  checkClientAddresse(): boolean {
     if (ClientEditFormComponent.isEmpty(this.clientToSave.addressReg)) return false;
     let re = /^[a-zA-Z0-9_]+$/;
     return this.isCorrect(re, this.clientToSave.addressReg.street) &&
@@ -102,7 +105,7 @@ export class ClientEditFormComponent implements OnInit{
     return (element == null || element == "")
   }
 
-  saveButtonClicked () {
+  saveButtonClicked() {
     if (this.checkClientData()) {
       this.wrongMessageEnable = false;
       this.saveClient();
@@ -130,16 +133,16 @@ export class ClientEditFormComponent implements OnInit{
 
   setMaxDate() {
     let today = new Date();
-    let dd:string = today.getDate().toString();
-    let mm:string = (today.getMonth()+1).toString(); //January is 0!
+    let dd: string = today.getDate().toString();
+    let mm: string = (today.getMonth() + 1).toString(); //January is 0!
     let yyyy: string = today.getFullYear().toString();
-    if(dd.length<10){
-      dd='0'+dd
+    if (dd.length < 10) {
+      dd = '0' + dd
     }
-    if(mm.length<10){
-      mm='0'+mm
+    if (mm.length < 10) {
+      mm = '0' + mm
     }
-    this.birthDayInput.nativeElement.setAttribute("max", yyyy+'-'+mm+'-'+dd);
+    this.birthDayInput.nativeElement.setAttribute("max", yyyy + '-' + mm + '-' + dd);
   }
 
   serializeInputText(id: number) {
@@ -181,6 +184,8 @@ export class ClientEditFormComponent implements OnInit{
     }
   }
 
+  //fixme есть проще варианты - не обязательно
+  //fixme name: formatPhoneNumber
   static serializeNumber(clientNumber: string | null): string {
     if (clientNumber == null) return "";
 
@@ -192,8 +197,8 @@ export class ClientEditFormComponent implements OnInit{
     let split = 4;
     let chunk = [];
     for (let i = 0, len = number.length; i < len; i += split) {
-      split = ( i <= 0 ) ? 1 : ((i >= 7) ? 2 : 3);
-      chunk.push( number.substr( i, split ) );
+      split = (i <= 0) ? 1 : ((i >= 7) ? 2 : 3);
+      chunk.push(number.substr(i, split));
     }
     return chunk.join("-").toUpperCase();
   }

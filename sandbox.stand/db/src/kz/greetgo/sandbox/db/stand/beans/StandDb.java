@@ -13,6 +13,7 @@ import java.util.*;
 
 @Bean
 public class StandDb implements HasAfterInject {
+  // FIXME: 6/13/18 tut doljni byt' tolko doty
   public final Map<String, PersonDot> personStorage = new HashMap<>();
   public final List<ClientDot> clientsStorage = new ArrayList<>();
   public final List<Charm> charms = new ArrayList<>();
@@ -128,7 +129,7 @@ public class StandDb implements HasAfterInject {
 
   @SuppressWarnings("unused")
   private void appendPhones() {
-    for(int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++) {
       ClientPhone clientPhone = new ClientPhone();
       clientPhone.id = i;
       clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
@@ -142,13 +143,15 @@ public class StandDb implements HasAfterInject {
     for (int i = 0; i < 100; i++) {
       ClientAccount clientAccount = new ClientAccount();
       clientAccount.id = i;
-      clientAccount.money = random.nextFloat()*random.nextInt(10000);
+      // TODO: 6/13/18 (float) RND.plusDouble(200, 2); - не ошибка
+      clientAccount.money = random.nextFloat() * random.nextInt(10000);
       clientAccount.number = RND.intStr(10);
       clientAccount.registered_at = null;
       accounts.add(clientAccount);
     }
   }
 
+  // FIXME: 6/13/18 zachem unused?
   @SuppressWarnings("unused")
   private void appendClientDetailsList() {
     for (int i = 0; i < 100; i++) {
@@ -159,7 +162,8 @@ public class StandDb implements HasAfterInject {
       clientDot.gender = random.nextInt(1) == 0 ? Gender.FEMALE : Gender.MALE;
       clientDot.patronymic = NameGenerator.generateName();
       Date birth_day = new Date();
-      birth_day.setYear(random.nextInt(70)+30);
+      // FIXME: 6/13/18 depricated nelzya ispolzovat
+      birth_day.setYear(random.nextInt(70) + 30);
       birth_day.setMonth(random.nextInt(12));
       birth_day.setDate(random.nextInt(28));
       System.out.println(birth_day);
@@ -170,7 +174,8 @@ public class StandDb implements HasAfterInject {
       clientDot.homePhoneId = phones.get(random.nextInt(phones.size())).id;
       clientDot.workPhoneId = phones.get(random.nextInt(phones.size())).id;
       clientDot.mobilePhoneId = phones.get(random.nextInt(phones.size())).id;
-      for (int g = 0; g < random.nextInt(9)+1; g++) clientDot.accountsId.add(accounts.get(random.nextInt(accounts.size())).id);
+      for (int g = 0; g < random.nextInt(9) + 1; g++)
+        clientDot.accountsId.add(accounts.get(random.nextInt(accounts.size())).id);
       clientsStorage.add(clientDot);
     }
   }
@@ -192,22 +197,22 @@ public class StandDb implements HasAfterInject {
 
 class NameGenerator {
 
-  private static String[] Beginning = { "Kr", "Ca", "Ra", "Mrok", "Cru",
+  private static String[] Beginning = {"Kr", "Ca", "Ra", "Mrok", "Cru",
     "Ray", "Bre", "Zed", "Drak", "Mor", "Jag", "Mer", "Jar", "Mjol",
     "Zork", "Mad", "Cry", "Zur", "Creo", "Azak", "Azur", "Rei", "Cro",
-    "Mar", "Luk" };
-  private static String[] Middle = { "air", "ir", "mi", "sor", "mee", "clo",
+    "Mar", "Luk"};
+  private static String[] Middle = {"air", "ir", "mi", "sor", "mee", "clo",
     "red", "cra", "ark", "arc", "miri", "lori", "cres", "mur", "zer",
-    "marac", "zoir", "slamar", "salmar", "urak" };
-  private static String[] End = { "d", "ed", "ark", "arc", "es", "er", "der",
-    "tron", "med", "ure", "zur", "cred", "mur" };
+    "marac", "zoir", "slamar", "salmar", "urak"};
+  private static String[] End = {"d", "ed", "ark", "arc", "es", "er", "der",
+    "tron", "med", "ure", "zur", "cred", "mur"};
 
   private static Random rand = new Random();
 
   static String generateName() {
 
     return Beginning[rand.nextInt(Beginning.length)] +
-      Middle[rand.nextInt(Middle.length)]+
+      Middle[rand.nextInt(Middle.length)] +
       End[rand.nextInt(End.length)];
 
   }

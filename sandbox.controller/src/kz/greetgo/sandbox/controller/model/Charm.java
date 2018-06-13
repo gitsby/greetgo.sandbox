@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
+// FIXME: 6/13/18 charmDot
 public class Charm {
   public int id;
   public String name;

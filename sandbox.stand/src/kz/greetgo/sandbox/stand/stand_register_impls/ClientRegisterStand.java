@@ -32,8 +32,7 @@ public class ClientRegisterStand implements ClientRegister {
       clientDot = new ClientDot();
       db.get().clientsStorage.add(0, clientDot);
       clientDot.id = db.get().clientsStorage.size();
-    }
-    else clientDot = getClient(clientToSave.id);
+    } else clientDot = getClient(clientToSave.id);
     System.out.println(clientToSave.birth_day);
     clientDot.name = clientToSave.name;
     clientDot.surname = clientToSave.surname;
@@ -114,17 +113,15 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private List<ClientRecords> getRecordsList(ClientFilter clientFilter) {
-    List<ClientDot> temp = db.get().clientsStorage;
     List<ClientRecords> clientRecords = new ArrayList<>();
 
-    for(ClientDot clientDot : temp) {
+    for (ClientDot clientDot : db.get().clientsStorage) {
       if (clientFilter != null && clientFilter.fio != null) {
         if ((clientDot.name.contains(clientFilter.fio))
           || (clientDot.surname.contains(clientFilter.fio))) {
           clientRecords.add(toClientRecords(clientDot));
         }
-      }
-      else {
+      } else {
         clientRecords.add(toClientRecords(clientDot));
       }
     }
@@ -136,9 +133,8 @@ public class ClientRegisterStand implements ClientRegister {
     Calendar birth = Calendar.getInstance();
     birth.setTime(d);
     int yeardiff = curr.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
-    curr.add(Calendar.YEAR,-yeardiff);
-    if(birth.after(curr))
-    {
+    curr.add(Calendar.YEAR, -yeardiff);
+    if (birth.after(curr)) {
       yeardiff = yeardiff - 1;
     }
     return yeardiff;
@@ -171,7 +167,7 @@ public class ClientRegisterStand implements ClientRegister {
     return min_balance;
   }
 
-  private ClientRecords toClientRecords (ClientDot clientDot) {
+  private ClientRecords toClientRecords(ClientDot clientDot) {
     ClientRecords clientRecords = new ClientRecords();
     clientRecords.id = clientDot.id;
     clientRecords.name = clientDot.name;
@@ -218,7 +214,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientAddress saveClientAddress(ClientAddress saveClientAddress) {
-    if(saveClientAddress.id == null) {
+    if (saveClientAddress.id == null) {
       saveClientAddress.id = db.get().addresses.size();
       db.get().addresses.add(saveClientAddress);
       return saveClientAddress;
@@ -232,7 +228,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientPhone saveClientPhone(ClientPhone saveClientPhone) {
-    if(saveClientPhone.id == null) {
+    if (saveClientPhone.id == null) {
       saveClientPhone.id = db.get().phones.size();
       db.get().phones.add(saveClientPhone);
       return saveClientPhone;

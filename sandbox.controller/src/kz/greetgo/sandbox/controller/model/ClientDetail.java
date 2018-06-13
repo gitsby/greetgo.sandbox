@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.controller.model;
 
 import java.util.Date;
 
+// FIXME: 6/13/18 Details
 public class ClientDetail {
   public Integer id;
   public String surname;
