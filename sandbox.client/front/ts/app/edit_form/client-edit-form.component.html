@@ -1,0 +1,114 @@
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span (click)="closeModalForm()" class="close">&times;</span>
+    <h2 id="welcomeText"><b>{{welcomeText}}</b></h2><br>
+    <form [formGroup]="clientInputForm" (ngSubmit)="submit()">
+      <div class="row">
+        <div class="form-group col-lg-3">
+          <h4>Client data</h4>
+          <p>Surname:</p>
+          <input [(ngModel)]="toSave.surname" formControlName="surname" id="surnameInput"
+                 class="form-control"
+                 type="text"
+                 placeholder="Required"
+                 required>
+          <p>Name:</p>
+          <input [(ngModel)]="toSave.name" formControlName="name" class="form-control"
+                 required>
+          <p>Middle Name:</p>
+          <input [(ngModel)]="toSave.patronymic" formControlName="patronymic" id="patronymicInput"
+                 class="form-control" type="text"
+                 required="">
+          <p>Date of birth: *</p>
+          <input [(ngModel)]="toSave.birthDate"
+                 formControlName="dateBirth" id="dateInput"
+                 class="input-group date"
+                 type="date">
+          <p>Character: *</p>
+          <select [(ngModel)]="toSave.charm"
+                  size="characters.length" formControlName="character">
+            <option disabled> Select character</option>
+            <option *ngFor="let character of characters"
+                    value="{{character.id}}">{{character.name}}
+            </option>
+          </select>
+          <p>Gender: *</p>
+          <input type="radio" [(ngModel)]="toSave.gender" [ngModelOptions]="{standalone: true}"
+                 value="MALE">Male<br>
+          <input type="radio" [(ngModel)]="toSave.gender" [ngModelOptions]="{standalone: true}"
+                 value="FEMALE">Female<br>
+
+        </div>
+        <div class="col-lg-3 form-group">
+          <h4>Living address (fact)</h4>
+          <p>Street</p>
+          <input [(ngModel)]="factAddress.street" formControlName="factStreet" id="factStreetInput"
+                 class="form-control" type="text">
+          <p>House</p>
+          <input [(ngModel)]="factAddress.house" formControlName="factHouse" id="factHouseInput"
+                 class="form-control"
+                 type="text">
+          <p>Flat</p>
+          <input [(ngModel)]="factAddress.flat" formControlName="factFlat" id="factFlatInput"
+                 class="form-control" type="text">
+        </div>
+        <div class="col-lg-3 form-group">
+          <h4>Registration address * </h4>
+          <p>Street</p>
+          <input [(ngModel)]="regAddress.street" formControlName="regStreet" id="streetInput"
+                 class="form-control" type="text">
+          <p>House</p>
+          <input [(ngModel)]="regAddress.house" formControlName="regHouse" id="regHouse" class="form-control"
+                 type="text">
+          <p>Flat</p>
+          <input [(ngModel)]="regAddress.flat" formControlName="regFlat" id="flatInput" class="form-control"
+                 type="text">
+        </div>
+        <div class="col-lg-3 form-group">
+          <h4>Phones(One mobile)</h4>
+          <p>Home</p>
+          <input (keypress)="omit_special_char($event)"
+                 placeholder="+1 (123) 456-7890"
+                 [textMask]="{mask: phoneMask}"
+                 pattern="\+\d \(\d{3}\) \d{3}-\d{4}"
+                 [(ngModel)]="homePhone.number" formControlName="homePhone" #homePhoneInput
+                 id="homePhoneInput" class="form-control"
+                 text
+                 type="tel">
+
+          <p>Working</p>
+          <input (keypress)="omit_special_char($event)"
+                 placeholder="+1 (123) 456-7890"
+                 [textMask]="{mask: phoneMask}"
+                 [(ngModel)]="workingPhone.number" formControlName="workingPhone" #workingPhoneInput
+                 id="workingPhoneInput"
+                 class="form-control" type="tel">
+
+          <p>Mobile 1</p>
+          <input (keypress)="omit_special_char($event)"
+
+                 placeholder="+1 (123) 456-7890"
+                 [textMask]="{mask: phoneMask}"
+                 [(ngModel)]="mobilePhone1.number" formControlName="mobilePhone" #mobilePhone1Input
+                 id="mobilePhone1Input"
+                 class="form-control" type="tel">
+
+        </div>
+      </div>
+
+    </form>
+    <div class="container">
+      <div class="row bottom-btns">
+        <div class="col-sm-3">
+          <a (click)="saveClient()" class="btn btn-md btn-primary btn-block">Save</a>
+        </div>
+
+        <div class="col-sm-3">
+          <a (click)="closeModalForm()" class="btn btn-md btn-block cancelBtn">Cancel</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

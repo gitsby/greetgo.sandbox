@@ -14,6 +14,16 @@
     ]]></sql>
   </changeSet>
 
+  <changeSet author="pompei" id="auto-increment-Charm">
+    <addAutoIncrement
+                      columnDataType="int"
+                      columnName="id"
+                      incrementBy="1"
+                      schemaName="public"
+                      startWith="1"
+                      tableName="characters"/>
+  </changeSet>
+
   <changeSet author="pompei" id="create-table-Client">
     <sql endDelimiter=";;">
       <![CDATA[
@@ -23,11 +33,21 @@
           surname varchar(30) not null,
           patronymic varchar(30) not null,
           gender varchar(10) not null,
-          birth_dat date,
+          birth_date date,
           charm int not null
         )
       ]]>
     </sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="auto-increment-Client">
+    <addAutoIncrement
+      columnDataType="int"
+      columnName="id"
+      incrementBy="1"
+      schemaName="public"
+      startWith="1"
+      tableName="client"/>
   </changeSet>
 
   <changeSet author="pompei-docs" id="create-foreign-ClientCharmFK">

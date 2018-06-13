@@ -22,4 +22,5 @@ public interface AuthDao {
 
   @Select("select * from Person where id = #{personId}")
   UserInfo getUserInfo(@Param("personId") String personId);
+
 }

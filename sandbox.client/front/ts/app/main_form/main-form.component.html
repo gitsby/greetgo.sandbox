@@ -11,17 +11,6 @@
       </div>
       <div class="col-sm-9">
         <div class="row">
-          <!--<div class="col-sm-3">-->
-          <!--<input [(ngModel)]="searchField" id="input" type="text" class="form-control"-->
-          <!--placeholder="Enter FIO">-->
-          <!--</div>-->
-
-          <!--<div class="col-sm-2">-->
-          <!--<a (click)="searchClicked()" class="btn">Search</a>-->
-          <!--</div>-->
-          <!--<div class="col-sm-1">-->
-          <!--<a class="btn" (click)="plusClick()">+</a>-->
-          <!--</div>-->
           <div class="col-lg-3">
             <button class="btn"
                     (click)="openClients()">
@@ -87,9 +76,5 @@
       </tbody>
     </table>
   </div>
-  <list-form-component *ngIf="openClient" (openEditingForm)="openEditingForm($event)"></list-form-component>
-
-  <!--fixme edit component ne doljen bit' v main form. tak kak ne otnositsya k nemu po logike-->
-  <edit-form-component (onClose)="setEditingClientNull()" [ngStyle]="{display:editingClient ? 'block': 'none'}"
-                       (returnChanges)="applyChanges($event)"></edit-form-component>
+  <list-form-component *ngIf="openClient"></list-form-component>
 </div>

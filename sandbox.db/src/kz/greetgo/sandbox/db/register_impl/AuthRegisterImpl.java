@@ -20,8 +20,6 @@ public class AuthRegisterImpl implements AuthRegister {
 
   public BeanGetter<AuthDao> authDao;
 
-//    public BeanGetter<PoliceCheckService> policeCheckService;
-
   @Override
   public void saveParam(String personId, UserParamName name, String value) {
     authDao.get().saveUserParam(personId, name, value);

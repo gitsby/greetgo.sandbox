@@ -1,30 +1,21 @@
 package kz.greetgo.sandbox.controller.register;
 
 import kz.greetgo.sandbox.controller.model.Character;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.RecordClient;
+import kz.greetgo.sandbox.controller.model.*;
 
 import java.util.List;
 
 public interface ClientRegister {
-    //
-    // FIXME: 6/12/18 Создай отдельный класс для фильтра
-    List<RecordClient> getClients(String columnNum,
-                                             String paginationPage,
-                                             String searchText,
-                                             int sliceNum);
 
-    // FIXME: 6/12/18 pochemu clientId - String?
-    boolean deleteClient(String clientId);
+  List<ClientRecord> getClients(ClientRecordPhilter clientRecordPhilter);
 
-    ClientDetails getClientById(int clientId);
+  void deleteClient(int clientId);
 
-    // FIXME: 6/12/18 zachem return int?
-    int editedClient(ClientToSave editedClient);
+  ClientDetails getClientById(int clientId);
 
-    List<Character> getCharacters();
+  ClientRecord editedClient(ClientToSave editedClient);
 
-    // FIXME: 6/12/18 вытаскивай количество клиентов и высчитывай пагинацию на клиенте
-    int getRequestedPaginationNum(String searchText, int sliceNum);
+  List<Character> getCharacters();
+
+  int getRequestedPaginationNum(ClientRecordPhilter clientRecordPhilter);
 }

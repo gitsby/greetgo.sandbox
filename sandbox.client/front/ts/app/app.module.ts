@@ -4,20 +4,26 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
-import {MainFormComponent} from "./main_form/main_form.component";
+import {MainFormComponent} from "./main_form/main-form.component";
 import {HttpService} from "./HttpService";
-import {EditFormComponent} from "./edit_form/edit_form.component";
+import {ClientEditFormComponent} from "./edit_form/client-edit-form.component";
 import {TextMaskModule} from "angular2-text-mask";
-import {ClientListComponent} from "./list_form/client_list.component";
+import {ClientListComponent} from "./list_form/client-list.component";
 
 @NgModule({
   imports: [
     TextMaskModule,
-    BrowserModule, HttpModule, JsonpModule, FormsModule,
+    BrowserModule,
+    HttpModule,
+    JsonpModule,
+    FormsModule,
     ReactiveFormsModule
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent, EditFormComponent,
+    RootComponent,
+    LoginComponent,
+    MainFormComponent,
+    ClientEditFormComponent,
     ClientListComponent
   ],
   bootstrap: [RootComponent],

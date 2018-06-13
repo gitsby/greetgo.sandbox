@@ -5,9 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.core.RequestMethod;
 import kz.greetgo.sandbox.controller.model.Character;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.RecordClient;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -22,40 +20,37 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.DELETE)
   @Mapping("/delete")
-  public boolean delete(@Par("index") String index) {
+  public void delete(@Par("index") int index) {
     clientRegister.get().deleteClient(index);
-    return false;
   }
 
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public int save(@Json @Par("editedClient") ClientToSave editedClient) {
+  public ClientRecord save(@Json @Par("editedClient") ClientToSave editedClient) {
     return clientRegister.get().editedClient(editedClient);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getPaginationNum")
-  public int getPaginationNum(@Par("searchText") String searchText, @Par("sliceNum") int sliceNum) {
-    return clientRegister.get().getRequestedPaginationNum(searchText, sliceNum);
+  public int getPaginationNum(@Json @Par("philter") ClientRecordPhilter clientRecordPhilter) {
+    return clientRegister.get().getRequestedPaginationNum(clientRecordPhilter);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getClients")
-  public List<RecordClient> getClients(@Par("columnName") String columnName,
-                                       @Par("paginationPage") String paginationPage,
-                                       @Par("searchName") String searchName,
-                                       @Par("sliceNum") int sliceNum) {
-    return clientRegister.get().getClients(columnName, paginationPage, searchName, sliceNum);
+  public List<ClientRecord> getClients(
+    @Json @Par("philter") ClientRecordPhilter philter) {
+    return clientRegister.get().getClients(philter);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/getClientWithId")
-  public ClientDetails getClientById(@Par("clientId") String clientId) {
-    return clientRegister.get().getClientById(Integer.parseInt(clientId));
+  public ClientDetails getClientById(@Par("clientId") int clientId) {
+    return clientRegister.get().getClientById(clientId);
   }
 
   @ToJson

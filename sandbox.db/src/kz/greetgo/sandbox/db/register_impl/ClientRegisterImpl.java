@@ -2,13 +2,10 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.Character;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.RecordClient;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import org.apache.ibatis.jdbc.SQL;
 
 import java.util.List;
 
@@ -18,12 +15,12 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
 
   @Override
-  public List<RecordClient> getClients(String columnNum, String paginationPage, String searchText, int sliceNum) {
-    throw new UnsupportedOperationException();
+  public List<ClientRecord> getClients(ClientRecordPhilter clientRecordPhilter) {
+    return null;
   }
 
   @Override
-  public boolean deleteClient(String clientId) {
+  public void deleteClient(int clientId) {
     throw new UnsupportedOperationException();
   }
 
@@ -33,20 +30,35 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public int editedClient(ClientToSave editedClient) {
-    throw new UnsupportedOperationException();
+  public ClientRecord editedClient(ClientToSave editedClient) {
+    if (editedClient.id != null) {
+      System.out.println("INSERTING INTO");
+
+    }
+    return null;
   }
 
   @Override
   public List<Character> getCharacters() {
-    SQL sql = new SQL();
-    sql.SELECT("");
-    List<Character> characters = null;
-    return characters;
+    return clientDao.get().getCharacters();
   }
 
   @Override
-  public int getRequestedPaginationNum(String searchText, int sliceNum) {
-    throw new UnsupportedOperationException();
+  public int getRequestedPaginationNum(ClientRecordPhilter clientRecordPhilter) {
+    return 0;
   }
+
+  private void createNewClient(ClientToSave client) {
+
+    clientDao.get().insertIntoClient(client);
+
+    for (Address address : client.addedAddresses) {
+      clientDao.get().insertIntoAddress(address);
+    }
+    for (Phone phone : client.addedPhones) {
+      clientDao.get().insertPhones(phone);
+    }
+
+  }
+
 }

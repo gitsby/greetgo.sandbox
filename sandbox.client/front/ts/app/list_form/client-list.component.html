@@ -1,5 +1,4 @@
 <div>
-
   <div class="container">
     <div class="row">
       <div class="col-lg-9">
@@ -7,7 +6,7 @@
           <h3 class="col-lg-3">Clients</h3>
         </div>
         <div class="col-lg-4 options">
-          <input [(ngModel)]="searchWord" id="input" type="text" class="form-control"
+          <input [(ngModel)]="clientRecordPhilter.searchName" id="input" type="text" class="form-control"
                  placeholder="Enter FIO">
         </div>
         <div class="col-lg-3 options">
@@ -27,45 +26,45 @@
 
         <p>Surname
           Name Middle Name
-          <i class="down" *ngIf="currentColumnName=='surname'"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='surname'"></i>
 
-          <i class="up" *ngIf="currentColumnName=='-surname'"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-surname'"></i>
         </p>
       </th>
       <th>
         <p>
           Character
-          <i class="down" *ngIf="currentColumnName==2"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName==2"></i>
 
-          <i class="up" *ngIf="currentColumnName==-2"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName==-2"></i>
         </p>
       </th>
       <th (click)="sortBy('age')">
         <p>Age
-          <i class="down" *ngIf="currentColumnName=='age'"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='age'"></i>
 
-          <i class="up" *ngIf="currentColumnName=='-age'"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-age'"></i>
         </p>
       </th>
       <th (click)="sortBy('total')">
         <p>Total
-          <i class="down" *ngIf="currentColumnName=='total'"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='total'"></i>
 
-          <i class="up" *ngIf="currentColumnName=='-total'"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-total'"></i>
         </p>
       </th>
       <th (click)="sortBy('max')">
         <p>Max
-          <i class="down" *ngIf="currentColumnName=='max'"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='max'"></i>
 
-          <i class="up" *ngIf="currentColumnName=='-max'"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-max'"></i>
         </p>
       </th>
       <th (click)="sortBy('min')">
         <p>Min
-          <i class="down" *ngIf="currentColumnName=='min'"></i>
+          <i class="down" *ngIf="this.clientRecordPhilter.columnName=='min'"></i>
 
-          <i class="up" *ngIf="currentColumnName=='-min'"></i>
+          <i class="up" *ngIf="this.clientRecordPhilter.columnName=='-min'"></i>
         </p>
       </th>
       <th>Edit</th>
@@ -92,19 +91,17 @@
 <div class="center">
   <div class="pagination">
     <a (click)="decreaseCurrentPagination()"><<</a>
-    <a *ngIf="currentPagination>1 && paginationNum>3" (click)="loadClientSlice(0)">0</a>
-    <a *ngIf="currentPagination>2">...</a>
-    <a *ngFor="let pag of tempPaginationArray; let ind = index"
-       [ngStyle]="{background:pag==currentPagination?'#ddd':'#fff'}"
+    <a *ngIf="this.clientRecordPhilter.paginationPage>1 && paginationNum>3" (click)="loadClientSlice(0)">0</a>
+    <a *ngIf="this.clientRecordPhilter.paginationPage>2">...</a>
+    <a *ngFor="let pag of tempPaginationArray"
+       [ngStyle]="{background:pag==this.clientRecordPhilter.paginationPage?'#ddd':'#fff'}"
        (click)="loadClientSlice(pag)">{{pag}}</a>
-    <!--<a *ngFor="let i of ' '.repeat(paginationNum).split(''); let ind = index"-->
-    <!--[ngStyle]="{background:ind==currentPagination?'#ddd':'#fff'}"-->
-    <!--(click)="loadClientSlice(ind)">{{ind}}</a>-->
-    <a *ngIf="currentPagination<paginationNum-3">...</a>
+    <a *ngIf="this.clientRecordPhilter.paginationPage<paginationNum-3">...</a>
     <a (click)="loadClientSlice(paginationNum-1)"
-       *ngIf="currentPagination<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
+       *ngIf="this.clientRecordPhilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
     <a (click)="increaseCurrentPagination()">>></a>
-    <select (change)="changed()" [(ngModel)]="sliceNum" class="selectSliceNum" placeholder="Select ">
+    <select (change)="sliceNumChanged()" [(ngModel)]="clientRecordPhilter.sliceNum" class="selectSliceNum"
+            placeholder="Select ">
       <option value="10">10</option>
       <option value="15">15</option>
       <option value="20">20</option>
@@ -112,3 +109,7 @@
   </div>
 
 </div>
+
+<edit-form-component (onClose)="closeEditingForm()" [ngStyle]="{display:openEditingClient ? 'block': 'none'}"
+                     (returnChanges)="addNewClient($event)"></edit-form-component>
+
