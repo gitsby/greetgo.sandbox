@@ -41,15 +41,14 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/get-clients")
-  public List<ClientRecord> getClients(
-    @Json @Par("filter") ClientRecordFilter philter) {
+  public List<ClientRecord> getClients(@Json @Par("filter") ClientRecordFilter philter) {
     return clientRegister.get().getClients(philter);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/details")
-  public ClientDetails getClientById(@Par("clientId") int clientId) {
+  public ClientDetails getClientDetails(@Par("clientId") int clientId) {
     return clientRegister.get().getClientDetails(clientId);
   }
 

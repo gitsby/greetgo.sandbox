@@ -1,8 +1,7 @@
-import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {ClientListComponent} from "../list_form/client-list.component";
 
 @Component({
   selector: 'main-form-component',
@@ -18,8 +17,6 @@ export class MainFormComponent {
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
-
-  @ViewChild(ClientListComponent) listForm;
 
   @Output() exit = new EventEmitter<void>();
 
