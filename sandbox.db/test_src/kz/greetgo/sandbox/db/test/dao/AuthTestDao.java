@@ -20,19 +20,19 @@ public interface AuthTestDao {
                        @Param("name") UserParamName name,
                        @Param("value") String value);
 
-  @Insert("insert into Person (id, accountName, encryptedPassword, blocked) " +
-    "values (#{id}, #{accountName}, #{encryptedPassword}, #{blocked})")
-  void insertUser(@Param("id") String id,
+  @Insert("insert into Person (client, accountName, encryptedPassword, blocked) " +
+    "values (#{client}, #{accountName}, #{encryptedPassword}, #{blocked})")
+  void insertUser(@Param("client") String id,
                   @Param("accountName") String accountName,
                   @Param("encryptedPassword") String encryptedPassword,
                   @Param("blocked") int blocked);
 
-  @Update("update Person set ${fieldName} = #{fieldValue} where id = #{id}")
-  void updatePersonField(@Param("id") String id,
+  @Update("update Person set ${fieldName} = #{fieldValue} where client = #{client}")
+  void updatePersonField(@Param("client") String id,
                          @Param("fieldName") String fieldName,
                          @Param("fieldValue") Object fieldValue);
 
-  @Insert("insert into Person (  id,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
-    "                  values (#{id}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
+  @Insert("insert into Person (  client,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
+    "                  values (#{client}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
   void insertPersonDot(PersonDot personDot);
 }

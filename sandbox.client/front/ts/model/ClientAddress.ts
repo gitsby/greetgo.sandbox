@@ -1,7 +1,8 @@
-import {AddressType} from "./AddressType";
+import {AddressTypeEnum} from "./AddressTypeEnum";
 
 export class ClientAddress {
-  public type: AddressType;
+  public client: number;
+  public type: AddressTypeEnum;
   public street: string;
   public house: string;
   public flat: string;

@@ -18,7 +18,7 @@ public interface ClientRegister {
    * @param clientId идентификатор клиента
    * @return детальная информация о клиенте
    */
-  ClientDetail detail(int clientId);
+  Details detail(int clientId);
 
   /**
    * Сохраняет или изменяет информацию о клиенте
@@ -34,7 +34,7 @@ public interface ClientRegister {
    */
   void remove(int clientId);
 
-  List<ClientRecords> getRecords(ClientFilter filter);
+  List<ClientRecord> getRecords(ClientFilter filter);
 
   int getRecordsCount(ClientFilter filter);
 

@@ -15,8 +15,8 @@ public interface ClientDao {
   @Select("select count(*) from Client where name like #{fio} or surname like #{fio} or patronymic like #{fio}")
   int getClientsCountWithFilter(@Param("fio") String fio);
 
-  @Select("select * from Client where id = #{id}")
-  ClientInfo get(@Param("id") Integer clientId);
+  @Select("select * from Client where client = #{client}")
+  ClientInfo get(@Param("client") Integer clientId);
 
 
   @Select("select * from Client")

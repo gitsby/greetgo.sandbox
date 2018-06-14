@@ -2,9 +2,10 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.Gender;
+import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.db.stand.model.*;
 import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
@@ -15,20 +16,16 @@ import java.util.*;
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
   public final List<ClientDot> clientsStorage = new ArrayList<>();
-  public final List<Charm> charms = new ArrayList<>();
-  public final List<ClientPhone> phones = new ArrayList<>();
-  public final List<ClientAddress> addresses = new ArrayList<>();
-  public final List<ClientAccount> accounts = new ArrayList<>();
+  public final List<CharmDot> charms = new ArrayList<>();
+  public final List<ClientPhoneDot> phones = new ArrayList<>();
+  public final List<ClientAddressDot> addresses = new ArrayList<>();
+  public final List<ClientAccountDot> accounts = new ArrayList<>();
 
   private Random random = new Random();
 
   @Override
   public void afterInject() throws Exception {
     appendCharms();
-
-    appendAddresses();
-    appendPhones();
-    appendClientAccounts();
 
     appendClientDetailsList();
 
@@ -60,96 +57,86 @@ public class StandDb implements HasAfterInject {
       }
     }
   }
-
   @SuppressWarnings("unused")
   private void appendCharms() {
-    Charm charm = new Charm();
+    CharmDot charm = new CharmDot();
     charm.id = 1;
     charm.name = "Гипертимный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 2;
     charm.name = "Дистимный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 3;
     charm.name = "Циклоидный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 4;
     charm.name = "Возбудимый";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 5;
     charm.name = "Застревающий";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 6;
     charm.name = "Педантичный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 7;
     charm.name = "Тревожный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
-    charm = new Charm();
+    charm = new CharmDot();
     charm.id = 8;
     charm.name = "Демонстративный";
     charm.energy = random.nextFloat();
     charm.description = RND.intStr(20);
     charms.add(charm);
   }
-
   @SuppressWarnings("unused")
-  private void appendAddresses() {
-    for (int i = 0; i < 100; i++) {
-      ClientAddress clientAddress = new ClientAddress();
-      clientAddress.id = i;
-      clientAddress.type = 1 == random.nextInt(1) ? AddressType.FACT : AddressType.REG;
-      clientAddress.street = RND.intStr(5);
-      clientAddress.house = RND.intStr(5);
-      clientAddress.flat = RND.intStr(5);
-      addresses.add(clientAddress);
-    }
+  private void appendAddresses(Integer clientId, AddressTypeEnum typeEnum) {
+    ClientAddressDot clientAddress = new ClientAddressDot();
+    clientAddress.client = clientId;
+    clientAddress.type = typeEnum;
+    clientAddress.street = RND.intStr(5);
+    clientAddress.house = RND.intStr(5);
+    clientAddress.flat = RND.intStr(5);
+    addresses.add(clientAddress);
+  }
+  @SuppressWarnings("unused")
+  private void appendPhones(Integer clientId, PhoneType type) {
+    ClientPhoneDot clientPhone = new ClientPhoneDot();
+    clientPhone.client = clientId;
+    clientPhone.type = type;
+    clientPhone.number = RND.intStr(11);
+    phones.add(clientPhone);
+  }
+  @SuppressWarnings("unused")
+  private void appendClientAccounts(Integer clientId) {
+    ClientAccountDot clientAccount = new ClientAccountDot();
+    clientAccount.id = clientId;
+    clientAccount.client = clientId;
+    clientAccount.money = (float) RND.plusDouble(200, 2);
+    clientAccount.number = RND.intStr(10);
+    clientAccount.registeredAt = null;
+    accounts.add(clientAccount);
   }
 
-  @SuppressWarnings("unused")
-  private void appendPhones() {
-    for(int i = 0; i < 100; i++) {
-      ClientPhone clientPhone = new ClientPhone();
-      clientPhone.id = i;
-      clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
-      clientPhone.number = RND.intStr(11);
-      phones.add(clientPhone);
-    }
-  }
-
-  @SuppressWarnings("unused")
-  private void appendClientAccounts() {
-    for (int i = 0; i < 100; i++) {
-      ClientAccount clientAccount = new ClientAccount();
-      clientAccount.id = i;
-      clientAccount.money = random.nextFloat()*random.nextInt(10000);
-      clientAccount.number = RND.intStr(10);
-      clientAccount.registered_at = null;
-      accounts.add(clientAccount);
-    }
-  }
-
-  @SuppressWarnings("unused")
   private void appendClientDetailsList() {
     for (int i = 0; i < 100; i++) {
       ClientDot clientDot = new ClientDot();
@@ -158,19 +145,20 @@ public class StandDb implements HasAfterInject {
       clientDot.surname = NameGenerator.generateName();
       clientDot.gender = random.nextInt(1) == 0 ? Gender.FEMALE : Gender.MALE;
       clientDot.patronymic = NameGenerator.generateName();
-      Date birth_day = new Date();
-      birth_day.setYear(random.nextInt(70)+30);
-      birth_day.setMonth(random.nextInt(12));
-      birth_day.setDate(random.nextInt(28));
-      System.out.println(birth_day);
-      clientDot.birth_day = birth_day;
+      Calendar cal = Calendar.getInstance();
+      cal.set(Calendar.YEAR,random.nextInt(70) + 1930);
+      cal.set(Calendar.MONTH,random.nextInt(12));
+      cal.set(Calendar.DAY_OF_MONTH,random.nextInt(28));
+      Date birthDate = cal.getTime();
+      clientDot.birthDate = birthDate;
       clientDot.charmId = charms.get(random.nextInt(charms.size())).id;
-      clientDot.addressRegId = addresses.get(random.nextInt(addresses.size())).id;
-      clientDot.addressFactId = addresses.get(random.nextInt(addresses.size())).id;
-      clientDot.homePhoneId = phones.get(random.nextInt(phones.size())).id;
-      clientDot.workPhoneId = phones.get(random.nextInt(phones.size())).id;
-      clientDot.mobilePhoneId = phones.get(random.nextInt(phones.size())).id;
-      for (int g = 0; g < random.nextInt(9)+1; g++) clientDot.accountsId.add(accounts.get(random.nextInt(accounts.size())).id);
+      appendAddresses(clientDot.id, AddressTypeEnum.FACT);
+      appendAddresses(clientDot.id, AddressTypeEnum.REG);
+      appendPhones(clientDot.id, PhoneType.HOME);
+      appendPhones(clientDot.id, PhoneType.MOBILE);
+      appendPhones(clientDot.id, PhoneType.WORK);
+      for (int g = 0; g < random.nextInt(9) + 1; g++)
+        appendClientAccounts(clientDot.id);
       clientsStorage.add(clientDot);
     }
   }
@@ -192,22 +180,22 @@ public class StandDb implements HasAfterInject {
 
 class NameGenerator {
 
-  private static String[] Beginning = { "Kr", "Ca", "Ra", "Mrok", "Cru",
+  private static String[] Beginning = {"Kr", "Ca", "Ra", "Mrok", "Cru",
     "Ray", "Bre", "Zed", "Drak", "Mor", "Jag", "Mer", "Jar", "Mjol",
     "Zork", "Mad", "Cry", "Zur", "Creo", "Azak", "Azur", "Rei", "Cro",
-    "Mar", "Luk" };
-  private static String[] Middle = { "air", "ir", "mi", "sor", "mee", "clo",
+    "Mar", "Luk"};
+  private static String[] Middle = {"air", "ir", "mi", "sor", "mee", "clo",
     "red", "cra", "ark", "arc", "miri", "lori", "cres", "mur", "zer",
-    "marac", "zoir", "slamar", "salmar", "urak" };
-  private static String[] End = { "d", "ed", "ark", "arc", "es", "er", "der",
-    "tron", "med", "ure", "zur", "cred", "mur" };
+    "marac", "zoir", "slamar", "salmar", "urak"};
+  private static String[] End = {"d", "ed", "ark", "arc", "es", "er", "der",
+    "tron", "med", "ure", "zur", "cred", "mur"};
 
   private static Random rand = new Random();
 
   static String generateName() {
 
     return Beginning[rand.nextInt(Beginning.length)] +
-      Middle[rand.nextInt(Middle.length)]+
+      Middle[rand.nextInt(Middle.length)] +
       End[rand.nextInt(End.length)];
 
   }

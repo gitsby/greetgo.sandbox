@@ -1,4 +1,4 @@
-export enum AddressType {
+export enum AddressTypeEnum {
   FACT = "FACT",
   REG = "REG",
 }

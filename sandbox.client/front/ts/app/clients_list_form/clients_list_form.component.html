@@ -2,129 +2,115 @@
   <table class="customers">
 
     <colgroup>
-      <col><col><col><col><col><col><col><col>
+      <col><col><col><col><col><col><col>
     </colgroup>
 
     <thead>
 
-      <tr class="tr-head">
-        <th class="no-select not-sort-th" (click)="sortPage(0)">
-          Name
-          <span *ngIf="sortIndex==0">
+    <tr class="tr-head">
+      <th class="no-select not-sort-th" (click)="sortPage(0)">
+        Ф.И.О
+        <span *ngIf="sortIndex==0">
             ▲
           </span>
-          <span *ngIf="sortIndex==0+100">
+        <span *ngIf="sortIndex==0+100">
             ▼
           </span>
-        </th>
+      </th>
 
-        <th class="no-select not-sort-th" (click)="sortPage(1)">
-          Surname
-          <span *ngIf="sortIndex==1">
+      <th class="no-select not-sort-th" (click)="sortPage(2)">
+        Возраст
+        <span *ngIf="sortIndex==2">
             ▲
           </span>
-          <span *ngIf="sortIndex==1+100">
+        <span *ngIf="sortIndex==2+100">
             ▼
           </span>
-        </th>
+      </th>
 
-        <th class="no-select not-sort-th" (click)="sortPage(2)">
-          Age
-          <span *ngIf="sortIndex==2">
+      <th class="no-select not-sort-th" (click)="sortPage(3)">
+        Баланс
+        <span *ngIf="sortIndex==3">
             ▲
           </span>
-          <span *ngIf="sortIndex==2+100">
+        <span *ngIf="sortIndex==3+100">
             ▼
           </span>
-        </th>
+      </th>
 
-        <th class="no-select not-sort-th" (click)="sortPage(3)">
-          Balance
-          <span *ngIf="sortIndex==3">
-            ▲
-          </span>
-          <span *ngIf="sortIndex==3+100">
-            ▼
-          </span>
-        </th>
-
-        <th class="no-select not-sort-th" (click)="sortPage(4)">
-          Max balance
-          <span *ngIf="sortIndex==4">
+      <th class="no-select not-sort-th" (click)="sortPage(4)">
+        Мак баланс
+        <span *ngIf="sortIndex==4">
             ▲
           </span><span *ngIf="sortIndex==4+100">
             ▼
           </span>
-        </th>
+      </th>
 
-        <th class="no-select not-sort-th" (click)="sortPage(5)">
-          Min balance
-          <span *ngIf="sortIndex==5">
+      <th class="no-select not-sort-th" (click)="sortPage(5)">
+        Мин баланс
+        <span *ngIf="sortIndex==5">
             ▲
           </span>
-          <span *ngIf="sortIndex==5+100">
+        <span *ngIf="sortIndex==5+100">
             ▼
           </span>
-        </th>
+      </th>
 
-        <th class="no-select not-sort-th" style="cursor: default;">
-          Delete
-        </th>
+      <th class="no-select not-sort-th" style="cursor: default;">
+        Удалить
+      </th>
 
-        <th class="no-select not-sort-th" style="cursor: default;">
-          Edit
-        </th>
-      </tr>
+      <th class="no-select not-sort-th" style="cursor: default;">
+        Изменить
+      </th>
+    </tr>
 
     </thead>
 
     <tbody *ngIf="clientRecords.length == 0">
-      <tr>
-        <td colspan="8">
-          <label style="width: 100%; text-align: center; font-size: 30px">Не найдено ни одного клиента !</label>
-        </td>
-      </tr>
+    <tr>
+      <td colspan="8">
+        <label style="width: 100%; text-align: center; font-size: 30px">Не найдено ни одного клиента !</label>
+      </td>
+    </tr>
     </tbody>
 
     <tbody *ngIf="clientRecords.length != 0">
 
     <tr *ngFor="let client of clientRecords">
-        <td scope="col">
-          {{client.name}}
-        </td>
+      <td scope="col">
+        {{client.surname}} {{client.name}} {{client.patronymic}}
+      </td>
 
-        <td scope="col">
-          {{client.surname}}
-        </td>
+      <td scope="col">
+        {{client.age}}
+      </td>
 
-        <td scope="col">
-          {{client.age}}
-        </td>
+      <td scope="col">
+        {{client.middle_balance}}
+      </td>
 
-        <td scope="col">
-          {{client.middle_balance}}
-        </td>
+      <td scope="col">
+        {{client.max_balance}}
+      </td>
 
-        <td scope="col">
-          {{client.max_balance}}
-        </td>
+      <td scope="col">
+        {{client.min_balance}}
+      </td>
 
-        <td scope="col">
-          {{client.min_balance}}
-        </td>
+      <td scope="col"><button class="action-button" (click)="deleteClientButtonClicked(client)">
+        <i class="fa fa-trash">
+        </i>
+      </button>
+      </td>
 
-        <td scope="col"><button class="action-button" (click)="deleteClientButtonClicked(client)">
-          <i class="fa fa-trash">
-          </i>
+      <td scope="col">
+        <button class="action-button" (click)="editClientButtonClicked(client.id)">
+          ...
         </button>
-        </td>
-
-        <td scope="col">
-          <button class="action-button" (click)="editClientButtonClicked(client.id)">
-            ...
-          </button>
-        </td>
-      </tr>
+      </td>
+    </tr>
 
     </tbody>
     <tfoot>
@@ -133,77 +119,80 @@
       <td colspan="8">
         <table style="width: 100%;">
           <thead>
-      <th>
+          <th>
 
-        <div class="custom-button">
-            <button class="no-select" style="float: right; height: 50px" (click)="editClientButtonClicked(null)">
-              +
-            </button>
-          <button class="no-select" style="float: right; height: 50px" (click)="filterPage()">
-              Поиск
-            </button>
-            <input id="searchInput" type="text" style="height: 50px" placeholder="Поиск.." [(ngModel)]="searchInputText">
-          </div>
+            <div class="custom-button">
+              <button class="no-select" style="float: right; height: 50px" (click)="editClientButtonClicked(null)">
+                +
+              </button>
+              <button class="no-select" style="float: right; height: 50px" (click)="filterPage()">
+                Поиск
+              </button>
+              <button class="no-select" style="float: right; height: 50px; margin-left: -16px;" (click)="clearFilter()">
+                ⌫
+              </button>
+              <input id="searchInput" type="text" style="height: 50px" placeholder="Поиск.." [(ngModel)]="searchInputText">
+            </div>
 
-        </th>
-      <th>
-          <div class="float_center" *ngIf="pagesCount()>1">
-            <div class="pagination">
-              <li>
-                <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage<=1">&lt;PREV</span>
-              </li>
+          </th>
+          <th>
+            <div class="float_center" *ngIf="pagesCount()>1">
+              <div class="pagination">
+                <li>
+                  <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage<=1">&lt;PREV</span>
+                </li>
 
-              <li>
+                <li>
                 <span class="no-select" (click)="pageChanged(currentPage-2)" [hidden]="currentPage <= pagesCount() - 1">
                   {{currentPage - 2}}
                 </span>
 
-                <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage === 1">
+                  <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage === 1">
                   {{currentPage - 1}}
                 </span>
 
-                <span class="no-select active">
+                  <span class="no-select active">
                   {{currentPage}}
                 </span>
 
-                <span class="no-select" (click)="pageChanged(currentPage+1)" [hidden]="currentPage >= pagesCount()">
+                  <span class="no-select" (click)="pageChanged(currentPage+1)" [hidden]="currentPage >= pagesCount()">
                   {{currentPage + 1}}
                 </span>
 
-                <span class="no-select" (click)="pageChanged(currentPage+2)" [hidden]="currentPage >= pagesCount() - 1">
+                  <span class="no-select" (click)="pageChanged(currentPage+2)" [hidden]="currentPage >= pagesCount() - 1">
                   {{currentPage + 2}}
                 </span>
 
-                <span class="no-select" (click)="pageChanged(currentPage+3)" [hidden]="currentPage !== 0 ">
+                  <span class="no-select" (click)="pageChanged(currentPage+3)" [hidden]="currentPage !== 0 ">
                   {{currentPage + 4}}
                 </span>
-              </li>
+                </li>
 
-              <li>
+                <li>
                 <span class="no-select" (click)="pageChanged(currentPage+1)" [hidden]="currentPage === pagesCount()">
                   NEXT&gt;
                 </span>
-              </li>
+                </li>
+              </div>
+              <label>
+                Общее количество клиентов = {{clientRecordsCount}}
+              </label>
             </div>
-            <label>
-              Общее количество клиентов = {{clientRecordsCount}}
-            </label>
-          </div>
-        </th>
-      <th>
-          <div style="float: right;">
-            <select [(ngModel)]="numberOfItemInPage" class="pagination selector" (change)="loadClientRecordsList(currentPage)">
-              <option *ngFor="let i of range(10, 31, 10)" value="{{i}}">
-                {{i}}
-              </option>
-            </select>
-          </div>
+          </th>
+          <th>
+            <div style="float: right;">
+              <select [(ngModel)]="numberOfItemInPage" class="pagination selector" (change)="loadClientRecordsList(1)">
+                <option *ngFor="let i of range(10, 31, 10)" value="{{i}}">
+                  {{i}}
+                </option>
+              </select>
+            </div>
 
-        </th>
+          </th>
           </thead>
         </table>
       </td>
-      </tr>
+    </tr>
     </tfoot>
   </table>
 

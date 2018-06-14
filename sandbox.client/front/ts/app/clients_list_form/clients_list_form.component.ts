@@ -1,9 +1,9 @@
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {AfterViewInit, Component} from "@angular/core";
 import {HttpService} from "../HttpService";
-import {ClientRecords} from "../../model/ClientRecords";
-import {SortBy} from "../../model/SortBy";
+import {ClientRecord} from "../../model/ClientRecord";
 import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
+import {SortByEnum} from "../../model/SortByEnum";
 
 @Component({
   selector: 'clients-list-form-component',
@@ -11,23 +11,23 @@ import {SortDirection} from "../../model/SortDirection";
   styles: [require('./clients_list_form.component.css')],
 })
 
-export class ClientsListFormComponent {
-  @ViewChild('myModule') module: ElementRef;
-
+export class ClientsListFormComponent implements AfterViewInit {
   searchInputText: string = "";
   editClientId: number | null = null;
 
   clientInfoFormComponentEnable: boolean = false;
 
   clientRecordsCount: number = 1;
-  clientRecords: ClientRecords[] = [];
+  clientRecords: ClientRecord[] = [];
   clientFilter: ClientFilter = new ClientFilter();
   currentPage: number = 1;
 
   sortIndex: number = -1;
   numberOfItemInPage: number = 10;
 
-  constructor(private httpService: HttpService) {
+  constructor(private httpService: HttpService) {}
+
+  ngAfterViewInit(): void {
     this.loadRecordsCount();
   }
 
@@ -45,19 +45,20 @@ export class ClientsListFormComponent {
   }
 
   loadPage() {
-    this.httpService.get("/client/records", {
+    this.httpService.get("/client/list", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
+      console.log(result.json());
       this.clientRecords = new Array();
       for (let res of result.json()) {
-        this.clientRecords.push(ClientRecords.copy(res));
+        this.clientRecords.push(ClientRecord.copy(res));
       }
     })
   }
 
   loadRecordsCount() {
     this.clientRecordsCount = 1;
-    this.httpService.get("/client/recordsCount", {
+    this.httpService.get("/client/count", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
       this.clientRecordsCount = result.json();
@@ -72,6 +73,13 @@ export class ClientsListFormComponent {
     this.loadRecordsCount();
   }
 
+  clearFilter() {
+    this.searchInputText = "";
+    this.clientFilter.fio = null;
+    this.currentPage = 1;
+    this.loadRecordsCount();
+  }
+
   sortPage(index: number) {
     this.currentPage = 1;
     if (this.sortIndex == index) {
@@ -82,37 +90,34 @@ export class ClientsListFormComponent {
     }
     else if (this.sortIndex == index + 100) {
       this.sortIndex = -1;
-      this.clientFilter.sortBy = SortBy.NONE;
+      this.clientFilter.sortByEnum = SortByEnum.NONE;
       this.clientFilter.sortDirection = SortDirection.NONE;
       this.loadPage();
       return;
     }
 
-    let sortBy: SortBy;
+    let sortBy: SortByEnum;
     switch (index) {
       case 0:
-        sortBy = SortBy.NAME;
-        break;
-      case 1:
-        sortBy = SortBy.SURNAME;
+        sortBy = SortByEnum.FULL_NAME;
         break;
       case 2:
-        sortBy = SortBy.AGE;
+        sortBy = SortByEnum.AGE;
         break;
       case 3:
-        sortBy = SortBy.MIDDLE_BALANCE;
+        sortBy = SortByEnum.MIDDLE_BALANCE;
         break;
       case 4:
-        sortBy = SortBy.MAX_BALANCE;
+        sortBy = SortByEnum.MAX_BALANCE;
         break;
       case 5:
-        sortBy = SortBy.MIN_BALANCE;
+        sortBy = SortByEnum.MIN_BALANCE;
         break;
     }
 
     this.sortIndex = index;
     this.clientFilter.sortDirection = SortDirection.ASCENDING;
-    this.clientFilter.sortBy = sortBy;
+    this.clientFilter.sortByEnum = sortBy;
     this.loadPage();
   }
 
@@ -135,7 +140,7 @@ export class ClientsListFormComponent {
     return rangeList;
   }
 
-  deleteClientButtonClicked(clientRecords: ClientRecords) {
+  deleteClientButtonClicked(clientRecords: ClientRecord) {
     let ID = clientRecords.id;
     this.httpService.delete("/client/remove", {
       "clientId": ID

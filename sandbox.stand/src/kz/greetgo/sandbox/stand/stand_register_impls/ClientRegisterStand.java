@@ -5,9 +5,12 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -20,7 +23,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public ClientDetail detail(int clientId) {
+  public Details detail(int clientId) {
     ClientDot clientDot = getClient(clientId);
     return toClientDetail(clientDot);
   }
@@ -32,19 +35,18 @@ public class ClientRegisterStand implements ClientRegister {
       clientDot = new ClientDot();
       db.get().clientsStorage.add(0, clientDot);
       clientDot.id = db.get().clientsStorage.size();
-    }
-    else clientDot = getClient(clientToSave.id);
-    System.out.println(clientToSave.birth_day);
+    } else clientDot = getClient(clientToSave.id);
+    System.out.println(clientToSave.birthDate);
     clientDot.name = clientToSave.name;
     clientDot.surname = clientToSave.surname;
     clientDot.patronymic = clientToSave.patronymic;
     clientDot.gender = clientToSave.gender;
-    clientDot.birth_day = clientToSave.birth_day;
-    clientDot.addressFactId = saveClientAddress(clientToSave.addressFact).id;
-    clientDot.addressRegId = saveClientAddress(clientToSave.addressReg).id;
-    clientDot.homePhoneId = saveClientPhone(clientToSave.homePhone).id;
-    clientDot.workPhoneId = saveClientPhone(clientToSave.workPhone).id;
-    clientDot.mobilePhoneId = saveClientPhone(clientToSave.mobilePhone).id;
+    clientDot.birthDate = clientToSave.birthDate;
+    saveClientAddress(clientToSave.addressFact).client = clientToSave.id;
+    saveClientAddress(clientToSave.addressReg).client = clientToSave.id;
+    saveClientPhone(clientToSave.homePhone).client = clientToSave.id;
+    saveClientPhone(clientToSave.workPhone).client = clientToSave.id;
+    saveClientPhone(clientToSave.mobilePhone).client = clientToSave.id;
     clientDot.charmId = clientToSave.charmId;
   }
 
@@ -54,23 +56,19 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public List<ClientRecords> getRecords(ClientFilter clientFilter) {
-    List<ClientRecords> clientRecords = getRecordsList(clientFilter);
+  public List<ClientRecord> getRecords(ClientFilter clientFilter) {
+    List<ClientRecord> clientRecords = getRecordsList(clientFilter);
 
-    Comparator<ClientRecords> comparator = null;
-    if (clientFilter.sortBy != null)
-      switch (clientFilter.sortBy) {
+    Comparator<ClientRecord> comparator = null;
+    if (clientFilter.sortByEnum != null)
+      switch (clientFilter.sortByEnum) {
         case NONE:
           comparator = null;
           break;
-        case NAME:
-          comparator = Comparator.comparing(o -> o.name);
-          break;
-        case SURNAME:
+        case FULL_NAME:
           comparator = Comparator.comparing(o -> o.surname);
-          break;
-        case PATRONYMIC:
-          comparator = Comparator.comparing(o -> o.patronymic);
+          comparator.thenComparing(o -> o.name);
+          comparator.thenComparing(o -> o.patronymic);
           break;
         case AGE:
           comparator = Comparator.comparing(o -> o.age);
@@ -106,25 +104,23 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public List<Charm> getCharms() {
-    return db.get().charms;
+    return db.get().charms.stream().map(charmDot -> charmDot.toCharm()).collect(Collectors.toList());
   }
 
   private ClientDot getClient(int clientId) {
     return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
   }
 
-  private List<ClientRecords> getRecordsList(ClientFilter clientFilter) {
-    List<ClientDot> temp = db.get().clientsStorage;
-    List<ClientRecords> clientRecords = new ArrayList<>();
+  private List<ClientRecord> getRecordsList(ClientFilter clientFilter) {
+    List<ClientRecord> clientRecords = new ArrayList<>();
 
-    for(ClientDot clientDot : temp) {
+    for (ClientDot clientDot : db.get().clientsStorage) {
       if (clientFilter != null && clientFilter.fio != null) {
         if ((clientDot.name.contains(clientFilter.fio))
           || (clientDot.surname.contains(clientFilter.fio))) {
           clientRecords.add(toClientRecords(clientDot));
         }
-      }
-      else {
+      } else {
         clientRecords.add(toClientRecords(clientDot));
       }
     }
@@ -136,9 +132,8 @@ public class ClientRegisterStand implements ClientRegister {
     Calendar birth = Calendar.getInstance();
     birth.setTime(d);
     int yeardiff = curr.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
-    curr.add(Calendar.YEAR,-yeardiff);
-    if(birth.after(curr))
-    {
+    curr.add(Calendar.YEAR, -yeardiff);
+    if (birth.after(curr)) {
       yeardiff = yeardiff - 1;
     }
     return yeardiff;
@@ -146,84 +141,80 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMiddleBalance(ClientDot clientDot) {
     float middle_balance = 0;
-    for (int clientAccountId : clientDot.accountsId)
-      middle_balance += getClientAccount(clientAccountId).money;
-    return middle_balance / clientDot.accountsId.size();
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    if(clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
+      middle_balance += clientAccount.money;
+    return middle_balance / clientAccounts.size();
   }
 
   private float getMaxBalance(ClientDot clientDot) {
-    if (clientDot.accountsId.size() == 0) return 0;
     float max_balance = -1;
-    for (int clientAccountId : clientDot.accountsId) {
-      ClientAccount clientAccount = getClientAccount(clientAccountId);
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    if(clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money > max_balance) max_balance = clientAccount.money;
-    }
     return max_balance;
   }
 
   private float getMinBalance(ClientDot clientDot) {
-    if (clientDot.accountsId.size() == 0) return 0;
     float min_balance = Integer.MAX_VALUE;
-    for (int clientAccountId : clientDot.accountsId) {
-      ClientAccount clientAccount = getClientAccount(clientAccountId);
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    if(clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money < min_balance) min_balance = clientAccount.money;
-    }
     return min_balance;
   }
 
-  private ClientRecords toClientRecords (ClientDot clientDot) {
-    ClientRecords clientRecords = new ClientRecords();
-    clientRecords.id = clientDot.id;
-    clientRecords.name = clientDot.name;
-    clientRecords.surname = clientDot.surname;
-    clientRecords.patronymic = clientDot.patronymic;
-    clientRecords.age = getAge(clientDot.birth_day);
-    clientRecords.middle_balance = getMiddleBalance(clientDot);
-    clientRecords.max_balance = getMaxBalance(clientDot);
-    clientRecords.min_balance = getMinBalance(clientDot);
-    return clientRecords;
+  private ClientRecord toClientRecords(ClientDot clientDot) {
+    ClientRecord clientRecord = new ClientRecord();
+    clientRecord.id = clientDot.id;
+    clientRecord.name = clientDot.name;
+    clientRecord.surname = clientDot.surname;
+    clientRecord.patronymic = clientDot.patronymic;
+    clientRecord.age = getAge(clientDot.birthDate);
+    clientRecord.middle_balance = getMiddleBalance(clientDot);
+    clientRecord.max_balance = getMaxBalance(clientDot);
+    clientRecord.min_balance = getMinBalance(clientDot);
+    return clientRecord;
   }
 
-  private ClientDetail toClientDetail(ClientDot clientDot) {
-    ClientDetail clientDetail = new ClientDetail();
-    clientDetail.id = clientDot.id;
-    clientDetail.name = clientDot.name;
-    clientDetail.surname = clientDot.surname;
-    clientDetail.patronymic = clientDot.patronymic;
-    clientDetail.birth_day = clientDot.birth_day;
-    clientDetail.charm = getCharm(clientDot.charmId);
-    clientDetail.addressFact = getClientAddress(clientDot.addressFactId);
-    clientDetail.addressReg = getClientAddress(clientDot.addressRegId);
-    clientDetail.homePhone = getClientPhone(clientDot.homePhoneId);
-    clientDetail.mobilePhone = getClientPhone(clientDot.mobilePhoneId);
-    clientDetail.workPhone = getClientPhone(clientDot.workPhoneId);
-    clientDetail.gender = clientDot.gender;
-    return clientDetail;
+  private Details toClientDetail(ClientDot clientDot) {
+    Details details = new Details();
+    details.id = clientDot.id;
+    details.name = clientDot.name;
+    details.surname = clientDot.surname;
+    details.patronymic = clientDot.patronymic;
+    details.birthDate = clientDot.birthDate;
+    details.charm = getCharm(clientDot.charmId);
+    details.addressFact = getClientAddress(clientDot.id, AddressTypeEnum.FACT);
+    details.addressReg = getClientAddress(clientDot.id, AddressTypeEnum.REG);
+    details.homePhone = getClientPhone(clientDot.id, PhoneType.HOME);
+    details.mobilePhone = getClientPhone(clientDot.id, PhoneType.MOBILE);
+    details.workPhone = getClientPhone(clientDot.id, PhoneType.WORK);
+    details.gender = clientDot.gender;
+    return details;
   }
 
   private Charm getCharm(int clientCharmId) {
-    return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get();
+    return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get().toCharm();
   }
 
-  private ClientAccount getClientAccount(int clientAccountId) {
-    return db.get().accounts.stream().filter(clientAccount -> clientAccount.id == clientAccountId).findFirst().get();
+  private ClientAddress getClientAddress(int clientAddressId, AddressTypeEnum type) {
+    return db.get().addresses.stream().filter(clientAddress -> clientAddress.client == clientAddressId && clientAddress.type == type).findFirst().get().toClientAddress();
   }
 
-  private ClientAddress getClientAddress(int clientAddressId) {
-    return db.get().addresses.stream().filter(clientAddress -> clientAddress.id == clientAddressId).findFirst().get();
-  }
-
-  private ClientPhone getClientPhone(int clientPhoneId) {
-    return db.get().phones.stream().filter(clientPhone -> clientPhone.id == clientPhoneId).findFirst().get();
+  private ClientPhone getClientPhone(int clientId, PhoneType type) {
+    return db.get().phones.stream().filter(clientPhone -> clientPhone.client == clientId && clientPhone.type == type).findFirst().get().toClientPhone();
   }
 
   private ClientAddress saveClientAddress(ClientAddress saveClientAddress) {
-    if(saveClientAddress.id == null) {
-      saveClientAddress.id = db.get().addresses.size();
-      db.get().addresses.add(saveClientAddress);
+    if (saveClientAddress.client == null) {
+      saveClientAddress.client = db.get().addresses.size();
+      db.get().addresses.add(new ClientAddressDot(saveClientAddress));
       return saveClientAddress;
     } else {
-      ClientAddress clientAddress = getClientAddress(saveClientAddress.id);
+      ClientAddress clientAddress = getClientAddress(saveClientAddress.client, saveClientAddress.type);
       clientAddress.street = saveClientAddress.street;
       clientAddress.house = saveClientAddress.house;
       clientAddress.flat = saveClientAddress.flat;
@@ -232,12 +223,12 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientPhone saveClientPhone(ClientPhone saveClientPhone) {
-    if(saveClientPhone.id == null) {
-      saveClientPhone.id = db.get().phones.size();
-      db.get().phones.add(saveClientPhone);
+    if (saveClientPhone.client == null) {
+      saveClientPhone.client = db.get().phones.size();
+      db.get().phones.add(new ClientPhoneDot(saveClientPhone));
       return saveClientPhone;
     } else {
-      ClientPhone clientPhone = getClientPhone(saveClientPhone.id);
+      ClientPhone clientPhone = getClientPhone(saveClientPhone.client, saveClientPhone.type);
       clientPhone.number = saveClientPhone.number;
       clientPhone.type = saveClientPhone.type;
       return clientPhone;

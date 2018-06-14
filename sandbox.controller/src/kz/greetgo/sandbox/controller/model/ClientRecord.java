@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-public class ClientRecords {
+public class ClientRecord {
   public Integer id;
   public String name;
   public String surname;

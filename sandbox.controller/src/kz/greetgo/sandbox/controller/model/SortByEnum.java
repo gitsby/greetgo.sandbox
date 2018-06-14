@@ -1,10 +1,8 @@
 package kz.greetgo.sandbox.controller.model;
 
-public enum SortBy {
+public enum SortByEnum {
   NONE,
-  NAME,
-  SURNAME,
-  PATRONYMIC,
+  FULL_NAME,
   AGE,
   MIDDLE_BALANCE,
   MAX_BALANCE,

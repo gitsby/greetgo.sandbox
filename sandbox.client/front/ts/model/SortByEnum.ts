@@ -1,8 +1,6 @@
-export enum SortBy {
+export enum SortByEnum {
   NONE = "NONE",
-  NAME = "NAME",
-  SURNAME = "SURNAME",
-  PATRONYMIC = "PATRONYMIC",
+  FULL_NAME = "FULL_NAME",
   AGE = "AGE",
   MIDDLE_BALANCE = "MIDDLE_BALANCE",
   MAX_BALANCE = "MAX_BALANCE",
