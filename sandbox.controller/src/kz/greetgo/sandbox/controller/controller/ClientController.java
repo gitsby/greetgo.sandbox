@@ -17,6 +17,7 @@ public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
+  // FIXME: 6/13/18 details
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/details")
@@ -39,6 +40,7 @@ public class ClientController implements Controller {
     clientRegister.get().delete(clientId);
   }
 
+  // FIXME: 6/13/18 list
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/list")

@@ -12,6 +12,7 @@ import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
@@ -31,7 +32,6 @@ public class ClientRegisterStand implements ClientRegister {
       db.get().clientsStorage.add(0, clientDot);
       clientDot.id = db.get().clientsStorage.size();
     } else clientDot = getClient(clientToSave.id);
-    System.out.println(clientToSave.birthDate);
     clientDot.name = clientToSave.name;
     clientDot.surname = clientToSave.surname;
     clientDot.patronymic = clientToSave.patronymic;
@@ -103,7 +103,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientDot getClient(int clientId) {
-    return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
+    return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findAny().orElse(null);
   }
 
   private List<ClientRecord> getRecordsList(ClientFilter clientFilter) {

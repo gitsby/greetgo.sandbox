@@ -28,6 +28,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   constructor(private httpService: HttpService) {}
 
   ngAfterViewInit(): void {
+
     this.loadRecordsCount();
   }
 
@@ -158,6 +159,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   close(listEdited: boolean) {
     this.editClientId = null;
     this.clientInfoFormComponentEnable = false;
+    //FIXME нельзя обновлять список целиком - надо обновлять только один элемент (или добавлять его в конец)
     this.loadRecordsCount();
     this.loadPage();
   }

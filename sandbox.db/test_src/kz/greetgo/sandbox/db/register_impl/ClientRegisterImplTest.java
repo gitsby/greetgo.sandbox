@@ -125,8 +125,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     emptyFilter.offset = 0;
     emptyFilter.limit = 10;
 
-    for (int i = 0; i < 20; i++) {
-      Integer clientId = RND.plusInt(100);
+    for (int i = 20; i < 40; i++) {
+      Integer clientId = i;
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
@@ -152,12 +152,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
     emptyFilter.fio = rName;
 
     for (int i = 0; i < 20; i++) {
-      Integer clientId = RND.plusInt(100);
+      Integer clientId = i;
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
 
-    Integer clientId = RND.plusInt(100);
+    Integer clientId = 20;
     Details details = generateRandomClientDetails(clientId);
     details.name = rName + RND.intStr(5);
     insertClient(details);

@@ -3,7 +3,6 @@ import {HttpService} from "../HttpService";
 import {ClientToSave} from "../../model/ClientToSave";
 import {Charm} from "../../model/Charm";
 import {Gender} from "../../model/Gender";
-import {Details} from "../../model/Details";
 
 @Component({
   selector: 'client-info-form-component',
@@ -11,6 +10,8 @@ import {Details} from "../../model/Details";
   styles: [require('./client_edit_form.component.css')],
 })
 export class ClientEditFormComponent implements OnInit {
+  //fixme есть проблемы с датой рождения. если год большой, то возраст становиться отрицательным или нул пойнтер на сервере
+  //fixme s kirilicoi ne rabotaet
   @Input() clientId: number;
   @Output() onClose = new EventEmitter<boolean>();
 
@@ -36,9 +37,8 @@ export class ClientEditFormComponent implements OnInit {
       this.buttonTitle = "Изменить";
       let clientId = this.clientId as number;
 
-      this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
-        console.log(result.json());
-        this.clientToSave = Details.copy(result.json()).toClientToSave();
+      this.httpService.get("/client/detail", {"clientId": clientId}).toPromise().then(result => {
+        this.clientToSave = ClientToSave.copy(result.json());
         console.log(this.clientToSave);
         this.formatAllPhoneNumbers();
       })

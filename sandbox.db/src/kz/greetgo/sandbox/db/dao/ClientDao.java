@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.Date;
+import java.util.List;
 
 @Bean
 public interface ClientDao {
@@ -100,4 +101,7 @@ public interface ClientDao {
 
   @Update("UPDATE client SET ${fieldName}=#{fieldValue} WHERE id=#{id}")
   void updateField(@Param("id") Integer id, @Param("fieldName") String fieldName, @Param("fieldValue") Object fieldValue);
+
+  @Select("${query}")
+  List<ClientRecord> select(@Param("query") String query);
 }

@@ -14,6 +14,7 @@ import java.util.*;
 
 @Bean
 public class StandDb implements HasAfterInject {
+  // FIXME: 6/13/18 tut doljni byt' tolko doty
   public final Map<String, PersonDot> personStorage = new HashMap<>();
   public final List<ClientDot> clientsStorage = new ArrayList<>();
   public final List<CharmDot> charms = new ArrayList<>();
@@ -119,14 +120,26 @@ public class StandDb implements HasAfterInject {
     addresses.add(clientAddress);
   }
   @SuppressWarnings("unused")
+<<<<<<< HEAD
   private void appendPhones(Integer clientId, PhoneType type) {
     ClientPhoneDot clientPhone = new ClientPhoneDot();
     clientPhone.client = clientId;
     clientPhone.type = type;
     clientPhone.number = RND.intStr(11);
     phones.add(clientPhone);
+=======
+  private void appendPhones() {
+    for (int i = 0; i < 100; i++) {
+      ClientPhone clientPhone = new ClientPhone();
+      clientPhone.id = i;
+      clientPhone.type = 1 == random.nextInt(1) ? PhoneType.HOME : PhoneType.MOBILE;
+      clientPhone.number = RND.intStr(11);
+      phones.add(clientPhone);
+    }
+>>>>>>> 4b2de63b1530e50ea61a6c5ac81e6076fba915ec
   }
   @SuppressWarnings("unused")
+<<<<<<< HEAD
   private void appendClientAccounts(Integer clientId) {
     ClientAccountDot clientAccount = new ClientAccountDot();
     clientAccount.id = clientId;
@@ -137,6 +150,22 @@ public class StandDb implements HasAfterInject {
     accounts.add(clientAccount);
   }
 
+=======
+  private void appendClientAccounts() {
+    for (int i = 0; i < 100; i++) {
+      ClientAccount clientAccount = new ClientAccount();
+      clientAccount.id = i;
+      // TODO: 6/13/18 (float) RND.plusDouble(200, 2); - не ошибка
+      clientAccount.money = random.nextFloat() * random.nextInt(10000);
+      clientAccount.number = RND.intStr(10);
+      clientAccount.registered_at = null;
+      accounts.add(clientAccount);
+    }
+  }
+
+  // FIXME: 6/13/18 zachem unused?
+  @SuppressWarnings("unused")
+>>>>>>> 4b2de63b1530e50ea61a6c5ac81e6076fba915ec
   private void appendClientDetailsList() {
     for (int i = 0; i < 100; i++) {
       ClientDot clientDot = new ClientDot();
@@ -145,6 +174,7 @@ public class StandDb implements HasAfterInject {
       clientDot.surname = NameGenerator.generateName();
       clientDot.gender = random.nextInt(1) == 0 ? Gender.FEMALE : Gender.MALE;
       clientDot.patronymic = NameGenerator.generateName();
+<<<<<<< HEAD
       Calendar cal = Calendar.getInstance();
       cal.set(Calendar.YEAR,random.nextInt(70) + 1930);
       cal.set(Calendar.MONTH,random.nextInt(12));
@@ -159,6 +189,23 @@ public class StandDb implements HasAfterInject {
       appendPhones(clientDot.id, PhoneType.WORK);
       for (int g = 0; g < random.nextInt(9) + 1; g++)
         appendClientAccounts(clientDot.id);
+=======
+      Date birth_day = new Date();
+      // FIXME: 6/13/18 depricated nelzya ispolzovat
+      birth_day.setYear(random.nextInt(70) + 30);
+      birth_day.setMonth(random.nextInt(12));
+      birth_day.setDate(random.nextInt(28));
+      System.out.println(birth_day);
+      clientDot.birth_day = birth_day;
+      clientDot.charmId = charms.get(random.nextInt(charms.size())).id;
+      clientDot.addressRegId = addresses.get(random.nextInt(addresses.size())).id;
+      clientDot.addressFactId = addresses.get(random.nextInt(addresses.size())).id;
+      clientDot.homePhoneId = phones.get(random.nextInt(phones.size())).id;
+      clientDot.workPhoneId = phones.get(random.nextInt(phones.size())).id;
+      clientDot.mobilePhoneId = phones.get(random.nextInt(phones.size())).id;
+      for (int g = 0; g < random.nextInt(9) + 1; g++)
+        clientDot.accountsId.add(accounts.get(random.nextInt(accounts.size())).id);
+>>>>>>> 4b2de63b1530e50ea61a6c5ac81e6076fba915ec
       clientsStorage.add(clientDot);
     }
   }
