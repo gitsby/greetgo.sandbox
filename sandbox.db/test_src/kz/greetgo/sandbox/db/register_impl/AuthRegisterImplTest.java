@@ -12,13 +12,9 @@ import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.errors.RedPoliceResponse;
-import kz.greetgo.sandbox.db.in_service.model.CheckPoliceResponse;
-import kz.greetgo.sandbox.db.in_service.model.PoliceStatus;
-import kz.greetgo.sandbox.db.test.beans.PoliceCheckServiceForTests;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -36,13 +32,6 @@ public class AuthRegisterImplTest extends ParentTestNg {
   public BeanGetter<AuthRegister> authRegister;
 
   public BeanGetter<AuthTestDao> authTestDao;
-
-  public BeanGetter<PoliceCheckServiceForTests> policeCheckService;
-
-  @BeforeMethod
-  public void cleanPoliceCheckService() throws Exception {
-    policeCheckService.get().clean();
-  }
 
   @DataProvider
   public Object[][] saveParam_DP() {
@@ -397,8 +386,6 @@ public class AuthRegisterImplTest extends ParentTestNg {
     authTestDao.get().updatePersonField(id, "name", name);
     authTestDao.get().updatePersonField(id, "patronymic", patronymic);
 
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
-
     //
     //
     UserInfo userInfo = authRegister.get().getUserInfo(id);
@@ -426,8 +413,6 @@ public class AuthRegisterImplTest extends ParentTestNg {
     authTestDao.get().updatePersonField(id, "name", name);
     authTestDao.get().updatePersonField(id, "patronymic", patronymic);
 
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
-
     //
     //
     UserInfo userInfo = authRegister.get().getUserInfo(id);
@@ -442,56 +427,5 @@ public class AuthRegisterImplTest extends ParentTestNg {
     assertThat(userInfo.patronymic).isEqualTo(patronymic);
 
     assertThat(userInfo.yellow).isFalse();
-
-    assertThat(policeCheckService.get().checkNaturalPerson_input).hasSize(1);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).surname).isEqualTo(surname);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).name).isEqualTo(name);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).patronymic).isEqualTo(patronymic);
   }
-
-  @Test
-  public void getUserInfo_ok_checkPoliceYellow() throws Exception {
-    String accountName = RND.str(10);
-    String surname = RND.str(10);
-    String name = RND.str(10);
-    String patronymic = RND.str(10);
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, accountName, "asd", 1);
-    authTestDao.get().updatePersonField(id, "surname", surname);
-    authTestDao.get().updatePersonField(id, "name", name);
-    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
-
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.YELLOW));
-
-    //
-    //
-    UserInfo userInfo = authRegister.get().getUserInfo(id);
-    //
-    //
-
-    assertThat(userInfo.yellow).isTrue();
-  }
-
-  @Test(expectedExceptions = RedPoliceResponse.class)
-  public void getUserInfo_ok_checkPoliceRed() throws Exception {
-    String accountName = RND.str(10);
-    String surname = RND.str(10);
-    String name = RND.str(10);
-    String patronymic = RND.str(10);
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, accountName, "asd", 1);
-    authTestDao.get().updatePersonField(id, "surname", surname);
-    authTestDao.get().updatePersonField(id, "name", name);
-    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
-
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.RED));
-
-    //
-    //
-    authRegister.get().getUserInfo(id);
-    //
-    //
-  }
-
-
 }
