@@ -34,9 +34,9 @@ public class ClientController implements Controller {
 
   @ToJson
   @MethodFilter(RequestMethod.DELETE)
-  @Mapping("/remove")
-  public void remove(@Par("clientId") int clientId) {
-    clientRegister.get().remove(clientId);
+  @Mapping("/delete")
+  public void delete(@Par("clientId") int clientId) {
+    clientRegister.get().delete(clientId);
   }
 
   @ToJson

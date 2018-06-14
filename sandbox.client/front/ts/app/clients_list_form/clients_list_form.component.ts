@@ -142,7 +142,7 @@ export class ClientsListFormComponent implements AfterViewInit {
 
   deleteClientButtonClicked(clientRecords: ClientRecord) {
     let ID = clientRecords.id;
-    this.httpService.delete("/client/remove", {
+    this.httpService.delete("/client/delete", {
       "clientId": ID
     }).toPromise().then(() => {
       this.loadPage();

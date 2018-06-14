@@ -18,12 +18,7 @@ public class ClientRegisterStand implements ClientRegister {
   public BeanGetter<StandDb> db;
 
   @Override
-  public ClientInfo get(int clientId) {
-    return null;
-  }
-
-  @Override
-  public Details detail(int clientId) {
+  public Details detail(Integer clientId) {
     ClientDot clientDot = getClient(clientId);
     return toClientDetail(clientDot);
   }
@@ -51,7 +46,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public void remove(int clientId) {
+  public void delete(Integer clientId) {
     db.get().clientsStorage.removeIf(clientDot -> clientDot.id == clientId);
   }
 
