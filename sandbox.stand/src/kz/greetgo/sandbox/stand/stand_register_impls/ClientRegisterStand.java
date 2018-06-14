@@ -2,12 +2,26 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Charm;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientFilter;
+import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.ClientRecords;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.SortDirection;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -109,7 +123,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientDot getClient(int clientId) {
-    return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
+    return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findAny().orElse(null);
   }
 
   private List<ClientRecords> getRecordsList(ClientFilter clientFilter) {
