@@ -1,137 +1,145 @@
 .button {
-    font-size: 20px;
-    padding: 7px 15px 7px 15px;
-    background: #3498db;
-    border: 0;
-    color: white;
-    text-decoration: none;
+  font-size: 20px;
+  padding: 7px 15px 7px 15px;
+  background: #3498db;
+  border: 0;
+  color: white;
+  text-decoration: none;
 }
 
 .topMenu {
-    width: 100%;
-    border-bottom: 1px solid #3498db;
+  width: 100%;
+  border-bottom: 1px solid #3498db;
 }
 
 .btn {
-    color: white;
-    background: #3498db;
-    margin: 5px;
-    border-color: #4fcadb;
+  color: white;
+  background: #3498db;
+  margin: 5px;
+  border-color: #4fcadb;
 }
 
 .btn:hover {
-    color: white;
-    background: #2b7edb;
+  color: white;
+  background: #2b7edb;
 }
 
 .center {
-    text-align: center;
+  text-align: center;
 }
 
 .form-control {
-    margin: 5px;
+  margin: 5px;
 }
 
 .button:hover {
-    color: white;
-    background: #2b7edb;
+  color: white;
+  background: #2b7edb;
 }
 
 /* Table start */
 table {
-    border-spacing: 0;
-    width: 100%;
-    border: 1px solid #ddd;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
 }
 
 th, td {
-    text-align: left;
-    padding: 8px;
+  text-align: left;
+  padding: 8px;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2
+  background-color: #f2f2f2
 }
 
 /*End table*/
 
 /* Pagination start*/
 .headers td {
-    font-style: oblique;
+  font-style: oblique;
 }
 
 .pagination {
-    display: inline-block;
+  display: inline-block;
 }
 
 .btn {
-    width: 100%;
+  width: 100%;
 }
 
 .row {
-    alignment: left;
+  alignment: left;
 }
 
 .col-sm {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .pagination a {
-    color: black;
-    float: left;
-    padding: 8px 16px;
-    text-decoration: none;
+  color: black;
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
 }
 
 .pagination a.active {
-    background-color: #1a5caf;
-    color: white;
+  background-color: #1a5caf;
+  color: white;
 }
 
 .black {
-    background: black;
+  background: black;
 }
 
-.pagination a:hover:not(.active) {
-    color: #1a7cd7;
-    background-color: #ddd;
+.pagination .paginationPageNum:hover:not(.active) {
+  color: #1a7cd7;
+  background-color: #ddd;
+}
+
+.pagination .dots:hover {
+  background-color: white;
 }
 
 /* Pagination end */
 
 .bottom_links {
-    height: auto;
-    width: 100%;
-    position: fixed;
-    bottom: 0;
+  height: auto;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
 }
 
 i {
-    border: solid black;
-    border-width: 0 3px 3px 0;
-    display: inline-block;
-    padding: 3px;
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
 }
 
 .down {
-    transform: rotate(45deg);
-    -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
 }
 
 .up {
-    transform: rotate(-135deg);
-    -webkit-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
 }
 
 .selectSliceNum {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 h3 {
-    height: auto;
+  height: auto;
+}
+
+.dots:hover {
+  background-color: white;
 }
 
 .options {
-    margin-top: 10px;
+  margin-top: 10px;
 }

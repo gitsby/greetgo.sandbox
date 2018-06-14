@@ -1,18 +1,9 @@
-<!--fixme clear button-->
-<!--fixme исправить пагинацию-->
-<!--fixme Телефон должен состоять из 11 цифр-->
-<!--fixme в середине ФИО может быть пробел-->
-<!--fixme должно работать с кирилицей-->
-<!--fixme нужно исправить дату рождения - максимальное значение - текущая-->
-<!--fixme должна быть вставка даты рождения-->
-<!--fixme ... недолжно нажиматься-->
-<!--fixme total number?!-->
 <div>
   <div class="container">
     <div class="row">
       <div class="col-lg-9">
-        <div class="col-lg-3">
-          <h3 class="col-lg-3">Clients</h3>
+        <div class="col-lg-2">
+          <h3>Clients</h3>
         </div>
         <div class="col-lg-4 options">
           <input [(ngModel)]="clientRecordFilter.searchName" id="input" type="text" class="form-control"
@@ -20,6 +11,9 @@
         </div>
         <div class="col-lg-3 options">
           <a (click)="searchClicked()" class="btn">Search</a>
+        </div>
+        <div class="col-lg-2 options">
+          <a (click)="clearClicked()" class="btn">Clear</a>
         </div>
         <div class="col-lg-1 options">
           <a class="btn" (click)="addNewClientClicked()">+</a>
@@ -99,16 +93,21 @@
 
 <div class="center">
   <div class="pagination">
-    <a (click)="decreaseCurrentPagination()"><<</a>
-    <a *ngIf="this.clientRecordFilter.paginationPage>1 && paginationNum>3" (click)="pageChanged(0)">0</a>
-    <a *ngIf="this.clientRecordFilter.paginationPage>2">...</a>
-    <a *ngFor="let pag of pagesList"
+    <a class="paginationPageNum"
+       (click)="decreaseCurrentPagination()"><<</a>
+    <a class="paginationPageNum" *ngIf="this.clientRecordFilter.paginationPage>1 && paginationNum>3"
+       (click)="pageChanged(0)">0</a>
+    <a *ngIf="this.clientRecordFilter.paginationPage>2" class="dots">...</a>
+    <a class="paginationPageNum"
+       *ngFor="let pag of pagesList"
        [ngStyle]="{background:pag==this.clientRecordFilter.paginationPage?'#ddd':'#fff'}"
        (click)="pageChanged(pag)">{{pag}}</a>
-    <a *ngIf="this.clientRecordFilter.paginationPage<paginationNum-3">...</a>
-    <a (click)="pageChanged(paginationNum-1)"
+    <a *ngIf="this.clientRecordFilter.paginationPage<paginationNum-3" class="dots">...</a>
+    <a class="paginationPageNum"
+       (click)="pageChanged(paginationNum-1)"
        *ngIf="this.clientRecordFilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
-    <a (click)="increaseCurrentPagination()">>></a>
+    <a class="paginationPageNum"
+       (click)="increaseCurrentPagination()">>></a>
     <select (change)="pageSizeChanged()" [(ngModel)]="clientRecordFilter.sliceNum" class="selectSliceNum"
             placeholder="Select ">
       <option value="10">10</option>

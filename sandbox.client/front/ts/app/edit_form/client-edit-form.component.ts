@@ -9,6 +9,7 @@ import {Phone} from "../../model/Phone";
 import {Character} from "../../model/Character";
 import {ClientToSave} from "../../model/ClientToSave";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {DatePipe} from "@angular/common";
 
 @Component({
   selector: 'edit-form-component',
@@ -16,6 +17,8 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
   styles: [require('./client-edit-form.component.css')],
 })
 export class ClientEditFormComponent implements AfterViewInit {
+
+  currentDate = new Date().toISOString().split('T')[0];
 
   retrievedClient: ClientDetails;
   welcomeText = "Add new Client";
@@ -37,11 +40,11 @@ export class ClientEditFormComponent implements AfterViewInit {
   @Output() onClose = new EventEmitter<void>();
   @Output() returnChanges = new EventEmitter<any>();
 
-  constructor(private httpService: HttpService) {
+  constructor(private datePipe: DatePipe, private httpService: HttpService) {
     this.clientInputForm = new FormBuilder().group({
-      "surname": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
-      "name": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
-      "patronymic": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]*")]),
+      "surname": new FormControl("", [Validators.required, Validators.pattern("([a-zA-Z_]|[а-яА-ЯёЁ])+ *(([a-zA-Z_]|[а-яА-ЯёЁ]))*")]),
+      "name": new FormControl("", [Validators.required, Validators.pattern("([a-zA-Z_]|[а-яА-ЯёЁ])+ *(([a-zA-Z_]|[а-яА-ЯёЁ]))*")]),
+      "patronymic": new FormControl("", [Validators.required, Validators.pattern("([a-zA-Z_]|[а-яА-ЯёЁ])+ *(([a-zA-Z_]|[а-яА-ЯёЁ]))*")]),
       "dateBirth": new FormControl("", Validators.required),
       "character": new FormControl("", Validators.required),
       "gender": new FormControl(0, Validators.required),
@@ -53,7 +56,7 @@ export class ClientEditFormComponent implements AfterViewInit {
       "regFlat": new FormControl("", Validators.required),
       "homePhone": new FormControl(),
       "workingPhone": new FormControl(),
-      "mobilePhone": new FormControl("+7", Validators.required),
+      "mobilePhone": new FormControl("+7", [Validators.required, Validators.pattern(".[0-9]..[0-9]{3}..[0-9]{3}.[0-9]{4}")]),
     });
     httpService.get("/client/characters").toPromise().then(result => {
       for (let chars of result.json()) {
@@ -215,7 +218,8 @@ export class ClientEditFormComponent implements AfterViewInit {
       this.toSave.patronymic = this.retrievedClient.patronymic;
       this.toSave.charm = this.characters[this.retrievedClient.charm].id;
       this.toSave.gender = this.retrievedClient.gender;
-      this.toSave.birthDate = this.retrievedClient.birthDate;
+
+      this.toSave.birthDate = this.datePipe.transform(this.retrievedClient.birthDate, "yyyy-MM-dd");
 
       for (let phone of this.retrievedClient.phones) {
         if (phone.type == "HOME") {
