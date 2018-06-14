@@ -15,7 +15,20 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public Details detail(Integer clientId) {
-    throw new UnsupportedOperationException();
+    Client client = clientDao.get().get(clientId);
+    Details details = new Details();
+    details.id = clientId;
+    details.surname = client.surname;
+    details.name = client.name;
+    details.patronymic = client.patronymic;
+    details.gender = client.gender;
+    details.charm = clientDao.get().getCharm(client.charm);
+    details.addressFact = clientDao.get().getAddress(clientId, AddressTypeEnum.FACT);
+    details.addressReg = clientDao.get().getAddress(clientId, AddressTypeEnum.REG);
+    details.homePhone = clientDao.get().getPhone(clientId, PhoneType.HOME);
+    details.workPhone = clientDao.get().getPhone(clientId, PhoneType.WORK);
+    details.mobilePhone = clientDao.get().getPhone(clientId, PhoneType.MOBILE);
+    return details;
   }
 
   @Override

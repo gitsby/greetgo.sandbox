@@ -44,6 +44,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     assertThat(resultDetail).isNotNull();
     assertThat(resultDetail.surname).isEqualTo(details.surname);
+    assertThat(resultDetail.charm.id).isEqualTo(details.charm.id);
     assertThat(resultDetail.addressFact.client).isEqualTo(details.addressFact.client);
     assertThat(resultDetail.homePhone.client).isEqualTo(details.homePhone.client);
   }
@@ -80,12 +81,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
     details.patronymic = RND.str(10);
     details.birthDate = new Date();
     details.gender = Gender.MALE;
-    details.charm = new Charm(RND.plusInt(100), RND.str(10), RND.str(10), RND.rnd.nextFloat());
+    details.charm = new Charm(RND.plusInt(1000), RND.str(10), RND.str(10), RND.rnd.nextFloat());
     details.addressFact = new ClientAddress(id, AddressTypeEnum.FACT, RND.str(10), RND.str(10), RND.str(10));
     details.addressReg = new ClientAddress(id, AddressTypeEnum.REG, RND.str(10), RND.str(10), RND.str(10));
     details.homePhone = new ClientPhone(id, PhoneType.HOME, RND.intStr(11));
-    details.mobilePhone = new ClientPhone(id, PhoneType.HOME, RND.intStr(11));
-    details.workPhone = new ClientPhone(id, PhoneType.HOME, RND.intStr(11));
+    details.mobilePhone = new ClientPhone(id, PhoneType.MOBILE, RND.intStr(11));
+    details.workPhone = new ClientPhone(id, PhoneType.WORK, RND.intStr(11));
     return details;
   }
 

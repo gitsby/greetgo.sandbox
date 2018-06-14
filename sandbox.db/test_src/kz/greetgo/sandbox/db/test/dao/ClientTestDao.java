@@ -1,20 +1,15 @@
 package kz.greetgo.sandbox.db.test.dao;
 
 import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.Date;
-import java.util.List;
 
 public interface ClientTestDao {
 
-  @Select("SELECT * FROM Client")
-  List<ClientInfo> getAll();
 
   @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm) " +
     "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm});")
