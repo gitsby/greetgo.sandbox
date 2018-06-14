@@ -31,7 +31,7 @@ import static java.util.Calendar.YEAR;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
-
+  // FIXME: 6/14/18 Смотри на подсказки которые тебе дает Idea. Желтых отметок не должно быть
   public BeanGetter<StandDb> db;
 
   private List<ClientDot> filter(ClientRecordFilter filter) {
@@ -56,6 +56,7 @@ public class ClientRegisterStand implements ClientRegister {
     clientRecord.age = getDiffYears(clientDot.birthDate, new Date());
     clientRecord.character = getCharacterById(clientDot.charm);
     // FIXME: 14.06.18 Нужно сделать float или double
+    // FIXME: 6/14/18 Расчет минимальной, максимальной и общей неверный
     clientRecord.minBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
     clientRecord.maxBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
     clientRecord.accBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
