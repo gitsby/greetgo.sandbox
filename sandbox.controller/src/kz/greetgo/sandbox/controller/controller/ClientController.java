@@ -25,7 +25,7 @@ public class ClientController implements Controller {
     return clientRegister.get().detail(clientId);
   }
 
-
+  // FIXME: 6/14/18 methodы не должны называться по разному, все должны быть save
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
