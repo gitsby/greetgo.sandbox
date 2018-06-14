@@ -52,6 +52,7 @@ public class ClientController implements Controller {
     return clientRegister.get().getClientDetails(clientId);
   }
 
+  // FIXME: 6/14/18 charm, ne character
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/characters")
