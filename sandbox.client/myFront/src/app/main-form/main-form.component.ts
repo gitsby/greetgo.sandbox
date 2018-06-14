@@ -10,6 +10,9 @@ import { CharmType } from "../../models/CharmType";
 import { AddressType } from "../../models/AddressType";
 import { MatDialogRef,MatDialog, MatDialogConfig } from '@angular/material';
 import { UserDialogComponent } from './user-dialog/user-dialog.component';
+import { Observable } from 'rxjs/';
+// import 'rxjs/add/observable/fromPromise';
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'main-form-component',
@@ -26,7 +29,6 @@ export class MainFormComponent {
   typeOfDialogCall: string | null = null;
   userDialogRef: MatDialogRef<UserDialogComponent>;
   constructor(private httpService: HttpService, private dialog: MatDialog) {}
-
 
   openDialog(userID:string, titleType:string){
 
@@ -45,7 +47,6 @@ export class MainFormComponent {
 
   }
 
-
   deleteButtonClicked():void{
     console.log("deleteButton triggered");
     this.httpService.post("/table/delete-user",{"userID":this.selectedUserID}).toPromise().then( result => {
@@ -53,6 +54,10 @@ export class MainFormComponent {
       alert("User was deleted");
      });
   }
+
+
+
+
   updateButtonClicked():void{
     console.log("updateButton triggered");
     this.openDialog(this.selectedUserID,"Update");

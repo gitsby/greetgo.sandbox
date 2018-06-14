@@ -1,5 +1,6 @@
 <div class="mat-elevation-z8">
-  <mat-table #table [dataSource]="dataSource" matSort aria-label="Elements">
+  <mat-table #table [dataSource]="dataSource" matSort aria-label="Elements"
+             matSort matSortActive="fullName" matSortDirection="asc" matSortDisableClear>
 
     <ng-container matColumnDef="fullName">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Full Name</mat-header-cell>
@@ -33,7 +34,8 @@
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"
-      (click)="onRowSelected(row)"
+             [class.selected]=""
+             (click)="onRowSelected(row)"
 
     ></mat-row>
   </mat-table>

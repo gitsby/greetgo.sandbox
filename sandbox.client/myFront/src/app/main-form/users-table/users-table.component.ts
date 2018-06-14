@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort } from '@angular/material';
 import { UsersTableDataSource } from './users-table-datasource';
+import {UsersTableCustomDatasource} from "./users-table-custom-datasource";
+import {TableService} from "../../../services/TableService";
 
 @Component({
   selector: 'users-table',
@@ -10,15 +12,21 @@ import { UsersTableDataSource } from './users-table-datasource';
 export class UsersTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
-  dataSource: UsersTableDataSource;
+  dataSource: UsersTableCustomDatasource;
+
   displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
 
-  ngOnInit() {
-    this.dataSource = new UsersTableDataSource(this.paginator, this.sort);
-  }
 
+  constructor(private tableService: TableService){
+
+  }
   onRowSelected(row) {
     console.log("Row clicked: ", row);
 
+  }
+
+  ngOnInit() {
+    this.dataSource = new UsersTableCustomDatasource(this.tableService);
+    this.dataSource.loadTable(0);
   }
 }

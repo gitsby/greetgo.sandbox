@@ -13,6 +13,7 @@ import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.util.ServerUtil;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -25,7 +26,7 @@ public class TableRegisterStand implements TableRegister {
     public BeanGetter<StandJsonDb> db;
 
     public enum SortType{
-        SUP,
+        FULLNAME,
         CHARM,
         AGE,
         TOTALBALANCE,
@@ -35,29 +36,29 @@ public class TableRegisterStand implements TableRegister {
     }
 
     @Override
-    public Table getTableData(int skipNumber, int limit, String sortDirection, String sortType){
+    public ArrayList<TableModel> getTableData(int skipNumber, int limit, String sortDirection, String sortType){
         Table queriedTable  = new Table();
         queriedTable.data=db.get().table.data.stream().sorted(((o1, o2) -> {
             System.out.println("sortType: " + sortType);
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
             switch (enumSortType) {
-                case SUP:
-                    return "descending".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
+                case FULLNAME:
+                    return "desc".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
                 case CHARM:
-                    return "descending".equals(sortDirection)?-o1.charm.compareTo(o2.charm):o1.charm.compareTo(o2.charm);
+                    return "desc".equals(sortDirection)?-o1.charm.compareTo(o2.charm):o1.charm.compareTo(o2.charm);
                 case AGE:
-                    return "descending".equals(sortDirection)?-Long.compare(o1.age,o2.age):Long.compare(o1.age,o2.age);
+                    return "desc".equals(sortDirection)?-Long.compare(o1.age,o2.age):Long.compare(o1.age,o2.age);
                 case TOTALBALANCE:
-                    return "descending".equals(sortDirection)?-Double.compare(o1.totalBalance,o2.totalBalance):Double.compare(o1.totalBalance,o2.totalBalance);
+                    return "desc".equals(sortDirection)?-Double.compare(o1.totalBalance,o2.totalBalance):Double.compare(o1.totalBalance,o2.totalBalance);
                 case MAXBALANCE:
-                    return "descending".equals(sortDirection)?-Double.compare(o1.maxBalance,o2.maxBalance):Double.compare(o1.maxBalance,o2.maxBalance);
+                    return "desc".equals(sortDirection)?-Double.compare(o1.maxBalance,o2.maxBalance):Double.compare(o1.maxBalance,o2.maxBalance);
                 case MINBALANCE:
-                    return "descending".equals(sortDirection)?-Double.compare(o1.minBalance,o2.minBalance):Double.compare(o1.minBalance,o2.minBalance);
+                    return "desc".equals(sortDirection)?-Double.compare(o1.minBalance,o2.minBalance):Double.compare(o1.minBalance,o2.minBalance);
                 default:
-                    return "descending".equals(sortDirection)?-o1.id.compareTo(o2.id):o1.id.compareTo(o2.id);
+                    return "desc".equals(sortDirection)?-o1.id.compareTo(o2.id):o1.id.compareTo(o2.id);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        return queriedTable;
+        return queriedTable.data;
 //        return db.get().table;
     }
 

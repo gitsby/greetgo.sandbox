@@ -13,6 +13,7 @@ import { MatTableModule, MatInputModule,
   MatButtonToggleModule,MatDialogModule } from '@angular/material';
 import { HttpService } from "../services/HttpService";
 import { UserDialogComponent } from './main-form/user-dialog/user-dialog.component';
+import {TableService} from "../services/TableService";
 // import { ControlsComponent } from './main-form/controls/controls.component';
 
 @NgModule({
@@ -38,7 +39,7 @@ import { UserDialogComponent } from './main-form/user-dialog/user-dialog.compone
     MatButtonToggleModule,
     MatDialogModule
   ],
-  providers: [HttpService],
+  providers: [HttpService, TableService],
   bootstrap: [AppComponent],
   entryComponents: [UserDialogComponent]
 })
