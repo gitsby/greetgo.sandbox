@@ -12,4 +12,12 @@ public class ClientPhone {
     this.type = type;
     this.number = number;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    ClientPhone clientPhone = (ClientPhone) obj;
+    if (type.equals(clientPhone.type) &&
+      number.equals(clientPhone.number)) return true;
+    return false;
+  }
 }

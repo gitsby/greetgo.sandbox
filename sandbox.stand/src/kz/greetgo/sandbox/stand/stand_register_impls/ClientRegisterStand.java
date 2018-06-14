@@ -83,13 +83,13 @@ public class ClientRegisterStand implements ClientRegister {
     if (clientFilter.sortDirection != null)
       if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
 
-    if (clientFilter.to < 0) clientFilter.to = 0;
-    if (clientFilter.from < 0) clientFilter.from = 0;
+    if (clientFilter.limit < 0) clientFilter.limit = 0;
+    if (clientFilter.offset < 0) clientFilter.offset = 0;
 
-    if (clientFilter.to > clientRecords.size()) clientFilter.to = clientRecords.size();
-    if (clientFilter.from > clientRecords.size()) clientFilter.from = clientRecords.size();
+    if (clientFilter.limit > clientRecords.size()) clientFilter.limit = clientRecords.size();
+    if (clientFilter.offset > clientRecords.size()) clientFilter.offset = clientRecords.size();
 
-    return clientRecords.subList(clientFilter.from, clientFilter.to);
+    return clientRecords.subList(clientFilter.offset, clientFilter.limit);
   }
 
   @Override

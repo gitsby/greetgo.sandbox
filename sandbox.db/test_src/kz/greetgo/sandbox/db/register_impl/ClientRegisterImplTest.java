@@ -9,6 +9,7 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -71,6 +72,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       insertClient(leftClient);
     }
 
+
     //
     //
     //
@@ -86,9 +88,91 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       String actualName = clientTestDao.get().loadParamValue(clientId, "name");
+      ClientAddress actualAddressReg = clientTestDao.get().getAddress(clientId, AddressTypeEnum.REG);
       assertThat(actualName).isEqualTo(clientToSave.name);
+      assertThat(actualAddressReg).isEqualTo(clientToSave.addressReg);
     }
   }
+
+  @Test
+  public void deleteClient() {
+
+    Integer clientId = RND.plusInt(100);
+    Details details = generateRandomClientDetails(clientId);
+    insertClient(details);
+
+
+    //
+    //
+    //
+    clientRegister.get().delete(clientId);
+    //
+    //
+    //
+
+    {
+      int count = clientTestDao.get().count();
+      assertThat(count).isZero();
+    }
+
+  }
+
+
+  @Test
+  public void getRecordsWithEmptyFilter() {
+
+    ClientFilter emptyFilter = new ClientFilter();
+    emptyFilter.offset = 0;
+    emptyFilter.limit = 10;
+
+    for (int i = 0; i < 20; i++) {
+      Integer clientId = RND.plusInt(100);
+      Details details = generateRandomClientDetails(clientId);
+      insertClient(details);
+    }
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(emptyFilter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList.size()).isEqualTo(emptyFilter.limit);
+  }
+
+  @Test
+  public void getRecordsWithFilter() {
+
+    String rName= RND.intStr(5);
+    ClientFilter emptyFilter = new ClientFilter();
+    emptyFilter.offset = 0;
+    emptyFilter.limit = 10;
+    emptyFilter.fio = rName;
+
+    for (int i = 0; i < 20; i++) {
+      Integer clientId = RND.plusInt(100);
+      Details details = generateRandomClientDetails(clientId);
+      insertClient(details);
+    }
+
+    Integer clientId = RND.plusInt(100);
+    Details details = generateRandomClientDetails(clientId);
+    details.name = rName + RND.intStr(5);
+    insertClient(details);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(emptyFilter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList.size()).isEqualTo(1);
+  }
+
 
   private void insertClient(Details details) {
     insertCharm(details.charm);
@@ -103,6 +187,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   private ClientToSave generateRandomClientToSave(Integer id) {
     Details details = generateRandomClientDetails(id);
     ClientToSave clientToSave = new ClientToSave();
+    clientToSave.id = details.id;
     clientToSave.surname = details.surname;
     clientToSave.name = details.name;
     clientToSave.patronymic = details.patronymic;
@@ -114,6 +199,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.homePhone = details.homePhone;
     clientToSave.mobilePhone = details.mobilePhone;
     clientToSave.workPhone = details.workPhone;
+    insertCharm(details.charm);
     return clientToSave;
   }
 

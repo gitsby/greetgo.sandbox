@@ -16,4 +16,14 @@ public class ClientAddress {
     this.house = house;
     this.flat = flat;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    ClientAddress clientAddress = (ClientAddress) obj;
+    if (street.equals(clientAddress.street) &&
+      house.equals(clientAddress.house) &&
+      flat.equals(clientAddress.flat) &&
+      type.equals(clientAddress.type)) return true;
+    return false;
+  }
 }

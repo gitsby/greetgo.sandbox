@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.test.dao;
 
 import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import org.apache.ibatis.annotations.Insert;
@@ -11,9 +12,11 @@ import java.util.Date;
 
 public interface ClientTestDao {
 
-  @Select("SELECT COUNT(*) FROM client")
+  @Select("SELECT COUNT(*) FROM client WHERE actual=1")
   Integer count();
 
+  @Select("SELECT * FROM client_address WHERE client=#{client} AND type=#{type}")
+  ClientAddress getAddress(@Param("client") Integer client, @Param("type") AddressTypeEnum type);
 
   @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm) " +
     "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm});")
@@ -45,6 +48,6 @@ public interface ClientTestDao {
                          @Param("number") String number,
                          @Param("type") PhoneType type);
 
-  @Select("SELECT #{fieldName} FROM client WHERE id=#{clientId}")
+  @Select("SELECT ${fieldName} FROM client WHERE id=#{clientId}")
   String loadParamValue(@Param("clientId") Integer clientId, @Param("fieldName") String fieldName);
 }

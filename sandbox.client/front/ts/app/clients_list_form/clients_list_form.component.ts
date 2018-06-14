@@ -34,8 +34,8 @@ export class ClientsListFormComponent implements AfterViewInit {
   loadClientRecordsList(page: number) {
     if (page <= 0) return;
     this.currentPage = page;
-    this.clientFilter.from = this.currentPage * this.numberOfItemInPage - this.numberOfItemInPage;
-    this.clientFilter.to = this.currentPage * this.numberOfItemInPage;
+    this.clientFilter.offset = this.currentPage * this.numberOfItemInPage - this.numberOfItemInPage;
+    this.clientFilter.limit = this.currentPage * this.numberOfItemInPage;
     this.loadPage();
   }
 
