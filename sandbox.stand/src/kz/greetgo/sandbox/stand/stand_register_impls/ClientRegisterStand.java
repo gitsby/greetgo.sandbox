@@ -2,32 +2,16 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.Character;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.AddressDot;
-import kz.greetgo.sandbox.db.stand.model.CharacterDot;
-import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.PhoneDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Calendar.DATE;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.YEAR;
+import static java.util.Calendar.*;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -39,7 +23,7 @@ public class ClientRegisterStand implements ClientRegister {
       return getClientSlice(db.get().clientDots, 0, filter.sliceNum);
     }
     filter.searchName = filter.searchName.toLowerCase().trim();
-
+    // FIXME: 6/14/18 Использование стрим апи не читабельная
     return db.get().getClientDot().stream()
       .filter(clientDot -> filter.searchName == null ||
         (clientDot.surname + " " + clientDot.name + " " + clientDot.patronymic).
