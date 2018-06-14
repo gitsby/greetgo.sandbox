@@ -5,10 +5,14 @@ import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.Date;
 
 public interface ClientTestDao {
+
+  @Select("SELECT COUNT(*) FROM client")
+  Integer count();
 
 
   @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm) " +
@@ -40,4 +44,7 @@ public interface ClientTestDao {
   void insertClientPhone(@Param("client") Integer client,
                          @Param("number") String number,
                          @Param("type") PhoneType type);
+
+  @Select("SELECT #{fieldName} FROM client WHERE id=#{clientId}")
+  String loadParamValue(@Param("clientId") Integer clientId, @Param("fieldName") String fieldName);
 }

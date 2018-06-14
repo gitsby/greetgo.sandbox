@@ -26,13 +26,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void getDetail() throws Exception {
     Integer clientId = RND.plusInt(100);
     Details details = generateRandomClientDetails(clientId);
-    insertCharm(details.charm);
-    clientTestDao.get().insertClient(details.id, details.surname, details.name, details.patronymic, details.gender, details.birthDate, details.charm.id);
-    insertClientAddress(details.addressFact);
-    insertClientAddress(details.addressReg);
-    insertClientPhone(details.homePhone);
-    insertClientPhone(details.workPhone);
-    insertClientPhone(details.mobilePhone);
+    insertClient(details);
 
     //
     //
@@ -50,27 +44,77 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void insertClient_withoutMandatoryValues() {
-    Details details = generateRandomClientDetails(1);
+  public void insertNewClient() {
+    ClientToSave clientToSave = generateRandomClientToSave(null);
+
+    //
+    //
+    //
+    clientRegister.get().save(clientToSave);
+    //
+    //
+    //
+
+    {
+      int count = clientTestDao.get().count();
+      assertThat(count).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void editClient() {
+    Integer clientId = RND.plusInt(100);
+    ClientToSave clientToSave = generateRandomClientToSave(clientId);
+
+    {
+      Details leftClient = generateRandomClientDetails(clientId);
+      insertClient(leftClient);
+    }
+
+    //
+    //
+    //
+    clientRegister.get().save(clientToSave);
+    //
+    //
+    //
+
+    {
+      int count = clientTestDao.get().count();
+      assertThat(count).isEqualTo(1);
+    }
+
+    {
+      String actualName = clientTestDao.get().loadParamValue(clientId, "name");
+      assertThat(actualName).isEqualTo(clientToSave.name);
+    }
+  }
+
+  private void insertClient(Details details) {
     insertCharm(details.charm);
-    clientTestDao.get().insertClient(details.id, details.surname, details.name, null, details.gender, details.birthDate, details.charm.id);
+    clientTestDao.get().insertClient(details.id, details.surname, details.name, details.patronymic, details.gender, details.birthDate, details.charm.id);
     insertClientAddress(details.addressFact);
+    insertClientAddress(details.addressReg);
     insertClientPhone(details.homePhone);
     insertClientPhone(details.workPhone);
     insertClientPhone(details.mobilePhone);
+  }
 
-    //
-    //
-    //
-    Details resultDetail = clientRegister.get().detail(1);
-    //
-    //
-    //
-
-    assertThat(resultDetail).isNotNull();
-    assertThat(resultDetail.surname).isEqualTo(details.surname);
-    assertThat(resultDetail.addressFact.client).isEqualTo(details.addressFact.client);
-    assertThat(resultDetail.homePhone.client).isEqualTo(details.homePhone.client);
+  private ClientToSave generateRandomClientToSave(Integer id) {
+    Details details = generateRandomClientDetails(id);
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.surname = details.surname;
+    clientToSave.name = details.name;
+    clientToSave.patronymic = details.patronymic;
+    clientToSave.birthDate = details.birthDate;
+    clientToSave.gender = details.gender;
+    clientToSave.charmId = details.charm.id;
+    clientToSave.addressFact = details.addressFact;
+    clientToSave.addressReg = details.addressReg;
+    clientToSave.homePhone = details.homePhone;
+    clientToSave.mobilePhone = details.mobilePhone;
+    clientToSave.workPhone = details.workPhone;
+    return clientToSave;
   }
 
   private Details generateRandomClientDetails(Integer id) {

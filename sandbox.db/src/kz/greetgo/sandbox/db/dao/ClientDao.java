@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Select;
 @Bean
 public interface ClientDao {
 
+  /** SELECTS */
+
   @Select("SELECT * FROM client WHERE id=#{clientId} AND actual=1")
   Client get(@Param("clientId") Integer clientId);
 
@@ -19,4 +21,7 @@ public interface ClientDao {
 
   @Select("SELECT * FROM charm WHERE id=#{id}")
   Charm getCharm(@Param("id") Integer charmId);
+
+
+
 }
