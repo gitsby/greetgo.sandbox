@@ -11,6 +11,7 @@ import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 import kz.greetgo.sandbox.controller.model.User;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,12 @@ public class TableController implements Controller{
         System.out.println(sortDirection);
         System.out.println(sortType);
 //        StandJsonDb.Users;
-        return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
+
+        ArrayList<TableModel> Boi = tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
+        for(TableModel b: Boi){
+            System.out.println(b.toString());
+        }
+        return Boi;
     }
 
     @NoSecurity

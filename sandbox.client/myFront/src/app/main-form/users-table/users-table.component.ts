@@ -3,6 +3,7 @@ import { MatPaginator, MatSort } from '@angular/material';
 import { UsersTableDataSource } from './users-table-datasource';
 import {UsersTableCustomDatasource} from "./users-table-custom-datasource";
 import {TableService} from "../../../services/TableService";
+import {HttpService} from "../../../services/HttpService";
 
 @Component({
   selector: 'users-table',
@@ -17,7 +18,7 @@ export class UsersTableComponent implements OnInit {
   displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
 
 
-  constructor(private tableService: TableService){
+  constructor(private httpService: HttpService){
 
   }
   onRowSelected(row) {
@@ -26,7 +27,7 @@ export class UsersTableComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dataSource = new UsersTableCustomDatasource(this.tableService);
+    this.dataSource = new UsersTableCustomDatasource(this.httpService);
     this.dataSource.loadTable(0);
   }
 }
