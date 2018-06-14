@@ -2,16 +2,32 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
 import kz.greetgo.sandbox.controller.model.Character;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.model.AddressDot;
+import kz.greetgo.sandbox.db.stand.model.CharacterDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.PhoneDot;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static java.util.Calendar.*;
+import static java.util.Calendar.DATE;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -23,13 +39,12 @@ public class ClientRegisterStand implements ClientRegister {
       return getClientSlice(db.get().clientDots, 0, filter.sliceNum);
     }
     filter.searchName = filter.searchName.toLowerCase().trim();
-    List<ClientDot> clientDots = db.get().getClientDot().stream()
+
+    return db.get().getClientDot().stream()
       .filter(clientDot -> filter.searchName == null ||
         (clientDot.surname + " " + clientDot.name + " " + clientDot.patronymic).
           toLowerCase().contains(filter.searchName))
       .collect(Collectors.toList());
-
-    return clientDots;
   }
 
   private ClientRecord dotToClientRecord(ClientDot clientDot) {
@@ -40,6 +55,7 @@ public class ClientRegisterStand implements ClientRegister {
     clientRecord.patronymic = clientDot.patronymic;
     clientRecord.age = getDiffYears(clientDot.birthDate, new Date());
     clientRecord.character = getCharacterById(clientDot.charm);
+    // FIXME: 14.06.18 Нужно сделать float или double
     clientRecord.minBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
     clientRecord.maxBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
     clientRecord.accBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
@@ -161,6 +177,7 @@ public class ClientRegisterStand implements ClientRegister {
       }
     }
     if (editedClient.charm != null) {
+      // FIXME: 14.06.18 Лишняя проверка
       if (!editedClient.charm.equals(clientDot.charm)) {
         clientDot.charm = editedClient.charm;
       }

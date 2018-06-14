@@ -17,6 +17,7 @@ public class ClientDetails {
 
   public int charm;
 
+  // FIXME: 14.06.18 Сделать List вместо массива
   public Address[] addresses;
 
   public Phone[] phones;
