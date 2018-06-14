@@ -7,7 +7,7 @@ export class ClientToSave {
   public surname: string;
   public patronymic: string;
   public gender: string;
-  public birthDate: Date;
+  public birthDate:any = new Date();
 
   public charm: number;
 

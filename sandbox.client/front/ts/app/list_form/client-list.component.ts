@@ -48,6 +48,11 @@ export class ClientListComponent {
     this.child.loadFromDatabase(this.clients[index].id);
   }
 
+  clearClicked() {
+    this.clientRecordFilter.searchName = "";
+    this.pageChanged(0);
+  }
+
   loadClients() {
     this.httpService.get("/client/get-clients", {
       filter: JSON.stringify(this.clientRecordFilter)
@@ -112,7 +117,6 @@ export class ClientListComponent {
   }
 
   pageSizeChanged() {
-    this.loadClients();
     this.pageChanged(0);
   }
 

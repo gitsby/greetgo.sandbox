@@ -9,6 +9,7 @@ import {HttpService} from "./HttpService";
 import {ClientEditFormComponent} from "./edit_form/client-edit-form.component";
 import {TextMaskModule} from "angular2-text-mask";
 import {ClientListComponent} from "./list_form/client-list.component";
+import {DatePipe} from "@angular/common";
 
 @NgModule({
   imports: [
@@ -27,7 +28,9 @@ import {ClientListComponent} from "./list_form/client-list.component";
     ClientListComponent
   ],
   bootstrap: [RootComponent],
-  providers: [HttpService],
+  providers: [
+    DatePipe,
+    HttpService],
   entryComponents: [],
 })
 export class AppModule {
