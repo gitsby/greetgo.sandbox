@@ -3,7 +3,6 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.Character;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
@@ -15,7 +14,8 @@ import static java.util.Calendar.*;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
-  // FIXME: 6/14/18 Смотри на подсказки которые тебе дает Idea. Желтых отметок не должно быть
+
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<StandDb> db;
 
   private List<ClientDot> filter(ClientRecordFilter filter) {
@@ -23,12 +23,15 @@ public class ClientRegisterStand implements ClientRegister {
       return getClientSlice(db.get().clientDots, 0, filter.sliceNum);
     }
     filter.searchName = filter.searchName.toLowerCase().trim();
-    // FIXME: 6/14/18 Использование стрим апи не читабельная
-    return db.get().getClientDot().stream()
-      .filter(clientDot -> filter.searchName == null ||
-        (clientDot.surname + " " + clientDot.name + " " + clientDot.patronymic).
-          toLowerCase().contains(filter.searchName))
+
+    return db.get().clientDots
+      .stream()
+      .filter(clientDot -> filter.searchName == null || fioForSearch(clientDot).contains(filter.searchName))
       .collect(Collectors.toList());
+  }
+
+  private String fioForSearch(ClientDot dot) {
+    return (dot.surname + " " + dot.name + " " + (dot.patronymic == null ? "" : dot.patronymic)).toLowerCase();
   }
 
   private ClientRecord dotToClientRecord(ClientDot clientDot) {
@@ -39,12 +42,45 @@ public class ClientRegisterStand implements ClientRegister {
     clientRecord.patronymic = clientDot.patronymic;
     clientRecord.age = getDiffYears(clientDot.birthDate, new Date());
     clientRecord.character = getCharacterById(clientDot.charm);
-    // FIXME: 14.06.18 Нужно сделать float или double
-    // FIXME: 6/14/18 Расчет минимальной, максимальной и общей неверный
-    clientRecord.minBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
-    clientRecord.maxBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
-    clientRecord.accBalance = (int) db.get().clientAccountDots.get(clientDot.id).money;
+
+    clientRecord.minBalance = minMoneyInClientAccounts(clientDot.id);
+    clientRecord.maxBalance = maxMoneyInClientAccounts(clientDot.id);
+    clientRecord.accBalance = totalMoneyInClientAccounts(clientDot.id);
     return clientRecord;
+  }
+
+  private double totalMoneyInClientAccounts(int clientId) {
+    double total = 0;
+    for (ClientAccountDot clientAccountDot : db.get().clientAccountDots) {
+      if (clientAccountDot.id == clientId) {
+        total += clientAccountDot.money;
+      }
+    }
+    return total;
+  }
+
+  private double maxMoneyInClientAccounts(int clientId) {
+    double max = 0;
+    for (ClientAccountDot clientAccount : db.get().clientAccountDots) {
+      if (clientAccount.id == clientId) {
+        if (clientAccount.money > max) {
+          max = clientAccount.money;
+        }
+      }
+    }
+    return max;
+  }
+
+  private double minMoneyInClientAccounts(int clientId) {
+    double min = Double.MAX_VALUE;
+    for (ClientAccountDot clientAccount : db.get().clientAccountDots) {
+      if (clientAccount.id == clientId) {
+        if (clientAccount.money < min) {
+          min = clientAccount.money;
+        }
+      }
+    }
+    return min;
   }
 
   @Override
@@ -56,10 +92,11 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public ClientDetails getClientDetails(int clientId) {
+  public ClientDetails details(int clientId) {
     ClientDetails foundClient = new ClientDetails();
 
     ClientDot clientDot = getClientDot(clientId);
+    assert clientDot != null;
     foundClient.id = clientDot.id;
     foundClient.name = clientDot.name;
     foundClient.surname = clientDot.surname;
@@ -70,18 +107,18 @@ public class ClientRegisterStand implements ClientRegister {
 
 
     List<PhoneDot> phoneDotList = getPhoneDotsWithId(clientId);
-    List<Phone> phones = new ArrayList<>();
+    foundClient.phones = new ArrayList<>();
+
     for (PhoneDot phoneDot : phoneDotList) {
       Phone phone = new Phone();
       phone.number = phoneDot.number;
-      phone.client = phoneDot.client;
+      phone.clientid = phoneDot.client;
       phone.type = phoneDot.type;
-      phones.add(phone);
+      foundClient.phones.add(phone);
     }
-    foundClient.phones = phones.toArray(new Phone[phoneDotList.size()]);
 
     List<AddressDot> addressDotList = getAddressesWithClientId(foundClient.id);
-    List<Address> addresses = new ArrayList<>();
+    foundClient.addresses = new ArrayList<>();
 
     for (AddressDot addressDot : addressDotList) {
       Address address = new Address();
@@ -92,14 +129,13 @@ public class ClientRegisterStand implements ClientRegister {
       address.street = addressDot.street;
       address.type = addressDot.type;
 
-      addresses.add(address);
+      foundClient.addresses.add(address);
     }
 
-    foundClient.addresses = addresses.toArray(new Address[addresses.size()]);
     return foundClient;
   }
 
-  public List<PhoneDot> getPhoneDotsWithId(int clientId) {
+  private List<PhoneDot> getPhoneDotsWithId(int clientId) {
     List<PhoneDot> phones = new ArrayList<>();
     for (PhoneDot phoneDot : db.get().phoneDots) {
       if (phoneDot.client == clientId) {
@@ -138,10 +174,12 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     if (editedClient.name != null) {
+      assert clientDot != null;
       if (!editedClient.name.equals(clientDot.name)) {
         clientDot.name = editedClient.name;
       }
     }
+    assert clientDot != null;
     System.out.println("Gender:" + editedClient.gender + " " + clientDot.gender);
     if (editedClient.surname != null) {
       if (!editedClient.surname.equals(clientDot.surname)) {
@@ -162,10 +200,7 @@ public class ClientRegisterStand implements ClientRegister {
       }
     }
     if (editedClient.charm != null) {
-      // FIXME: 14.06.18 Лишняя проверка
-      if (!editedClient.charm.equals(clientDot.charm)) {
-        clientDot.charm = editedClient.charm;
-      }
+      clientDot.charm = editedClient.charm;
     }
     if (editedClient.gender != null) {
       if (!editedClient.gender.equals
@@ -224,7 +259,7 @@ public class ClientRegisterStand implements ClientRegister {
     if (editedClient.editedPhones != null) {
       for (Phone phone : editedClient.editedPhones) {
         for (PhoneDot phoneDot : db.get().phoneDots) {
-          if (phoneDot.client == phone.client && phoneDot.number.equals(phone.number)) {
+          if (phoneDot.client == phone.clientid && phoneDot.number.equals(phone.number)) {
             phoneDot.number = phone.editedTo;
             break;
           }
@@ -269,15 +304,15 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public List<Character> getCharacters() {
-    List<Character> characters = new ArrayList<>();
+  public List<CharmRecord> charm() {
+    List<CharmRecord> charmRecords = new ArrayList<>();
     for (CharacterDot characterDot : db.get().characterDots) {
-      Character character = new Character();
-      character.id = characterDot.id;
-      character.name = characterDot.name;
-      characters.add(character);
+      CharmRecord charmRecord = new CharmRecord();
+      charmRecord.id = characterDot.id;
+      charmRecord.name = characterDot.name;
+      charmRecords.add(charmRecord);
     }
-    return characters;
+    return charmRecords;
   }
 
   private static int getDiffYears(Date first, Date last) {
@@ -333,16 +368,16 @@ public class ClientRegisterStand implements ClientRegister {
         clientRecords.sort(Comparator.comparing(o -> o.surname));
         break;
       case "age":
-        clientRecords.sort(Comparator.comparingInt(o -> o.age));
+        clientRecords.sort(Comparator.comparingDouble(o -> o.age));
         break;
       case "total":
-        clientRecords.sort(Comparator.comparingInt(o -> o.accBalance));
+        clientRecords.sort(Comparator.comparingDouble(o -> o.accBalance));
         break;
       case "max":
-        clientRecords.sort(Comparator.comparingInt(o -> o.maxBalance));
+        clientRecords.sort(Comparator.comparingDouble(o -> o.maxBalance));
         break;
       case "min":
-        clientRecords.sort(Comparator.comparingInt(o -> o.minBalance));
+        clientRecords.sort(Comparator.comparingDouble(o -> o.minBalance));
         break;
       case "-surname":
         clientRecords.sort((o1, o2) -> (-o1.surname.compareTo(o2.surname)));
@@ -351,13 +386,13 @@ public class ClientRegisterStand implements ClientRegister {
         clientRecords.sort((o1, o2) -> Integer.compare(o2.age, o1.age));
         break;
       case "-total":
-        clientRecords.sort((o1, o2) -> Integer.compare(o2.accBalance, o1.accBalance));
+        clientRecords.sort((o1, o2) -> Double.compare(o2.accBalance, o1.accBalance));
         break;
       case "-max":
-        clientRecords.sort((o1, o2) -> Integer.compare(o2.maxBalance, o1.maxBalance));
+        clientRecords.sort((o1, o2) -> Double.compare(o2.maxBalance, o1.maxBalance));
         break;
       case "-min":
-        clientRecords.sort((o1, o2) -> Integer.compare(o2.minBalance, o1.minBalance));
+        clientRecords.sort((o1, o2) -> Double.compare(o2.minBalance, o1.minBalance));
         break;
     }
     clientRecords = getClientSlice(clientRecords, clientRecordFilter.paginationPage, clientRecordFilter.sliceNum);

@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class ClientDetails {
 
@@ -17,10 +17,9 @@ public class ClientDetails {
 
   public int charm;
 
-  // FIXME: 14.06.18 Сделать List вместо массива
-  public Address[] addresses;
+  public List<Address> addresses;
 
-  public Phone[] phones;
+  public List<Phone> phones;
 
   @Override
   public String toString() {
@@ -33,8 +32,8 @@ public class ClientDetails {
       ", birthDate='" + birthDate + '\'' +
       ", age=" + age +
       ", charm=" + charm +
-      ", addresses=" + Arrays.toString(addresses) +
-      ", phones=" + Arrays.toString(phones) +
+      ", addresses=" + addresses +
+      ", phones=" + phones +
       '}';
   }
 }

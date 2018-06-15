@@ -8,8 +8,8 @@
       <![CDATA[
         create table Client_Phone(
           clientid int not null,
-          number varchar(10) not null,
-          type varchar(10) not null
+          number varchar(20) not null,
+          type varchar(20) not null
         )
       ]]>
     </sql>

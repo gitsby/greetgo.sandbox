@@ -11,5 +11,5 @@
   <include file="liquibase/postgres/v001/004_client_phone.xml"/>
   <include file="liquibase/postgres/v001/005_client_account.xml"/>
   <include file="liquibase/postgres/v001/006_client_account_transaction.xml"/>
-
+  <include file="liquibase/postgres/v001/007_views.xml"/>
 </databaseChangeLog>
