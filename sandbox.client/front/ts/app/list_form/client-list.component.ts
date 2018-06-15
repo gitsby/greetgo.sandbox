@@ -50,7 +50,9 @@ export class ClientListComponent {
 
   clearClicked() {
     this.clientRecordFilter.searchName = "";
-    this.pageChanged(0);
+    this.clientRecordFilter.paginationPage = 0;
+    this.loadClientsNum();
+    this.loadClients();
   }
 
   loadClients() {

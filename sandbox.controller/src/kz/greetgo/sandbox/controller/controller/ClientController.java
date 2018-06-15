@@ -4,7 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.core.RequestMethod;
-import kz.greetgo.sandbox.controller.model.Character;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
@@ -48,16 +48,15 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/details")
-  public ClientDetails getClientDetails(@Par("clientId") int clientId) {
-    return clientRegister.get().getClientDetails(clientId);
+  public ClientDetails details(@Par("clientId") int clientId) {
+    return clientRegister.get().details(clientId);
   }
 
-  // FIXME: 6/14/18 charm, ne character
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/characters")
-  public List<Character> getCharacters() {
-    return clientRegister.get().getCharacters();
+  @Mapping("/charm")
+  public List<CharmRecord> getCharms() {
+    return clientRegister.get().charm();
   }
 
 }

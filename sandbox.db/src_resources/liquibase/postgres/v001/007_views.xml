@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="pompei" id="create-view-JoinWithCharacter">
+    <createView
+      replaceIfExists="true"
+      schemaName="public"
+      viewName="v_client_with_character">
+      select client.id, client.name, client.surname, client.patronymic, client.gender,
+      client.birth_date, c2.name as character from client join characters c2 on client.charm = c2.id
+    </createView>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-view-TotalMoneyOfAccount">
+    <createView
+      replaceIfExists="true"
+      schemaName="public"
+      viewName="v_client_account_total">
+      select
+      clientid,
+      sum(money)
+      from client
+      join client_account a on client.id = a.clientid
+      group by clientid;
+    </createView>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-view-MinMoneyOfAccount">
+    <createView
+      replaceIfExists="true"
+      schemaName="public"
+      viewName="v_client_account_min">
+      select
+      clientid,
+      min(money)
+      from client
+      join client_account a on client.id = a.clientid
+      group by clientid;
+    </createView>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-view-MaxMoneyOfAccount">
+    <createView
+      replaceIfExists="true"
+      schemaName="public"
+      viewName="v_client_account_max">
+      select
+      clientid,
+      max(money)
+      from client
+      join client_account a on client.id = a.clientid
+      group by clientid;
+    </createView>
+  </changeSet>
+
+</databaseChangeLog>

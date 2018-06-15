@@ -1,6 +1,3 @@
-<!--fixme при нажатии на clear total number of clients не обновляется-->
-<!--fixme ограничение на дату рождения все еще не работает-->
-
 <div>
   <div class="container">
     <div class="row">
@@ -97,6 +94,7 @@
 <div class="center">
   <div class="pagination">
     <a class="paginationPageNum"
+       *ngIf="paginationNum>1"
        (click)="decreaseCurrentPagination()"><<</a>
     <a class="paginationPageNum" *ngIf="this.clientRecordFilter.paginationPage>1 && paginationNum>3"
        (click)="pageChanged(0)">0</a>
@@ -110,6 +108,7 @@
        (click)="pageChanged(paginationNum-1)"
        *ngIf="this.clientRecordFilter.paginationPage<paginationNum-2 && paginationNum>3">{{paginationNum-1}}</a>
     <a class="paginationPageNum"
+       *ngIf="paginationNum>1"
        (click)="increaseCurrentPagination()">>></a>
     <select (change)="pageSizeChanged()" [(ngModel)]="clientRecordFilter.sliceNum" class="selectSliceNum"
             placeholder="Select ">

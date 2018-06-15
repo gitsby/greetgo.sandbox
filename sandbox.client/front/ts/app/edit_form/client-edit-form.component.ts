@@ -58,7 +58,7 @@ export class ClientEditFormComponent implements AfterViewInit {
       "workingPhone": new FormControl(),
       "mobilePhone": new FormControl("+7", [Validators.required, Validators.pattern(".[0-9]..[0-9]{3}..[0-9]{3}.[0-9]{4}")]),
     });
-    httpService.get("/client/characters").toPromise().then(result => {
+    httpService.get("/client/charm").toPromise().then(result => {
       for (let chars of result.json()) {
         console.log(chars.name);
         this.characters.push(chars as Character)

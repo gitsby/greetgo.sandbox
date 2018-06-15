@@ -19,14 +19,16 @@
                  class="form-control" type="text"
                  required="">
           <p>Date of birth: *</p>
-          <input max="{{currentDate}}"
-                 [(ngModel)]="toSave.birthDate"
-                 formControlName="dateBirth"
-                 id="dateInput"
-                 value="{{toSave.birthDate| date:'yyyy-MM-dd'}}"
-                 format="dd/MM/yyyy"
-                 class="input-group date"
-                 type="date">
+          <input
+            onkeydown="return false"
+            max="{{currentDate}}"
+            [(ngModel)]="toSave.birthDate"
+            formControlName="dateBirth"
+            id="dateInput"
+            value="{{toSave.birthDate| date:'yyyy-MM-dd'}}"
+            format="dd/MM/yyyy"
+            class="input-group date"
+            type="date">
           <p>Character: *</p>
           <select [(ngModel)]="toSave.charm"
                   size="characters.length" formControlName="character">
