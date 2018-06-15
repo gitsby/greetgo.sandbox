@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Bean
@@ -88,7 +89,48 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<ClientRecord> getRecords(ClientFilter filter) {
-    throw new UnsupportedOperationException();
+    if (filter == null) return new ArrayList<>();
+
+    StringBuilder sqlQuery = new StringBuilder();
+
+    sqlQuery.append("SELECT surname, name, patronymic, DATE_PART('year', '2012-01-01'::date) - DATE_PART('year', '2011-10-02'::date) AS age, AVG(money) AS middle_balance, MAX(money) AS max_balance, MIN(money) AS min_balance ");
+    sqlQuery.append("FROM client ");
+    sqlQuery.append("LEFT JOIN client_account ON client_account.client=Client.id AND client_account.actual=1 AND client.actual=1 ");
+
+    String direct = sortDirection(filter);
+    sqlQuery.append("GROUP BY surname, name, patronymic ");
+
+    if (filter.sortByEnum != null)
+      switch (filter.sortByEnum) {
+        case FULL_NAME:
+          sqlQuery.append(String.format("ORDER BY surname %s, name %s, patronymic %s ", direct, direct, direct));
+          break;
+        case AGE:
+          sqlQuery.append(String.format("ORDER BY age %s ", direct));
+          break;
+        case MIDDLE_BALANCE:
+          sqlQuery.append(String.format("ORDER BY middle_balance %s ", direct));
+          break;
+        case MAX_BALANCE:
+          sqlQuery.append(String.format("ORDER BY max_balance %s ", direct));
+          break;
+        case MIN_BALANCE:
+          sqlQuery.append(String.format("ORDER BY min_balance %s ", direct));
+          break;
+      }
+
+    if (filter.fio != null)
+      sqlQuery.append(String.format("WHERE client.name LIKE %s OR client.surname LIKE %s ", filter.fio, filter.fio));
+
+    sqlQuery.append(String.format("OFFSET %d ", filter.offset));
+    sqlQuery.append(String.format("LIMIT %d ", filter.limit));
+
+    return clientDao.get().select(sqlQuery.toString());
+  }
+
+  private String sortDirection(ClientFilter clientFilter) {
+    if (clientFilter.sortDirection != null) return clientFilter.sortDirection.toString();
+    return "";
   }
 
   @Override

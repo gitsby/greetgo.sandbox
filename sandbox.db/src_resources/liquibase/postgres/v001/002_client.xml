@@ -68,7 +68,8 @@
         client INTEGER,
         money FLOAT,
         number VARCHAR(255),
-        registered_at date,
+        registered_at DATE,
+        actual SMALLINT NOT NULL DEFAULT 1,
         FOREIGN KEY (client) REFERENCES client(id)
       )
     ]]>
