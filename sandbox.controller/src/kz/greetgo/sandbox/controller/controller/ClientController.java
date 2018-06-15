@@ -55,6 +55,7 @@ public class ClientController implements Controller {
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
+  // FIXME: 6/15/18 mapper: get-charms
   @Mapping("/getCharms")
   public List<Charm> charms() { return clientRegister.get().getCharms(); }
 }

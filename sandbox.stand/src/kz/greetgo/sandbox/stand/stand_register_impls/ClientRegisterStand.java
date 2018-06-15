@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
+  // FIXME: 6/15/18 izbavlyaisya ot zheltih v kode
+
   public BeanGetter<StandDb> db;
 
   @Override
