@@ -3,56 +3,44 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet author="pompei" id="create-view-JoinWithCharacter">
-    <createView
-      replaceIfExists="true"
-      schemaName="public"
-      viewName="v_client_with_character">
-      select client.id, client.name, client.surname, client.patronymic, client.gender,
-      client.birth_date, c2.name as character from client join characters c2 on client.charm = c2.id
-    </createView>
-  </changeSet>
 
-  <changeSet author="pompei" id="create-view-TotalMoneyOfAccount">
+  <changeSet author="pompei" id="create-view-ClientAccountMoneysInfo">
     <createView
       replaceIfExists="true"
       schemaName="public"
-      viewName="v_client_account_total">
+      viewName="v_client_account_moneys">
       select
       clientid,
-      sum(money)
-      from client
-      join client_account a on client.id = a.clientid
-      group by clientid;
-    </createView>
-  </changeSet>
-
-  <changeSet author="pompei" id="create-view-MinMoneyOfAccount">
-    <createView
-      replaceIfExists="true"
-      schemaName="public"
-      viewName="v_client_account_min">
-      select
-      clientid,
+      SUM(money),
+      max(money),
       min(money)
       from client
       join client_account a on client.id = a.clientid
-      group by clientid;
+      group by clientid
     </createView>
   </changeSet>
 
-  <changeSet author="pompei" id="create-view-MaxMoneyOfAccount">
+  <changeSet author="pompei" id="create-view-ClientRecords">
     <createView
       replaceIfExists="true"
       schemaName="public"
-      viewName="v_client_account_max">
+      viewName="v_client_records">
       select
-      clientid,
-      max(money)
+      client.id,
+      client.name,
+      client.surname,
+      client.patronymic,
+      client.gender,
+      age(birth_date),
+      c2.name as character,
+      v_client_account_moneys.min,
+      v_client_account_moneys.max,
+      v_client_account_moneys.sum
       from client
-      join client_account a on client.id = a.clientid
-      group by clientid;
+      join characters c2 on client.charm = c2.id
+      left join v_client_account_moneys on client.id= v_client_account_moneys.clientid
     </createView>
   </changeSet>
+
 
 </databaseChangeLog>

@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
@@ -37,12 +36,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void createNewClient() {
     ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = "Namy";
-    clientToSave.surname = "Andres";
-    clientToSave.patronymic = "Torpa";
-    clientToSave.gender = "FEMALE";
+    clientToSave.name = "Famir";
+    clientToSave.surname = "Fill";
+    clientToSave.patronymic = "Tindra";
+    clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
-    clientToSave.charm = 2;
+    clientToSave.charm = 1;
     clientToSave.id = null;
 
     Phone phone = new Phone();
@@ -113,13 +112,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.columnName = "surname";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
-    clientRecordFilter.searchName = "";
+    clientRecordFilter.searchName = "and";
 
     assertThat(clientRegister.get().getClients(clientRecordFilter));
-    for (ClientRecord clientRecord : clientRegister.get().getClients(clientRecordFilter)) {
-      System.out.println(clientRecord.name + " " + clientRecord.surname + " " + clientRecord.patronymic);
-    }
-    System.out.println(clientRegister.get().getClients(clientRecordFilter).size());
+
   }
 
   @Test

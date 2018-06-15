@@ -2,14 +2,14 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.annotations.ParSession;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 @Bean
@@ -19,50 +19,98 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<JdbcSandbox> jdbc;
 
 
-
   @Override
   public List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
+    StringBuilder query = new StringBuilder("SELECT * FROM v_client_records ");
 
-
-    if (clientRecordFilter.searchName == null) {
-
-    } else {
-      // Without where like
-      if (clientRecordFilter.searchName.length() == 0) {
-
+    if (clientRecordFilter.searchName != null) {
+      if (clientRecordFilter.searchName.length() != 0) {
+        query.append(" WHERE concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||?||'%' ");
       }
     }
 
     switch (clientRecordFilter.columnName) {
       case "surname":
-        System.out.println("SORTING WITH SURNAME");
-        clientRecordFilter.columnName = "name";
-        break;
-      case "gender":
-        clientRecordFilter.columnName = "gender";
+        query.append(" ORDER BY surname,name, patronymic ASC ");
         break;
       case "age":
+        query.append(" ORDER BY age ASC ");
         break;
       case "total":
+        query.append(" ORDER BY sum ASC ");
         break;
       case "max":
+        query.append(" ORDER BY max ASC ");
         break;
       case "min":
+        query.append(" ORDER BY min ASC ");
         break;
       case "-surname":
+        query.append(" ORDER BY surname, name, patronymic DESC ");
         break;
       case "-age":
+        query.append(" ORDER BY age DESC ");
         break;
       case "-total":
+        query.append(" ORDER BY sum DESC ");
         break;
       case "-max":
+        query.append(" ORDER BY max DESC ");
         break;
       case "-min":
+        query.append(" ORDER BY min DESC ");
         break;
     }
 
-    List<ClientRecord> clientRecords = clientDao.get().getClientRecordsAsc(clientRecordFilter);
+    query.append(" LIMIT ? OFFSET ? ");
+
+    //List<ClientRecord> clientRecords = clientDao.get().getClientRecordsAsc(clientRecordFilter);
+
+    List<ClientRecord> clientRecords = new ArrayList<>();
+
+    jdbc.get().execute(ConnectionCallback -> {
+      System.out.println("Query: " + query.toString());
+      PreparedStatement statement = ConnectionCallback.prepareStatement(query.toString());
+
+      int parameterIndex = 1;
+      if (clientRecordFilter.searchName != null) {
+        statement.setObject(parameterIndex++, clientRecordFilter.searchName);
+      }
+
+      statement.setObject(parameterIndex++, clientRecordFilter.sliceNum * clientRecordFilter.paginationPage + clientRecordFilter.sliceNum);
+      statement.setObject(parameterIndex++, clientRecordFilter.sliceNum * clientRecordFilter.paginationPage);
+
+      try (ResultSet resultSet = statement.executeQuery()) {
+
+        while (resultSet.next()) {
+          ClientRecord clientRecord = new ClientRecord();
+          clientRecord.surname = resultSet.getString("surname");
+          clientRecord.name = resultSet.getString("name");
+          clientRecord.patronymic = (resultSet.getString("name") != null) ? resultSet.getString("name") : "";
+          clientRecord.character = resultSet.getString("character");
+
+          int firstSpaceIndex = resultSet.getString("age").indexOf(":");
+          System.out.println(resultSet.getString("age") + ' ' + firstSpaceIndex);
+          String age = resultSet.getString("age").substring(0, firstSpaceIndex);
+          clientRecord.age = Integer.parseInt(age);
+
+          clientRecord.maxBalance = resultSet.getDouble("max");
+          clientRecord.minBalance = resultSet.getDouble("min");
+          clientRecord.accBalance = resultSet.getDouble("sum");
+
+          clientRecords.add(clientRecord);
+          System.out.println("From JDBC: " + clientRecord.surname + " " + clientRecord.name + " " + clientRecord.patronymic + " " + clientRecord.age + " " + clientRecord.minBalance + " " + clientRecord.maxBalance + " " + clientRecord.accBalance + " " + clientRecord.character);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return statement;
+    });
     return clientRecords;
+  }
+
+  private String createSqlQueryFromFilter(ClientRecordFilter filter) {
+    return null;
   }
 
   @Override
