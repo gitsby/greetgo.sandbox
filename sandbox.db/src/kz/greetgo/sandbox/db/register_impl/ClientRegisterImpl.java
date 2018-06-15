@@ -85,7 +85,7 @@ public class ClientRegisterImpl implements ClientRegister {
     details.name = client.name;
     details.patronymic = client.patronymic;
     details.gender = client.gender;
-    details.charmRecord = clientDao.get().getCharm(client.charm);
+    details.charm = clientDao.get().getCharm(client.charm);
     details.addressFact = getClientAddress(clientId, AddressTypeEnum.FACT);
     details.addressReg = getClientAddress(clientId, AddressTypeEnum.REG);
     details.homePhone = getClientPhone(clientId, PhoneType.HOME);
