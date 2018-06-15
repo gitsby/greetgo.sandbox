@@ -6,6 +6,7 @@ import java.util.Date;
 
 public class ClientAccountDot {
   public Integer id;
+  // FIXME: 6/15/18 clientId
   public Integer client;
   public float money;
   public String number;

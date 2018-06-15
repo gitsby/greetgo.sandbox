@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-// FIXME: 6/13/18 charmDot
+// FIXME: 6/13/18 CharmRecord
 public class Charm {
   public Integer id;
   public String name;
