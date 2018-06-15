@@ -1,5 +1,4 @@
-//fixme ClientRecord
-export class ClientRecords {
+export class ClientRecord {
   public id: number;
   public name: string;
   public surname: string;
@@ -9,7 +8,7 @@ export class ClientRecords {
   public max_balance: number | null;
   public min_balance: number | null;
 
-  public assign(o: any): ClientRecords {
+  public assign(o: any): ClientRecord {
     this.id = o.id;
     this.name = o.name;
     this.surname = o.surname;
@@ -21,8 +20,8 @@ export class ClientRecords {
     return this;
   }
 
-  public static copy(a: any): ClientRecords {
-    let ret = new ClientRecords();
+  public static copy(a: any): ClientRecord {
+    let ret = new ClientRecord();
     ret.assign(a);
     return ret;
   }

@@ -3,49 +3,76 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet author="adilbek" id="create-table-Client">
+  <changeSet id="create-table-charm" author="adilbek">
     <sql endDelimiter=";;"><![CDATA[
-      create table Client (
-        id integer primary key,
-        surname varchar(255),
-        name varchar(255),
-        patronymic varchar(255),
-        gender varchar(255),
-        birth_day date,
-        addressRegId integer,
-        addressFactId integer,
-        homePhoneId integer,
-        workPhoneId integer,
-        mobilePhoneId integer,
-        actual smallint not null default 1
+      CREATE TABLE charm (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        description TEXT,
+        energy FLOAT
+      )
+    ]]>
+    </sql>
+  </changeSet>
+
+
+  <changeSet author="adilbek" id="create-table-client">
+    <sql endDelimiter=";;"><![CDATA[
+      CREATE TABLE client (
+        id SERIAL,
+        surname VARCHAR(255),
+        name VARCHAR(255),
+        patronymic VARCHAR(255),
+        gender VARCHAR(255),
+        birth_date DATE,
+        charm INTEGER,
+        actual SMALLINT NOT NULL DEFAULT 1,
+        CONSTRAINT pk_tbl_Client_id PRIMARY KEY (id),
+        FOREIGN KEY (charm) REFERENCES charm(id)
+      );
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="adilbek" id="create-table-client_phone">
+    <sql endDelimiter=";;"><![CDATA[
+      CREATE TABLE client_phone (
+        client INTEGER,
+        type VARCHAR(255),
+        number VARCHAR(255),
+        actual SMALLINT NOT NULL DEFAULT 1,
+        PRIMARY KEY (client, number),
+        FOREIGN KEY (client) REFERENCES client(id)
       )
     ]]></sql>
   </changeSet>
 
-  <changeSet author="adilbek" id="create-table-ClientPhone">
+  <changeSet author="adilbek" id="create-table-client_address">
     <sql endDelimiter=";;"><![CDATA[
-      create table ClientPhone (
-        client integer,
-        type varchar(255),
-        number varchar(255),
-        primary key(client, number),
-        foreign key (client) references Client(id)
+      CREATE TABLE client_address (
+        client INTEGER,
+        type VARCHAR(255),
+        street VARCHAR(255),
+        house VARCHAR(255),
+        flat VARCHAR(255),
+        PRIMARY KEY(client, type),
+        actual SMALLINT NOT NULL DEFAULT 1,
+        FOREIGN KEY (client) REFERENCES client(id)
       )
     ]]></sql>
   </changeSet>
 
-  <changeSet author="adilbek" id="create-table-ClientAddress">
+  <changeSet id="create-tabler-client_account" author="adilbek">
     <sql endDelimiter=";;"><![CDATA[
-      create table ClientAddress (
-        client integer,
-        type varchar(255),
-        street varchar(255),
-        house varchar(255),
-        flat varchar(255),
-        primary key(client, type),
-        foreign key (client) references Client(id)
+      CREATE TABLE client_account (
+        id SERIAL PRIMARY KEY,
+        client INTEGER,
+        money FLOAT,
+        number VARCHAR(255),
+        registered_at DATE,
+        actual SMALLINT NOT NULL DEFAULT 1,
+        FOREIGN KEY (client) REFERENCES client(id)
       )
-    ]]></sql>
+    ]]>
+    </sql>
   </changeSet>
-
 </databaseChangeLog>

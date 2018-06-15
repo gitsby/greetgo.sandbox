@@ -8,7 +8,7 @@ export class ClientToSave {
   public name: string;
   public patronymic: string;
   public gender: Gender;
-  public birth_day: Date;
+  public birthDate: Date;
   public charmId: number;
   public addressFact: ClientAddress = new ClientAddress();
   public addressReg: ClientAddress = new ClientAddress();
@@ -23,7 +23,7 @@ export class ClientToSave {
     this.name = o.name;
     this.patronymic = o.patronymic;
     this.gender = o.gender;
-    this.birth_day = new Date(o.birth_day);
+    this.birthDate = new Date(o.birthDate);
     this.charmId = o.charm.id;
     this.addressFact = o.addressFact;
     this.addressReg = o.addressReg;

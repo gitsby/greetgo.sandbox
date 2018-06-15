@@ -1,5 +1,7 @@
 export class ClientAccount {
+  public id: number;
+  public client: number;
   public money: number;
   public number: string;
-  public registered_at: Date;
+  public registeredAt: Date;
 }

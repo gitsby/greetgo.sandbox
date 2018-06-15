@@ -1,10 +1,10 @@
-import {SortBy} from "./SortBy";
 import {SortDirection} from "./SortDirection";
+import {SortByEnum} from "./SortByEnum";
 
 export class ClientFilter {
-  public from: number;
-  public to: number;
-  public sortBy: SortBy | null;
+  public offset: number;
+  public limit: number;
+  public sortByEnum: SortByEnum | null;
   public sortDirection: SortDirection | null;
   public fio: string | null;
 }

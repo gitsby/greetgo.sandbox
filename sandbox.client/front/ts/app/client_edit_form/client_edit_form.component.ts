@@ -3,6 +3,7 @@ import {HttpService} from "../HttpService";
 import {ClientToSave} from "../../model/ClientToSave";
 import {Charm} from "../../model/Charm";
 import {Gender} from "../../model/Gender";
+import {Details} from "../../model/Details";
 
 @Component({
   selector: 'client-info-form-component',
@@ -10,8 +11,6 @@ import {Gender} from "../../model/Gender";
   styles: [require('./client_edit_form.component.css')],
 })
 export class ClientEditFormComponent implements OnInit {
-  //fixme есть проблемы с датой рождения. если год большой, то возраст становиться отрицательным или нул пойнтер на сервере
-  //fixme s kirilicoi ne rabotaet
   @Input() clientId: number;
   @Output() onClose = new EventEmitter<boolean>();
 
@@ -24,20 +23,24 @@ export class ClientEditFormComponent implements OnInit {
   wrongMessageEnable: boolean = false;
   clientToSave: ClientToSave = new ClientToSave();
 
+  currentDate: Date = new Date();
+
   constructor(private httpService: HttpService) {
     this.loadCharms();
   }
 
   ngOnInit(): void {
+
     if (this.clientId != null) {
       this.title = "Изменить данные клиента";
       this.buttonTitle = "Изменить";
       let clientId = this.clientId as number;
 
-      this.httpService.get("/client/detail", {"clientId": clientId}).toPromise().then(result => {
-        this.clientToSave = ClientToSave.copy(result.json());
-        this.serializeAllNumber();
+      this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
+        console.log(result.json());
+        this.clientToSave = Details.copy(result.json()).toClientToSave();
         console.log(this.clientToSave);
+        this.formatAllPhoneNumbers();
       })
     }
     else {
@@ -45,7 +48,6 @@ export class ClientEditFormComponent implements OnInit {
       this.clientToSave.gender = Gender.MALE;
       this.clientToSave.charmId = 1;
     }
-    this.setMaxDate();
   }
 
   loadCharms() {
@@ -59,26 +61,27 @@ export class ClientEditFormComponent implements OnInit {
 
   checkClientData(): boolean {
     if (this.checkClientPhones() &&
+      this.isCorrectDate(this.clientToSave.birthDate) &&
       this.checkClientText() &&
-      this.checkClientAddresse() &&
-      !ClientEditFormComponent.isEmpty(this.clientToSave.birth_day) &&
+      this.checkClientAddress() &&
+      !ClientEditFormComponent.isEmpty(this.clientToSave.birthDate) &&
       !ClientEditFormComponent.isEmpty(this.clientToSave.gender)) {
-      this.unSerializeAllNumbers();
+      this.reformatAllPhoneNumbers();
       return true;
     }
     return false;
   }
 
-  checkClientAddresse(): boolean {
+  checkClientAddress(): boolean {
     if (ClientEditFormComponent.isEmpty(this.clientToSave.addressReg)) return false;
-    let re = /^[a-zA-Z0-9_]+$/;
+    let re = /^[a-zA-Z0-9а-яА-Я_]+$/;
     return this.isCorrect(re, this.clientToSave.addressReg.street) &&
       this.isCorrect(re, this.clientToSave.addressReg.house) &&
       this.isCorrect(re, this.clientToSave.addressReg.flat);
   }
 
   checkClientText(): boolean {
-    let re = /^[a-zA-Z_]*$/;
+    let re = /^[a-zA-Zа-яА-Я_]*$/;
     return this.isCorrect(re, this.clientToSave.name)
       && this.isCorrect(re, this.clientToSave.surname);
   }
@@ -95,10 +98,10 @@ export class ClientEditFormComponent implements OnInit {
     return text.match(re) != null;
   }
 
-  unSerializeAllNumbers() {
-    this.clientToSave.homePhone.number = this.unSerializeNumber(this.clientToSave.homePhone.number);
-    this.clientToSave.mobilePhone.number = this.unSerializeNumber(this.clientToSave.mobilePhone.number);
-    this.clientToSave.workPhone.number = this.unSerializeNumber(this.clientToSave.workPhone.number);
+  reformatAllPhoneNumbers() {
+    this.clientToSave.homePhone.number = this.reformatPhoneNumber(this.clientToSave.homePhone.number);
+    this.clientToSave.mobilePhone.number = this.reformatPhoneNumber(this.clientToSave.mobilePhone.number);
+    this.clientToSave.workPhone.number = this.reformatPhoneNumber(this.clientToSave.workPhone.number);
   }
 
   static isEmpty(element: any): boolean {
@@ -127,66 +130,56 @@ export class ClientEditFormComponent implements OnInit {
     this.onClose.emit(clientSaved);
   }
 
-  setBDate(dateText) {
-    this.clientToSave.birth_day = new Date(dateText);
+  setBDate(dateText: string) {
+    if (dateText.length < 10) return;
+    this.clientToSave.birthDate = new Date(dateText);
   }
 
-  setMaxDate() {
-    let today = new Date();
-    let dd: string = today.getDate().toString();
-    let mm: string = (today.getMonth() + 1).toString(); //January is 0!
-    let yyyy: string = today.getFullYear().toString();
-    if (dd.length < 10) {
-      dd = '0' + dd
-    }
-    if (mm.length < 10) {
-      mm = '0' + mm
-    }
-    this.birthDayInput.nativeElement.setAttribute("max", yyyy + '-' + mm + '-' + dd);
+  isCorrectDate(date: Date): boolean {
+    return date.getTime() < new Date().getTime() && date.getTime() > new Date("1000-01-01").getTime();
   }
 
-  serializeInputText(id: number) {
+
+  formatInputText(id: number) {
     switch (id) {
       case 0:
-        this.clientToSave.name = ClientEditFormComponent.serializeText(this.clientToSave.name);
+        this.clientToSave.name = ClientEditFormComponent.formatText(this.clientToSave.name);
         break;
       case 1:
-        this.clientToSave.surname = ClientEditFormComponent.serializeText(this.clientToSave.surname);
+        this.clientToSave.surname = ClientEditFormComponent.formatText(this.clientToSave.surname);
         break;
       case 2:
-        this.clientToSave.patronymic = ClientEditFormComponent.serializeText(this.clientToSave.patronymic);
+        this.clientToSave.patronymic = ClientEditFormComponent.formatText(this.clientToSave.patronymic);
         break;
     }
   }
 
-  static serializeText(clientText: string | null): string {
+  static formatText(clientText: string | null): string {
     if (clientText == null) return "";
-    return clientText.replace(/[\W\s_\-\d]+/g, '');
+    return clientText.replace(/[\*\+\^\&\$\#\%\@\)\(\_\+\=\!\s_\-\d]+/g, '');
   }
 
-  serializeAllNumber() {
-    if (this.clientToSave.homePhone.number != null) this.serializeInputNumber(0);
-    if (this.clientToSave.workPhone.number) this.serializeInputNumber(1);
-    if (this.clientToSave.mobilePhone.number) this.serializeInputNumber(2);
+  formatAllPhoneNumbers() {
+    if (this.clientToSave.homePhone.number != null) this.formatInputNumber(0);
+    if (this.clientToSave.workPhone.number) this.formatInputNumber(1);
+    if (this.clientToSave.mobilePhone.number) this.formatInputNumber(2);
   }
 
-  serializeInputNumber(id: number) {
+  formatInputNumber(id: number) {
     switch (id) {
       case 0:
-        this.clientToSave.homePhone.number = ClientEditFormComponent.serializeNumber(this.clientToSave.homePhone.number);
+        this.clientToSave.homePhone.number = ClientEditFormComponent.formatPhoneNumber(this.clientToSave.homePhone.number);
         break;
       case 1:
-        this.clientToSave.workPhone.number = ClientEditFormComponent.serializeNumber(this.clientToSave.workPhone.number);
+        this.clientToSave.workPhone.number = ClientEditFormComponent.formatPhoneNumber(this.clientToSave.workPhone.number);
         break;
       case 2:
-        this.clientToSave.mobilePhone.number = ClientEditFormComponent.serializeNumber(this.clientToSave.mobilePhone.number);
+        this.clientToSave.mobilePhone.number = ClientEditFormComponent.formatPhoneNumber(this.clientToSave.mobilePhone.number);
         break;
     }
   }
 
-  //fixme есть проще варианты - не обязательно
-  //fixme name: formatPhoneNumber
-  static serializeNumber(clientNumber: string | null): string {
+  static formatPhoneNumber(clientNumber: string | null): string {
     if (clientNumber == null) return "";
 
     let number = clientNumber.replace(/[\W\s._\-a-zA-Z]+/g, '');
@@ -203,7 +196,7 @@ export class ClientEditFormComponent implements OnInit {
     return chunk.join("-").toUpperCase();
   }
 
-  unSerializeNumber(number: string | null): string {
+  reformatPhoneNumber(number: string | null): string {
     if (number == null) return "";
     return number.replace(/[($)\W\s._\-]+/g, '');
   }

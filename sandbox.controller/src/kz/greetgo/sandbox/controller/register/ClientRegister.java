@@ -10,15 +10,13 @@ import java.util.List;
  */
 public interface ClientRegister {
 
-  ClientInfo get(int clientId);
-
   /**
    * Предоставляет детальную информацию о клиенте
    *
    * @param clientId идентификатор клиента
    * @return детальная информация о клиенте
    */
-  ClientDetail detail(int clientId);
+  Details detail(Integer clientId);
 
   /**
    * Сохраняет или изменяет информацию о клиенте
@@ -32,11 +30,28 @@ public interface ClientRegister {
    *
    * @param clientId идентификатор клиента
    */
-  void remove(int clientId);
+  void delete(Integer clientId);
 
-  List<ClientRecords> getRecords(ClientFilter filter);
+  /**
+   * Предоставляет отфильтрованный список клиентов
+   *
+   * @param filter параметры фильтров для списка слиентов
+   * @return список слиентов после фильтрации
+   */
+  List<ClientRecord> getRecords(ClientFilter filter);
 
+  /**
+   * Предоствовляет количество клиентов с отфильтрованного результата
+   *
+   * @param filter параметры фильтров для списка слиентов
+   * @return количество клиентов после фильтрации
+   */
   int getRecordsCount(ClientFilter filter);
 
+  /**
+   * Предостволяет список характеров
+   *
+   * @return список характеров
+   */
   List<Charm> getCharms();
 }

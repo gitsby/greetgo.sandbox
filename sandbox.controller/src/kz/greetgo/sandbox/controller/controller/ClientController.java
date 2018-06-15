@@ -17,42 +17,39 @@ public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
-  // FIXME: 6/13/18 details
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/detail")
-  public ClientDetail detail(@Par("clientId") int clientId) {
+  @Mapping("/details")
+  public Details details(@Par("clientId") int clientId) {
     return clientRegister.get().detail(clientId);
   }
 
-  // FIXME: 6/14/18 methodы не должны называться по разному, все должны быть save
+
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public void create(@Par("clientToSave") @Json ClientToSave client) {
+  public void save(@Par("clientToSave") @Json ClientToSave client) {
     clientRegister.get().save(client);
   }
 
   @ToJson
   @MethodFilter(RequestMethod.DELETE)
-  @Mapping("/remove")
-  public void remove(@Par("clientId") int clientId) {
-    clientRegister.get().remove(clientId);
+  @Mapping("/delete")
+  public void delete(@Par("clientId") int clientId) {
+    clientRegister.get().delete(clientId);
   }
 
-  // FIXME: 6/13/18 list
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/records")
-  public List<ClientRecords> records(@Par("clientFilter") @Json ClientFilter filter) {
+  @Mapping("/list")
+  public List<ClientRecord> list(@Par("clientFilter") @Json ClientFilter filter) {
     return clientRegister.get().getRecords(filter);
   }
 
-  // FIXME: 6/13/18 count
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  @Mapping("/recordsCount")
-  public int recordsCount(@Par("clientFilter") @Json ClientFilter filter) {
+  @Mapping("/count")
+  public int count(@Par("clientFilter") @Json ClientFilter filter) {
     return clientRegister.get().getRecordsCount(filter);
   }
 
