@@ -8,7 +8,7 @@ export class ClientRecord {
   public max_balance: number | null;
   public min_balance: number | null;
 
-  public assign(o: any): ClientRecord {
+  public assign(o: ClientRecord): ClientRecord {
     this.id = o.id;
     this.name = o.name;
     this.surname = o.surname;
@@ -20,7 +20,7 @@ export class ClientRecord {
     return this;
   }
 
-  public static copy(a: any): ClientRecord {
+  public static copy(a: ClientRecord): ClientRecord {
     let ret = new ClientRecord();
     ret.assign(a);
     return ret;

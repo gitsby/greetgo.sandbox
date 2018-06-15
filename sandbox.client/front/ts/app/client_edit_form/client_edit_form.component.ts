@@ -1,7 +1,7 @@
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientToSave} from "../../model/ClientToSave";
-import {Charm} from "../../model/Charm";
+import {CharmRecord} from "../../model/CharmRecord";
 import {Gender} from "../../model/Gender";
 import {Details} from "../../model/Details";
 
@@ -19,7 +19,7 @@ export class ClientEditFormComponent implements OnInit {
   title = "Новый клиент";
   buttonTitle = "Добавить";
 
-  charms: Array<Charm> = [];
+  charms: Array<CharmRecord> = [];
   wrongMessageEnable: boolean = false;
   clientToSave: ClientToSave = new ClientToSave();
 
@@ -51,9 +51,9 @@ export class ClientEditFormComponent implements OnInit {
   }
 
   loadCharms() {
-    this.httpService.get("/client/getCharms").toPromise().then(result => {
+    this.httpService.get("/client/get-charms").toPromise().then(result => {
       for (let res of result.json())
-        this.charms.push(Charm.copy(res));
+        this.charms.push(CharmRecord.copy(res));
       console.log(this.charms);
 
     })

@@ -5,17 +5,13 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
-
-  // FIXME: 6/15/18 izbavlyaisya ot zheltih v kode
 
   public BeanGetter<StandDb> db;
 
@@ -49,7 +45,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public void delete(Integer clientId) {
-    db.get().clientsStorage.removeIf(clientDot -> clientDot.id == clientId);
+    db.get().clientsStorage.removeIf(clientDot -> clientDot.id.equals(clientId));
   }
 
   @Override
@@ -100,8 +96,8 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public List<Charm> getCharms() {
-    return db.get().charms.stream().map(charmDot -> charmDot.toCharm()).collect(Collectors.toList());
+  public List<CharmRecord> getCharms() {
+    return db.get().charms.stream().map(CharmDot::toCharm).collect(Collectors.toList());
   }
 
   private ClientDot getClient(int clientId) {
@@ -138,7 +134,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMiddleBalance(ClientDot clientDot) {
     float middle_balance = 0;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       middle_balance += clientAccount.money;
@@ -147,7 +143,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMaxBalance(ClientDot clientDot) {
     float max_balance = -1;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money > max_balance) max_balance = clientAccount.money;
@@ -156,7 +152,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMinBalance(ClientDot clientDot) {
     float min_balance = Integer.MAX_VALUE;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money < min_balance) min_balance = clientAccount.money;
@@ -193,7 +189,7 @@ public class ClientRegisterStand implements ClientRegister {
     return details;
   }
 
-  private Charm getCharm(int clientCharmId) {
+  private CharmRecord getCharm(int clientCharmId) {
     return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get().toCharm();
   }
 

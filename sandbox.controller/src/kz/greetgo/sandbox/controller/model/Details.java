@@ -9,7 +9,7 @@ public class Details {
   public String patronymic;
   public Gender gender;
   public Date birthDate;
-  public Charm charm;
+  public CharmRecord charm;
   public ClientAddress addressFact;
   public ClientAddress addressReg;
   public ClientPhone homePhone;

@@ -130,7 +130,7 @@ public class StandDb implements HasAfterInject {
   private void appendClientAccounts(Integer clientId) {
     ClientAccountDot clientAccount = new ClientAccountDot();
     clientAccount.id = clientId;
-    clientAccount.client = clientId;
+    clientAccount.clientId = clientId;
     clientAccount.money = (float) RND.plusDouble(200, 2);
     clientAccount.number = RND.intStr(10);
     clientAccount.registeredAt = null;

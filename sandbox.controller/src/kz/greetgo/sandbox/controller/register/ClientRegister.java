@@ -53,5 +53,5 @@ public interface ClientRegister {
    *
    * @return список характеров
    */
-  List<Charm> getCharms();
+  List<CharmRecord> getCharms();
 }

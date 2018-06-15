@@ -54,7 +54,7 @@
         street VARCHAR(255),
         house VARCHAR(255),
         flat VARCHAR(255),
-        PRIMARY KEY(client, type),
+        PRIMARY KEY (client, type),
         actual SMALLINT NOT NULL DEFAULT 1,
         FOREIGN KEY (client) REFERENCES client(id)
       )
