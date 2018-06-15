@@ -16,6 +16,7 @@ export class ClientToSave {
   public workPhone: ClientPhone = new ClientPhone();
   public mobilePhone: ClientPhone = new ClientPhone();
 
+  //fixme указывай тип
   public assign(o: any): ClientToSave {
     this.id = o.id;
     this.surname = o.surname;
