@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
@@ -8,6 +9,7 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -15,8 +17,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientRegister> clientRegister;
 
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientTestDao> testDaoBeanGetter;
 
   @Test
@@ -119,6 +123,86 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
+  public void isSortedBySurnameNameAsc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "surname";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+
+
+    Comparator<ClientRecord> clientRecordAgeComparator = Comparator.comparing(o -> (o.surname + o.name + o.patronymic));
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedBySurnameNameDesc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "-surname";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> (o2.surname + o2.name + o2.patronymic).compareTo(o1.surname + o1.name + o1.patronymic);
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByAgeAsc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "age";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+
+    // Compare
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age >= o2.age ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByAgeDesc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "-age";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age <= o2.age ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  private boolean isSorted(Comparator<ClientRecord> comparator, List<ClientRecord> records) {
+    ClientRecord previous = null;
+
+    for (ClientRecord clientRecord : records) {
+      if (previous != null && comparator.compare(previous, clientRecord) == -1) {
+        return false;
+      }
+      previous = clientRecord;
+    }
+    return true;
+  }
+
+  @Test
   public void testInvalidSliceNum() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
@@ -135,7 +219,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 1000000000;
-    clientRecordFilter.searchName = "";
+    clientRecordFilter.searchName = null;
 
     assertThat(clientRegister.get().getClients(clientRecordFilter));
   }
@@ -146,7 +230,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = -1;
     clientRecordFilter.sliceNum = 10;
-    clientRecordFilter.searchName = "";
 
     assertThat(clientRegister.get().getClients(clientRecordFilter));
   }
@@ -157,7 +240,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = 900;
     clientRecordFilter.sliceNum = 10;
-    clientRecordFilter.searchName = "";
+    clientRecordFilter.searchName = null;
 
     assertThat(clientRegister.get().getClients(clientRecordFilter));
   }

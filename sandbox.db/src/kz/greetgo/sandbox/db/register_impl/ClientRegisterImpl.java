@@ -26,6 +26,8 @@ public class ClientRegisterImpl implements ClientRegister {
     if (clientRecordFilter.searchName != null) {
       if (clientRecordFilter.searchName.length() != 0) {
         query.append(" WHERE concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||?||'%' ");
+      } else {
+        clientRecordFilter.searchName = null;
       }
     }
 
@@ -64,8 +66,6 @@ public class ClientRegisterImpl implements ClientRegister {
 
     query.append(" LIMIT ? OFFSET ? ");
 
-    //List<ClientRecord> clientRecords = clientDao.get().getClientRecordsAsc(clientRecordFilter);
-
     List<ClientRecord> clientRecords = new ArrayList<>();
 
     jdbc.get().execute(ConnectionCallback -> {
@@ -73,12 +73,16 @@ public class ClientRegisterImpl implements ClientRegister {
       PreparedStatement statement = ConnectionCallback.prepareStatement(query.toString());
 
       int parameterIndex = 1;
+
       if (clientRecordFilter.searchName != null) {
         statement.setObject(parameterIndex++, clientRecordFilter.searchName);
       }
 
+      clientRecordFilter.sliceNum = clientRecordFilter.sliceNum > 0 ? clientRecordFilter.sliceNum : 0;
+      clientRecordFilter.paginationPage = clientRecordFilter.paginationPage > 0 ? clientRecordFilter.paginationPage : 0;
+
       statement.setObject(parameterIndex++, clientRecordFilter.sliceNum * clientRecordFilter.paginationPage + clientRecordFilter.sliceNum);
-      statement.setObject(parameterIndex++, clientRecordFilter.sliceNum * clientRecordFilter.paginationPage);
+      statement.setObject(parameterIndex, clientRecordFilter.sliceNum * clientRecordFilter.paginationPage);
 
       try (ResultSet resultSet = statement.executeQuery()) {
 
@@ -89,17 +93,13 @@ public class ClientRegisterImpl implements ClientRegister {
           clientRecord.patronymic = (resultSet.getString("name") != null) ? resultSet.getString("name") : "";
           clientRecord.character = resultSet.getString("character");
 
-          int firstSpaceIndex = resultSet.getString("age").indexOf(":");
-          System.out.println(resultSet.getString("age") + ' ' + firstSpaceIndex);
-          String age = resultSet.getString("age").substring(0, firstSpaceIndex);
-          clientRecord.age = Integer.parseInt(age);
+          clientRecord.age = resultSet.getInt("age");
 
           clientRecord.maxBalance = resultSet.getDouble("max");
           clientRecord.minBalance = resultSet.getDouble("min");
           clientRecord.accBalance = resultSet.getDouble("sum");
 
           clientRecords.add(clientRecord);
-          System.out.println("From JDBC: " + clientRecord.surname + " " + clientRecord.name + " " + clientRecord.patronymic + " " + clientRecord.age + " " + clientRecord.minBalance + " " + clientRecord.maxBalance + " " + clientRecord.accBalance + " " + clientRecord.character);
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -109,9 +109,6 @@ public class ClientRegisterImpl implements ClientRegister {
     return clientRecords;
   }
 
-  private String createSqlQueryFromFilter(ClientRecordFilter filter) {
-    return null;
-  }
 
   @Override
   public void deleteClient(int clientId) {
@@ -167,7 +164,6 @@ public class ClientRegisterImpl implements ClientRegister {
       System.out.println("EDITING ADDRESS");
       for (Address address : editedClient.editedAddresses) {
         address.clientId = editedClient.id;
-        System.out.println(address.flat + " " + address.street + " " + address.house + " " + address.type + " " + address.clientId);
         clientDao.get().updateAddress(address);
       }
     }
@@ -188,9 +184,8 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private boolean characterIdExists(int id) {
-    for (CharmRecord charecter :
-      charm()) {
-      if (id == charecter.id) {
+    for (CharmRecord charm : charm()) {
+      if (id == charm.id) {
         return true;
       }
     }
@@ -204,7 +199,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public int getClientCount(ClientRecordFilter clientRecordFilter) {
-    return clientDao.get().getClientRecords(clientRecordFilter).size();
+    return clientDao.get().getClientCount(clientRecordFilter);
   }
 
 }
