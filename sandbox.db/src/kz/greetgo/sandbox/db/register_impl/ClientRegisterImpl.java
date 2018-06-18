@@ -276,7 +276,7 @@ public class ClientRegisterImpl implements ClientRegister {
   private void appendWhere(StringBuilder sqlQuery, ClientFilter filter, List<Object> params) {
     if (filter.fio != null) {
       if (!filter.fio.isEmpty()) {
-        sqlQuery.append("WHERE (m.name=? OR m.surname=? OR m.patronymic=?) AND m.actual=1 ");
+        sqlQuery.append("WHERE (m.name=? OR m.surname=? OR m.patronymic=?) AND m.actual=1 "); //fixme ИСПРАВИТЬ ФИЛЬТР author: Adilbek
         params.add(filter.fio);
         params.add(filter.fio);
         params.add(filter.fio);
@@ -290,9 +290,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
   private void appendOffsetAndLimit(StringBuilder sqlQuery, ClientFilter filter, List<Object> params) {
     if (filter.offset != null && filter.limit != null) {
-      sqlQuery.append("OFFSET ? LIMIT ?;");
-      params.add(filter.offset);
+      sqlQuery.append("LIMIT ? OFFSET ?");
       params.add(filter.limit);
+      params.add(filter.offset);
     }
   }
 
@@ -302,28 +302,24 @@ public class ClientRegisterImpl implements ClientRegister {
     if (filter.sortByEnum != null)
       switch (filter.sortByEnum) {
         case FULL_NAME:
-          sqlQuery.append("ORDER BY m.surname ?, m.name ?, m.patronymic ? ");
-          params.add(direct);
-          params.add(direct);
-          params.add(direct);
+          sqlQuery.append(String.format("ORDER BY m.surname %s, m.name %s, m.patronymic %s ", direct, direct, direct));
           return;
         case AGE:
-          sqlQuery.append("ORDER BY m.age ? ");
-          params.add(direct);
+          sqlQuery.append(String.format("ORDER BY m.age %s ", direct));
           return;
         case MIDDLE_BALANCE:
-          sqlQuery.append("ORDER BY middle_balance ? ");
-          params.add(direct);
+          sqlQuery.append(String.format("ORDER BY middle_balance %s ", direct));
           return;
         case MAX_BALANCE:
-          sqlQuery.append("ORDER BY max_balance ? ");
+          sqlQuery.append(String.format("ORDER BY max_balance %s ", direct));
           params.add(direct);
           return;
         case MIN_BALANCE:
-          sqlQuery.append("ORDER BY min_balance ? ");
+          sqlQuery.append(String.format("ORDER BY min_balance %s ", direct));
           params.add(direct);
           return;
       }
+    sqlQuery.append("ORDER BY m.id ");
   }
 
   private ClientRecord getClientRecordFromResultSet(ResultSet resultSet) throws SQLException {
@@ -353,16 +349,15 @@ public class ClientRegisterImpl implements ClientRegister {
 
     appendRecordsCountSelect(sqlQuery);
     appendRecordsCountFrom(sqlQuery);
-    appendGroupBy(sqlQuery);
     appendWhere(sqlQuery, filter, params);
-    appendOffsetAndLimit(sqlQuery, filter, params);
 
     return jdbc.get().execute(connection -> {
       try (PreparedStatement ps = connection.prepareStatement(sqlQuery.toString())) {
         appendParams(ps, params);
         try(ResultSet rs = ps.executeQuery()) {
-          if (rs.next())
-          return rs.getInt("result");
+          if (rs.next()) {
+            return rs.getInt("result");
+          }
         }
       }
       return 0;

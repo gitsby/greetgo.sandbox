@@ -29,7 +29,7 @@ export class MainFormComponent {
   loadUserInfo() {
     this.httpService.get("/auth/userInfo").toPromise().then(result => {
       this.userInfo = UserInfo.copy(result.json());
-    }, error => {
+    }, () => {
       this.userInfo = null;
     });
   }

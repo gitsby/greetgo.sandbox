@@ -1,14 +1,12 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.Gender;
-import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.Date;
+import java.util.List;
 
 public interface ClientTestDao {
 
@@ -50,4 +48,13 @@ public interface ClientTestDao {
 
   @Select("SELECT ${fieldName} FROM client WHERE id=#{clientId}")
   String loadParamValue(@Param("clientId") Integer clientId, @Param("fieldName") String fieldName);
+
+  @Insert("INSERT INTO client_account(client, number, money, registered_at) VALUES(#{client}, #{number}, #{money}, #{registered_at})")
+  void insertClientAccount(@Param("client") Integer client,
+                           @Param("number") String number,
+                           @Param("money") float money,
+                           @Param("registered_at") Date registeredAt);
+
+  @Select("SELECT * FROM client_account WHERE client=#{id}")
+  List<ClientAccount> getClientAccounts(@Param("id") Integer id);
 }

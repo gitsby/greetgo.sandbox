@@ -139,7 +139,9 @@
             <div class="float_center" *ngIf="pagesCount()>1">
               <div class="pagination">
                 <li>
-                  <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage<=1">&lt;PREV</span>
+                  <span class="no-select" (click)="pageChanged(currentPage-1)" [hidden]="currentPage<=1">
+                    &lt;НАЗАД
+                  </span>
                 </li>
 
                 <li>
@@ -170,7 +172,7 @@
 
                 <li>
                 <span class="no-select" (click)="pageChanged(currentPage+1)" [hidden]="currentPage === pagesCount()">
-                  NEXT&gt;
+                  ДАЛЕЕ&gt;
                 </span>
                 </li>
               </div>
