@@ -44,6 +44,29 @@ public interface ClientDao {
   @Select("select clientid, type, street, house, flat from client_address where clientid=#{id}")
   List<Address> getAddressesWithClientId(int id);
 
+  @Select("select\n" +
+    "  client.id,\n" +
+    "  client.name,\n" +
+    "  client.surname,\n" +
+    "  client.patronymic,\n" +
+    "  client.gender,\n" +
+    "  extract(year from age(birth_date)) as age,\n" +
+    "  c2.name as charm,\n" +
+    "  accountMoneys.min as minBalance,\n" +
+    "  accountMoneys.max as maxBalance,\n" +
+    "  accountMoneys.sum as accBalance\n" +
+    "from client\n" +
+    "  join characters c2 on client.charm = c2.id\n" +
+    "  left join (select\n" +
+    "          clientid,\n" +
+    "          SUM(money),\n" +
+    "          max(money),\n" +
+    "          min(money)\n" +
+    "        from client\n" +
+    "          join client_account a on client.id = a.clientid\n" +
+    "        group by clientid) as accountMoneys on client.id= accountMoneys.clientid where client.id=#{id}")
+  ClientRecord getClientRecordById(int id);
+
   @Select("select id from client order by id desc limit 1")
   int getLastInsertedClientId();
 

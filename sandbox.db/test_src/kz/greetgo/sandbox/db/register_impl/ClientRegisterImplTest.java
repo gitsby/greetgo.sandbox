@@ -72,7 +72,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 //    clientToSave.editedAddresses = new Address[1];
 //    clientToSave.editedAddresses[0] = edited;
 
-    assertThat(clientRegister.get().save(clientToSave)).isNull();
+    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
   }
 
   @Test
@@ -116,7 +116,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.columnName = "surname";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
-    clientRecordFilter.searchName = "and";
+    clientRecordFilter.searchName = "";
 
     assertThat(clientRegister.get().getClients(clientRecordFilter));
 
@@ -146,10 +146,133 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
+    //
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
-
+    //
+    //
 
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> (o2.surname + o2.name + o2.patronymic).compareTo(o1.surname + o1.name + o1.patronymic);
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByMinAsc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "min";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.minBalance >= o2.minBalance ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByMinDesc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "-min";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.minBalance <= o2.minBalance ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByMaxAsc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "max";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.maxBalance >= o2.maxBalance ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByMaxDesc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "-max";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.maxBalance <= o2.maxBalance ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByTotalnAsc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "total";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.accBalance >= o2.accBalance ? 1 : -1;
+
+
+    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+
+  }
+
+  @Test
+  public void isSortedByTotalDesc() {
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "-total";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.accBalance <= o2.accBalance ? 1 : -1;
 
 
     assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
@@ -163,7 +286,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
+    //
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
 
     // Compare
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age >= o2.age ? 1 : -1;
@@ -180,8 +307,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
+    //
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
-
+    //
+    //
 
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age <= o2.age ? 1 : -1;
 
@@ -221,7 +351,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.sliceNum = 1000000000;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
   }
 
   @Test
@@ -231,7 +361,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = -1;
     clientRecordFilter.sliceNum = 10;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
   }
 
   @Test
@@ -242,7 +372,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.sliceNum = 10;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    //
+    //
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
+    //
+    //
   }
 
 
@@ -254,12 +388,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.patronymic = RND.str(10);
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
-    clientToSave.id = -1;
+    clientToSave.id = null;
 
     clientToSave.charm = 1;
-    // Send new client
 
-    assertThat(clientRegister.get().save(clientToSave));
+    //
+    //
+    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    //
+    //
   }
 
   @Test
@@ -276,7 +413,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.charm = -1;
     // Send new client
 
-    assertThat(clientRegister.get().save(clientToSave));
+    //
+    //
+    assertThat(clientRegister.get().save(clientToSave)).isNull();
+    //
+    //
   }
 
   @Test
@@ -289,10 +430,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.birthDate = new Date();
     clientToSave.id = null;
 
-    clientToSave.charm = -1;
-    // Send new client
+    clientToSave.charm = 1;
 
-    assertThat(clientRegister.get().save(clientToSave));
+    //
+    //
+    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    //
+    //
   }
 
   @Test

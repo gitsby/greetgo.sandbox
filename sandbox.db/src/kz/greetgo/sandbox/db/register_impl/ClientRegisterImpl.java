@@ -18,7 +18,6 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
-
   @Override
   public List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
     StringBuilder query = new StringBuilder("SELECT * FROM v_client_records ");
@@ -91,7 +90,7 @@ public class ClientRegisterImpl implements ClientRegister {
           clientRecord.surname = resultSet.getString("surname");
           clientRecord.name = resultSet.getString("name");
           clientRecord.patronymic = (resultSet.getString("name") != null) ? resultSet.getString("name") : "";
-          clientRecord.character = resultSet.getString("character");
+          clientRecord.charm = resultSet.getString("character");
 
           clientRecord.age = resultSet.getInt("age");
 
@@ -108,7 +107,6 @@ public class ClientRegisterImpl implements ClientRegister {
     });
     return clientRecords;
   }
-
 
   @Override
   public void deleteClient(int clientId) {
@@ -161,7 +159,6 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     if (editedClient.editedAddresses != null) {
-      System.out.println("EDITING ADDRESS");
       for (Address address : editedClient.editedAddresses) {
         address.clientId = editedClient.id;
         clientDao.get().updateAddress(address);
@@ -180,7 +177,7 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
 
-    return null;
+    return clientDao.get().getClientRecordById(editedClient.id);
   }
 
   private boolean characterIdExists(int id) {
