@@ -1,4 +1,4 @@
-.selected{
+.highlight{
   background-color: palevioletred;
-  color: white;
+  color: white!important;
 }

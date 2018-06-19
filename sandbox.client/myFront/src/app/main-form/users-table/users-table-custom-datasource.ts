@@ -9,7 +9,7 @@ import {HttpService} from "../../../services/HttpService";
 export class UsersTableCustomDatasource implements DataSource<TableModel> {
 
   data: TableModel[] = [];
-
+  public size:number=0;
   private tableSubject = new BehaviorSubject<TableModel[]>([]);
   private thisTable: TableModel[];
   // private loadingSubject = new BehaviorSubject<boolean>(false);
@@ -27,22 +27,26 @@ export class UsersTableCustomDatasource implements DataSource<TableModel> {
 
   disconnect(/*collectionViewer: CollectionViewer*/): void{
     this.tableSubject.complete();
-    // this.loadingSubject.complete();
   }
 
 
-  loadTable(skipNumber:number,limit=4,
-            sortDirection='asc', sortType='fullName'){
-    // this.loadingSubject.next(true);
 
+
+
+  loadTable(pageIndex=0,pageSize=3,
+            sortDirection='asc', active='fullName'){
+    // this.loadingSubject.next(true);
+    let skipNumber = (pageIndex*pageSize);
     this.httpService.get("/table/get-table-data",
-      {
-        skipNumber: skipNumber, limit: limit,
-        sortDirection: sortDirection, sortType: sortType
-      }).subscribe(table =>{
+      {skipNumber: skipNumber, limit: pageSize,
+        sortDirection: sortDirection, sortType: active})
+        .subscribe(table =>{
         this.thisTable=table.json().map(TableModel.copy);
         this.tableSubject.next(this.thisTable);
     });
+    this.httpService.get('/table/get-table-size').toPromise().then(
+      response => this.size= parseInt(response.text())
+    );
       // .pipe(map(res => res["payload"]));
     // ;subscribe(response => console.log(response.text()));
 

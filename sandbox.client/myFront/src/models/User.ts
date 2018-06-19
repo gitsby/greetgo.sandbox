@@ -1,6 +1,8 @@
 import { Phone } from './Phone';
 import { Address } from './Address';
 import {CharmType} from './CharmType'
+import {GenderType} from "./GenderType";
+
 
 
 
@@ -14,20 +16,17 @@ export class User {
     public phones: Phone[] ;
     public factualAddress: Address | null;
     public registeredAddress: Address;
+    public genderType: GenderType;
 
     public assign(o: any): User{
         this.id = o.id;
         this.surname = o.surname;
         this.name = o.name;
         this.patronymic = o.patronymic;
-        this.phones = o.phones;
         this.charm = o.charm;
-        this.phones = [];
-        for (let key in o.phones) {
-            if (o.hasOwnProperty(key)) {
-                this.phones.push(Phone.copy(o.phones[key]));
-            }
-        }
+        this.birthDate = o.birthDate;
+        this.genderType = o.genderType;
+        this.phones=o.phones;
         this.factualAddress = o.factualAddress;
         this.registeredAddress = o.registeredAddress;
         return this;

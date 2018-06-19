@@ -12,6 +12,7 @@ public class User {
     public Phone[] phones;
     public Address factualAddress;
     public Address registeredAddress;
+    public GenderType genderType;
 
     @Override
     public String toString() {
@@ -25,6 +26,7 @@ public class User {
                 ", phones=" + Arrays.toString(phones) +
                 ", factualAddress=" + factualAddress +
                 ", registeredAddress=" + registeredAddress +
+                ", genderType=" + genderType+
                 '}';
     }
 }

@@ -5,7 +5,8 @@
 
     <button mat-stroked-button (click)="createButtonClicked()" color="basic" style="margin: 10px">Create</button>
 
-    <button mat-stroked-button (click)="updateButtonClicked()" color="primary" style="margin: 10px">Update</button>
+    <button [disabled]="isThereData"
+      mat-stroked-button (click)="updateButtonClicked()" color="primary" style="margin: 10px">Update</button>
 
     <button mat-stroked-button (click)="deleteButtonClicked()" color="warn" style="margin: 10px">Delete</button>
 
@@ -13,7 +14,7 @@
 
   </div>
 
-  <users-table style="width: 80%" ></users-table>
+  <users-table style="width: 80%" (selectedUserID)="selectedUserIDChange($event)"></users-table>
 <!--[selectedUserID]="selectedUserID" -->
 <!--[typeOfDialogCall]="typeOfDialogCall"-->
 

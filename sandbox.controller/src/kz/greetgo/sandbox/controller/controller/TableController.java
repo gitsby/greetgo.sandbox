@@ -52,6 +52,7 @@ public class TableController implements Controller{
     @ToJson
     @Mapping("/get-exact-user")
     public User getExactUser(@Par("userID") String userID){
+        System.out.println(userID);
         return tableRegister.get().getExactUser(userID);
     }
 
@@ -67,9 +68,7 @@ public class TableController implements Controller{
     }catch (Exception e){
          e.printStackTrace();
      }
-     finally {
-         return "fuck you and your user";
-     }
+     return "goodtry";
     }
 
 

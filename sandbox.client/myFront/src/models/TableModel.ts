@@ -14,7 +14,7 @@ export class TableModel{
       this.fullName = o.fullName;
       this.charm = o.charm;
       this.age = o.age;
-      this.totalBalance = o.age;
+      this.totalBalance = o.totalBalance;
       this.maxBalance = o.maxBalance;
       this.minBalance = o.minBalance;
       return this;

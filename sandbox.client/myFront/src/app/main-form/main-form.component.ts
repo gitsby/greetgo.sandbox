@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from "@angular/core";
+import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import { UserInfo } from "../../models/UserInfo";
 import { HttpService } from "../../services/HttpService";
 import { PhoneType } from "../../models/PhoneType";
@@ -13,6 +13,7 @@ import { UserDialogComponent } from './user-dialog/user-dialog.component';
 import { Observable } from 'rxjs/';
 // import 'rxjs/add/observable/fromPromise';
 import {map} from "rxjs/operators";
+import {UsersTableComponent} from "./users-table/users-table.component";
 
 @Component({
   selector: 'main-form-component',
@@ -25,61 +26,82 @@ export class MainFormComponent {
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
   mockRequest: string | null = null;
-  selectedUserID: string | null = null;
+  selectedUserID: string = '0';
+  selectedUser:User = this.generateNewUser();
+  isThereData:boolean=true;
   typeOfDialogCall: string | null = null;
   userDialogRef: MatDialogRef<UserDialogComponent>;
+  @ViewChild(UsersTableComponent) private usersTableComponent:UsersTableComponent;
+
   constructor(private httpService: HttpService, private dialog: MatDialog) {}
 
-  openDialog(userID:string, titleType:string){
 
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.hasBackdrop=true;
-
-    dialogConfig.data = {
-      selectedUserId: userID,
-      typeOfDialogCall: titleType
-    };
-    this.dialog.open(UserDialogComponent, dialogConfig);
-
-
+  selectedUserIDChange(changedUser){
+    this.isThereData=true;
+    this.selectedUserID = changedUser;
+    this.selectedUser=User.copy(this.getSelectedUser());
+    console.log("damndisguysissolet",this.selectedUser);
+    console.log(this.selectedUserID);
   }
+
+  openDialog(user:User, titleType:string){
+    this.dialog.open(UserDialogComponent, {
+      hasBackdrop: true,
+      minWidth:400,
+      data: {
+        user: user,
+        titleType: titleType
+      }
+    });
+    this.dialog.afterAllClosed.subscribe(()=>this.usersTableComponent.loadTablePage());
+  }
+
 
   deleteButtonClicked():void{
     console.log("deleteButton triggered");
     this.httpService.post("/table/delete-user",{"userID":this.selectedUserID}).toPromise().then( result => {
       console.log(result.json());
       alert("User was deleted");
+      this.usersTableComponent.loadTablePage();
      });
+
   }
-
-
-
-
   updateButtonClicked():void{
     console.log("updateButton triggered");
-    this.openDialog(this.selectedUserID,"Update");
-    // this.userDialogRef = this.dialog.open(UserDialogComponent, {hasBackdrop:false});
-
-    // let user = new User();
-    // let userJson = "";
-    //
-    // this.httpService.get("/table/get-exact-user",{"userID":this.selectedUserID}).toPromise().then( result => {
-    //   userJson = result.json();
-    //   user.assign(userJson);
-    //   // dialogue
-    // });
+    this.openDialog(this.selectedUser,"Update");
 
   }
   createButtonClicked():void{
     console.log("createButton triggered");
-    this.openDialog('-1',"Create");
-    // this.userDialogRef = this.dialog.open(UserDialogComponent, {hasBackdrop:false});
+    this.openDialog(this.generateNewUser() ,"Create");
+  }
+
+  getSelectedUser(){
+    console.log(this.selectedUserID);
+    let user = new User();
+     return (this.httpService.get('/table/get-exact-user',{'userID':this.selectedUserID}).toPromise().then(
+       res=>{
+         console.log(res.json());
+         this.selectedUser=User.copy(res.json());
+         this.isThereData=false;
+         return res.json()}
+     ));
   }
 
 
+  generateNewUser():User{
+    let user = new User();
+    user.phones=[new Phone('',PhoneType.MOBILE)];
+    user.name="";
+    user.surname="";
+    user.patronymic="";
+    user.charm=CharmType.BOI;
+    user.birthDate=0;
+    user.factualAddress=new Address();
+    user.registeredAddress=new Address();
+    user.id='-1';
+    return user
+  }
 
   // loadUserInfoButtonClicked() {
   //   this.loadUserInfoButtonEnabled = false;

@@ -87,8 +87,10 @@ public class TableRegisterStand implements TableRegister {
 
     @Override
     public String createUser(User user){
-        System.out.println("bitch");
-        user.id = Integer.toString(db.get().users.data.size());
+        if(!checkForValidity(user)){
+            return "User is not valid!";
+        }
+        user.id = Integer.toString(Integer.parseInt(db.get().lastId)+1);
         db.get().users.data.add(user);
         Account account = new Account();
         account.registeredAt = System.currentTimeMillis();
@@ -103,19 +105,44 @@ public class TableRegisterStand implements TableRegister {
 
 
     private Boolean checkForValidity(User user){
-        return true;
+
+        if ("".equals(user.name) ||"".equals(user.surname) ||"".equals(user.patronymic)){
+            return false;
+        }
+
+        if (user.charm==null || user.genderType==null
+                || user.name==null || user.surname==null || user.patronymic==null
+                || user.phones==null || user.registeredAddress==null){
+            return false;
+        }
+
+        if("".equals(user.registeredAddress.street)||"".equals(user.registeredAddress.flat)||"".equals(user.registeredAddress.house)){
+            return  false;
+        }
+        boolean val=false;
+        for(Phone phone: user.phones){
+            if(phone.phoneType==PhoneType.MOBILE && phone.number.matches("^(\\d{11})?$")){
+                val=true;
+            }else if(phone.number.matches("^(\\d{11})?$")){
+                val=true;
+            }
+        }
+
+        return val;
+
+
     }
 
     @Override
     public String changeUser(User user){
         if (!checkForValidity(user)){
-            return "User you given is not valid";
+            return "User is not valid!";
         }
         db.get().users.data.removeIf(user1 -> user.id.equals(user1.id));
         db.get().users.data.add(user);
         db.get().updateDB();
         System.out.println(db.get().users.data.contains(user));
-        return "User was successfully edited";
+        return "User was successfully updated";
     }
 
     @Override

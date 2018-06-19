@@ -78,7 +78,6 @@ export class UsersTableDataSource extends DataSource<UsersTableItem> {
     if (!this.sort.active || this.sort.direction === '') {
       return data;
     }
-
     return data.sort((a, b) => {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
