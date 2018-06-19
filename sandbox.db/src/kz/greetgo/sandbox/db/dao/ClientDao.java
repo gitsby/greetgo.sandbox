@@ -27,7 +27,7 @@ public interface ClientDao {
 
   // ---------------------------------------
 
-  @Select("select count(*) from client where concat(Lower(surname),Lower(name),Lower(patronymic)) like '%'||{searchName}||'%")
+  @Select("select count(*) from client where concat(Lower(surname),Lower(name),Lower(patronymic)) like '%'||#{searchName}||'%")
   int getClientCount(ClientRecordFilter filter);
 
   @Select("select id, name from characters")
