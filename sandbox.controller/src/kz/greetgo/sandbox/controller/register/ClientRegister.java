@@ -22,8 +22,10 @@ public interface ClientRegister {
    * Сохраняет или изменяет информацию о клиенте
    *
    * @param clientToSave моделька для сохранения клиента
+   *
+   * @return id нового или измененного клиента
    */
-  void save(ClientToSave clientToSave);
+  Integer save(ClientToSave clientToSave);
 
   /**
    * Удалает клиент из списка

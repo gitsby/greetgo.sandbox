@@ -22,11 +22,11 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public void save(ClientToSave clientToSave) {
+  public Integer save(ClientToSave clientToSave) {
     ClientDot clientDot;
     if (clientToSave.id == null) {
       clientDot = new ClientDot();
-      db.get().clientsStorage.add(0, clientDot);
+      db.get().clientsStorage.add(clientDot);
       clientDot.id = db.get().clientsStorage.size();
     } else clientDot = getClient(clientToSave.id);
     System.out.println(clientToSave.birthDate);
@@ -35,12 +35,13 @@ public class ClientRegisterStand implements ClientRegister {
     clientDot.patronymic = clientToSave.patronymic;
     clientDot.gender = clientToSave.gender;
     clientDot.birthDate = clientToSave.birthDate;
-    saveClientAddress(clientToSave.addressFact).client = clientToSave.id;
-    saveClientAddress(clientToSave.addressReg).client = clientToSave.id;
-    saveClientPhone(clientToSave.homePhone).client = clientToSave.id;
-    saveClientPhone(clientToSave.workPhone).client = clientToSave.id;
-    saveClientPhone(clientToSave.mobilePhone).client = clientToSave.id;
+    saveClientAddress(clientDot.id, clientToSave.addressFact);
+    saveClientAddress(clientDot.id, clientToSave.addressReg);
+    saveClientPhone(clientDot.id, clientToSave.homePhone);
+    saveClientPhone(clientDot.id, clientToSave.workPhone);
+    saveClientPhone(clientDot.id, clientToSave.mobilePhone);
     clientDot.charmId = clientToSave.charmId;
+    return clientDot.id;
   }
 
   @Override
@@ -190,20 +191,20 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private CharmRecord getCharm(int clientCharmId) {
-    return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get().toCharm();
+    return db.get().charms.stream().filter(charm -> charm.id.equals(clientCharmId)).findFirst().get().toCharm();
   }
 
-  private ClientAddress getClientAddress(int clientAddressId, AddressTypeEnum type) {
-    return db.get().addresses.stream().filter(clientAddress -> clientAddress.client == clientAddressId && clientAddress.type == type).findFirst().get().toClientAddress();
+  private ClientAddress getClientAddress(int client, AddressTypeEnum type) {
+    return db.get().addresses.stream().filter(clientAddress -> clientAddress.client.equals(client) && clientAddress.type.equals(type)).findFirst().get().toClientAddress();
   }
 
-  private ClientPhone getClientPhone(int clientId, PhoneType type) {
-    return db.get().phones.stream().filter(clientPhone -> clientPhone.client == clientId && clientPhone.type == type).findFirst().get().toClientPhone();
+  private ClientPhone getClientPhone(int client, PhoneType type) {
+    return db.get().phones.stream().filter(clientPhone -> clientPhone.client.equals(client) && clientPhone.type.equals(type)).findFirst().get().toClientPhone();
   }
 
-  private ClientAddress saveClientAddress(ClientAddress saveClientAddress) {
+  private ClientAddress saveClientAddress(Integer client, ClientAddress saveClientAddress) {
     if (saveClientAddress.client == null) {
-      saveClientAddress.client = db.get().addresses.size();
+      saveClientAddress.client = client;
       db.get().addresses.add(new ClientAddressDot(saveClientAddress));
       return saveClientAddress;
     } else {
@@ -215,9 +216,9 @@ public class ClientRegisterStand implements ClientRegister {
     }
   }
 
-  private ClientPhone saveClientPhone(ClientPhone saveClientPhone) {
+  private ClientPhone saveClientPhone(Integer client, ClientPhone saveClientPhone) {
     if (saveClientPhone.client == null) {
-      saveClientPhone.client = db.get().phones.size();
+      saveClientPhone.client = client;
       db.get().phones.add(new ClientPhoneDot(saveClientPhone));
       return saveClientPhone;
     } else {

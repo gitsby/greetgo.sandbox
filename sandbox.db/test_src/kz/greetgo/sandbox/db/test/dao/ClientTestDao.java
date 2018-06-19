@@ -57,4 +57,8 @@ public interface ClientTestDao {
 
   @Select("SELECT * FROM client_account WHERE client=#{id}")
   List<ClientAccount> getClientAccounts(@Param("id") Integer id);
+
+  @Select("SELECT * FROM client")
+  List<Client> details();
+
 }

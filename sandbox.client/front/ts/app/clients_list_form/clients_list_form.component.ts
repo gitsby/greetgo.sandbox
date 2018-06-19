@@ -4,6 +4,7 @@ import {ClientRecord} from "../../model/ClientRecord";
 import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
 import {SortByEnum} from "../../model/SortByEnum";
+import {ClientToSave} from "../../model/ClientToSave";
 
 @Component({
   selector: 'clients-list-form-component',
@@ -48,7 +49,6 @@ export class ClientsListFormComponent implements AfterViewInit {
     this.httpService.get("/client/list", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
-      console.log(result.json());
       this.clientRecords = new Array();
       for (let res of result.json()) {
         this.clientRecords.push(ClientRecord.copy(res));
@@ -155,11 +155,41 @@ export class ClientsListFormComponent implements AfterViewInit {
     this.clientInfoFormComponentEnable = true;
   }
 
-  close(listEdited: boolean) {
-    this.editClientId = null;
+  isLastPage(): boolean {
+    return this.currentPage == this.pagesCount();
+  }
+
+  close(clientToSave: ClientToSave | null) {
     this.clientInfoFormComponentEnable = false;
-    //FIXME нельзя обновлять список целиком - надо обновлять только один элемент (или добавлять его в конец)
-    this.loadRecordsCount();
-    this.loadPage();
+    if (clientToSave == null) return;
+    if (this.editClientId == null) this.insertRecord(clientToSave);
+    else this.updateClient(clientToSave);
+    this.editClientId = null;
+  }
+
+  private insertRecord(clientToSave: ClientToSave) {
+    if (this.isLastPage() && this.clientRecords.length < this.numberOfItemInPage) {
+      let clientRecord = new ClientRecord();
+      clientRecord.id = clientToSave.id;
+      clientRecord.surname = clientToSave.surname;
+      clientRecord.name = clientToSave.name;
+      clientRecord.patronymic = clientToSave.patronymic;
+      clientRecord.age = 0;
+      clientRecord.middle_balance = 0;
+      clientRecord.max_balance = 0;
+      clientRecord.min_balance = 0;
+      this.clientRecords.push(clientRecord);
+    }
+    this.clientRecordsCount++;
+  }
+
+  private updateClient(clientToSave: ClientToSave) {
+    for (let record of this.clientRecords)
+      if (record.id == clientToSave.id) {
+        record.surname = clientToSave.surname;
+        record.name = clientToSave.name;
+        record.patronymic = clientToSave.patronymic;
+        break;
+      }
   }
 }

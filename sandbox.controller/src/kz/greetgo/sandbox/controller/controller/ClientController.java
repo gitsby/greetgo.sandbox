@@ -28,8 +28,8 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public void save(@Par("clientToSave") @Json ClientToSave client) {
-    clientRegister.get().save(client);
+  public Integer save(@Par("clientToSave") @Json ClientToSave client) {
+    return clientRegister.get().save(client);
   }
 
   @ToJson

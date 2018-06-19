@@ -95,7 +95,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       String actualName = clientTestDao.get().loadParamValue(clientId, "name");
       ClientAddress actualAddressReg = clientTestDao.get().getAddress(clientId, AddressTypeEnum.REG);
       assertThat(actualName).isEqualTo(clientToSave.name);
-      assertThat(actualAddressReg).isEqualTo(clientToSave.addressReg);
+      assertThat(actualAddressReg.client).isEqualTo(clientToSave.addressReg.client);
     }
   }
 
@@ -161,7 +161,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     Integer clientId = (int)(System.nanoTime()/10000);
     Details details = generateRandomClientDetails(clientId);
-    details.name = rName;
+    details.name = rName + RND.str(10);
     insertClient(details);
 
     //

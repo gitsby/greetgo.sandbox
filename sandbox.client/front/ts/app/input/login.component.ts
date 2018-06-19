@@ -31,7 +31,6 @@ export class LoginComponent {
 
   updateEnterButton() {
     this.enterButtonEnabled = !!this.fieldEnterLogin && !!this.fieldEnterPassword;
-    console.log("this.enterButtonEnabled = " + this.enterButtonEnabled)
   }
 
   enterButtonClicked() {
@@ -54,7 +53,6 @@ export class LoginComponent {
     }, error => {
       this.disabled = false;
       this.enterButtonEnabled = true;
-      console.error("AUTHENTICATION_UNKNOWN_ERROR", error);
       if (400 <= error.status && error.status < 500) {
         this.errorMessage = error.text();
       } else {

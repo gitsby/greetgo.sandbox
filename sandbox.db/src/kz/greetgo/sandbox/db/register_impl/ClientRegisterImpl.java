@@ -25,56 +25,110 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public void save(ClientToSave clientToSave) {
-    if (clientToSave.id == null) {
-      insertClient(clientToSave);
-    } else {
-      editClient(clientToSave);
-    }
+  public Integer save(ClientToSave clientToSave) {
+    return insertOrUpdateClient(clientToSave);
   }
 
-  private void editClient(ClientToSave clientToSave) {
-    Details details = getDetails(clientToSave.id);
-    updateClient(clientToSave);
-    checkAndSaveClientAddresses(details.addressFact, clientToSave.addressFact);
-    checkAndSaveClientAddresses(details.addressReg, clientToSave.addressReg);
-    checkAndSaveClientPhone(details.homePhone, clientToSave.homePhone);
-    checkAndSaveClientPhone(details.workPhone, clientToSave.workPhone);
-    checkAndSaveClientPhone(details.mobilePhone, clientToSave.mobilePhone);
+  private Integer insertOrUpdateClient(ClientToSave clientToSave) {
+    return jdbc.get().execute(connection -> {
+      try(PreparedStatement ps = connection.prepareStatement(clientToSave.id==null?getClientInsertQuery():getClientUpdateQuery())) {
+        setObjectsToPS(ps, clientToSave);
+        Integer id = null;
+        try(ResultSet rs = ps.executeQuery()) {
+          if (rs.next()) {
+            id = rs.getInt("id");
+            insertPhonesAndAddresses(id, clientToSave);
+          }
+          return id;
+        }
+      }
+    });
   }
 
-  private void updateClient(ClientToSave clientToSave) {
+  private void setObjectsToPS(PreparedStatement ps, ClientToSave clientToSave) throws SQLException {
+    setObjects(1, ps,
+      clientToSave.surname,
+      clientToSave.name,
+      clientToSave.patronymic,
+      clientToSave.gender.name(),
+      new java.sql.Date(clientToSave.birthDate.getTime()),
+      clientToSave.charmId);
+    if (clientToSave.id!=null) ps.setObject(7, clientToSave.id);
+  }
+
+  private String getClientInsertQuery() {
+    return "INSERT INTO client(surname, name, patronymic, gender, birth_date, charm) VALUES (?, ?, ?, ?, ?, ?) RETURNING id;";
+  }
+
+  private String getClientUpdateQuery() {
+    return "UPDATE client SET surname=?, name=?, patronymic=?, gender=?, birth_date=?, charm=? WHERE id=? RETURNING id;";
+  }
+
+  private void insertPhonesAndAddresses(Integer client, ClientToSave clientToSave) {
+    clientToSave.addressFact.client = client;
+    insertOrUpdateClientAddress(clientToSave.addressFact);
+    clientToSave.addressReg.client = client;
+    insertOrUpdateClientAddress(clientToSave.addressReg);
+    clientToSave.homePhone.client = client;
+    insertOrUpdateClientPhone(clientToSave.homePhone);
+    clientToSave.workPhone.client = client;
+    insertOrUpdateClientPhone(clientToSave.workPhone);
+    clientToSave.mobilePhone.client = client;
+    insertOrUpdateClientPhone(clientToSave.mobilePhone);
+  }
+
+  private void insertOrUpdateClientPhone(ClientPhone clientPhone) {
     jdbc.get().execute(connection -> {
-      try (PreparedStatement ps = connection.prepareStatement("UPDATE client SET surname=?, name=?, patronymic=?, gender=?, birth_date=?, charm=? WHERE id=?")) {
-        setObjectsToPs(ps, clientToSave);
+      try(PreparedStatement ps = connection.prepareStatement(getPhoneInsertQuery())) {
+        setObjectsToPS(ps, clientPhone);
         ps.execute();
       }
       return null;
     });
   }
 
-  private void setObjectsToPs(PreparedStatement ps, ClientToSave clientToSave) throws SQLException {
-    ps.setObject(1, clientToSave.surname);
-    ps.setObject(2, clientToSave.name);
-    ps.setObject(3, clientToSave.patronymic);
-    ps.setObject(4, clientToSave.gender.name());
-    ps.setObject(5, new java.sql.Date(clientToSave.birthDate.getTime()));
-    ps.setObject(6, clientToSave.charmId);
-    ps.setObject(7, clientToSave.id);
+  private void setObjectsToPS(PreparedStatement ps, ClientPhone clientPhone) throws SQLException {
+    setObjects(1, ps,
+      clientPhone.client,
+      clientPhone.type.name(),
+      clientPhone.number,
+      clientPhone.number);
   }
 
-  private void insertClient(ClientToSave clientToSave) {
-    Integer id = clientDao.get().insert(clientToSave.surname, clientToSave.name, clientToSave.patronymic, clientToSave.gender, clientToSave.birthDate, clientToSave.charmId);
-    clientToSave.addressFact.client = id;
-    insertAddress(clientToSave.addressFact);
-    clientToSave.addressReg.client = id;
-    insertAddress(clientToSave.addressReg);
-    clientToSave.homePhone.client = id;
-    insertPhone(clientToSave.homePhone);
-    clientToSave.workPhone.client = id;
-    insertPhone(clientToSave.workPhone);
-    clientToSave.mobilePhone.client = id;
-    insertPhone(clientToSave.mobilePhone);
+  private String getPhoneInsertQuery() {
+    return "INSERT INTO client_phone(client, type, number) " +
+      "VALUES (?, ?, ?) " +
+      "ON CONFLICT(client, number) DO UPDATE SET " +
+      "number=?";
+  }
+
+  private void insertOrUpdateClientAddress(ClientAddress clientAddress) {
+    jdbc.get().execute(connection -> {
+      try(PreparedStatement ps = connection.prepareStatement(getAddressInsertQuery())) {
+        setObjectsToPS(ps, clientAddress);
+        ps.execute();
+      }
+      return null;
+    });
+  }
+
+  private void setObjectsToPS(PreparedStatement ps, ClientAddress clientAddress) throws SQLException {
+    setObjects(1, ps,
+      clientAddress.client,
+      clientAddress.type.name(),
+      clientAddress.street,
+      clientAddress.house,
+      clientAddress.flat,
+      clientAddress.street,
+      clientAddress.house,
+      clientAddress.flat);
+  }
+
+  private String getAddressInsertQuery() {
+    return "INSERT INTO client_address(client, type, street, house, flat) " +
+      "VALUES (?, ?, ?, ?, ?) " +
+      "ON CONFLICT(client, type) DO UPDATE SET " +
+      "street=?, house=?, flat=?";
   }
 
   private Details getDetails(Integer clientId) {
@@ -177,50 +231,12 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private void appendParams(PreparedStatement ps, ClientAddress curAddr, ClientAddress editAddr) throws SQLException {
-    ps.setObject(1, editAddr.street);
-    ps.setObject(2, editAddr.house);
-    ps.setObject(3, editAddr.flat);
-    ps.setObject(4, curAddr.client);
-    ps.setObject(5, curAddr.type.name());
-  }
-
-  private void checkAndSaveClientPhone(ClientPhone currentPhone, ClientPhone editedPhone) {
-    if (currentPhone.equals(editedPhone)) return;
-    clientDao.get().updatePhone(currentPhone.client, currentPhone.number, editedPhone.type, editedPhone.number);
-  }
-
-  private void insertAddress(ClientAddress clientAddress) {
-    jdbc.get().execute(connection -> {
-      try (PreparedStatement ps = connection.prepareStatement("INSERT INTO client_address VALUES (?, ?, ?, ?, ?)")) {
-        setObjectsToPs(ps, clientAddress);
-        ps.execute();
-      }
-      return  null;
-    });
-  }
-
-  private void insertPhone(ClientPhone clientPhone) {
-    jdbc.get().execute(connection -> {
-      try (PreparedStatement ps = connection.prepareStatement("INSERT INTO client_phone VALUES (?, ?, ?)")) {
-        setObjectsToPs(ps, clientPhone);
-        ps.execute();
-      }
-      return null;
-    });
-  }
-
-  private void setObjectsToPs(PreparedStatement ps, ClientAddress clientAddress) throws SQLException {
-    ps.setObject(1, clientAddress.client);
-    ps.setObject(2, clientAddress.type.name());
-    ps.setObject(3, clientAddress.street);
-    ps.setObject(4, clientAddress.house);
-    ps.setObject(5, clientAddress.flat);
-  }
-
-  private void setObjectsToPs(PreparedStatement ps, ClientPhone clientPhone) throws SQLException {
-    ps.setObject(1, clientPhone.client);
-    ps.setObject(2, clientPhone.type.name());
-    ps.setObject(3, clientPhone.number);
+    setObjects(1, ps,
+      editAddr.street,
+      editAddr.house,
+      editAddr.flat,
+      curAddr.client,
+      curAddr.type.name());
   }
 
 
@@ -276,10 +292,10 @@ public class ClientRegisterImpl implements ClientRegister {
   private void appendWhere(StringBuilder sqlQuery, ClientFilter filter, List<Object> params) {
     if (filter.fio != null) {
       if (!filter.fio.isEmpty()) {
-        sqlQuery.append("WHERE (m.name=? OR m.surname=? OR m.patronymic=?) AND m.actual=1 "); //fixme ИСПРАВИТЬ ФИЛЬТР author: Adilbek
-        params.add(filter.fio);
-        params.add(filter.fio);
-        params.add(filter.fio);
+        sqlQuery.append("WHERE (m.name LIKE ? OR m.surname LIKE ? OR m.patronymic LIKE ?) AND m.actual=1 ");
+        params.add("%"+filter.fio+"%");
+        params.add("%"+filter.fio+"%");
+        params.add("%"+filter.fio+"%");
       }
     }
   }
@@ -398,5 +414,10 @@ public class ClientRegisterImpl implements ClientRegister {
     charmRecord.description = rs.getString("description");
     charmRecord.energy = rs.getFloat("energy");
     return charmRecord;
+  }
+
+  private void setObjects(int from, PreparedStatement ps, Object... objects) throws SQLException {
+    for (int i = from; i < objects.length+from; i++)
+      ps.setObject(i, objects[i-from]);
   }
 }

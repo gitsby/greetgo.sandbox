@@ -12,7 +12,7 @@ import {Details} from "../../model/Details";
 })
 export class ClientEditFormComponent implements OnInit {
   @Input() clientId: number;
-  @Output() onClose = new EventEmitter<boolean>();
+  @Output() onClose = new EventEmitter<ClientToSave>();
 
   @ViewChild('birthDayInput') birthDayInput: ElementRef;
 
@@ -37,9 +37,7 @@ export class ClientEditFormComponent implements OnInit {
       let clientId = this.clientId as number;
 
       this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
-        console.log(result.json());
         this.clientToSave = Details.copy(result.json()).toClientToSave();
-        console.log(this.clientToSave);
         this.formatAllPhoneNumbers();
       })
     }
@@ -54,7 +52,6 @@ export class ClientEditFormComponent implements OnInit {
     this.httpService.get("/client/get-charms").toPromise().then(result => {
       for (let res of result.json())
         this.charms.push(CharmRecord.copy(res));
-      console.log(this.charms);
 
     })
   }
@@ -121,13 +118,14 @@ export class ClientEditFormComponent implements OnInit {
   saveClient() {
     this.httpService.post("/client/save", {
       "clientToSave": JSON.stringify(this.clientToSave)
-    }).toPromise().then(() => {
-      this.onClose.emit(true);
+    }).toPromise().then(res => {
+      this.clientToSave.id = res.json();
+      this.onClose.emit(this.clientToSave);
     })
   }
 
-  closeButtonClicked(clientSaved: boolean) {
-    this.onClose.emit(clientSaved);
+  closeButtonClicked() {
+    this.onClose.emit(null);
   }
 
   setBDate(dateText: string) {
