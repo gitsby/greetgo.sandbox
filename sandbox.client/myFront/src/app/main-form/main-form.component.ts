@@ -21,6 +21,7 @@ export class MainFormComponent {
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
   mockRequest: string | null = null;
+  userIsLoading: boolean | null = false;
   selectedUserID: string = '0';
   selectedUser: User = this.generateNewUser();
   isThereData: boolean = true;
@@ -36,6 +37,7 @@ export class MainFormComponent {
   }
 
   openDialog(titleType: string) {
+    this.userIsLoading=true;
     let clearlyOpenDialog=(user) => this.dialog.open(UserDialogComponent, {
       hasBackdrop: true,
       minWidth: 400,
@@ -76,6 +78,7 @@ export class MainFormComponent {
         this.selectedUser = User.copy(res.json());
         this.isThereData = false;
         callback(this.selectedUser);
+        this.userIsLoading=false;
       }
     ));
   }
