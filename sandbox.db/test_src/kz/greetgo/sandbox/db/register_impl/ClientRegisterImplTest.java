@@ -25,16 +25,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void checkCharactersNotNull() {
-    List<CharmRecord> charmRecords = clientRegister.get().charm();
-    assertThat(charmRecords).isNotNull();
-    for (CharmRecord charmRecord : charmRecords) {
-      System.out.println(charmRecord.id + " " + charmRecord.name);
-    }
+    assertThat(clientRegister.get().charm()).isNotNull();
+  }
+
+  @Test
+  public void clientDetails() {
+    ClientDetails details = clientRegister.get().details(testDaoBeanGetter.get().getFirstClient());
+    assertThat(details).isNotNull();
   }
 
   @Test
   public void deleteClient() {
-    clientRegister.get().deleteClient(2);
+    clientRegister.get().deleteClient(testDaoBeanGetter.get().getFirstClient());
   }
 
   @Test
@@ -63,36 +65,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     clientToSave.addedAddresses = new Address[1];
     clientToSave.addedAddresses[0] = address;
-//
-//    Address edited = new Address();
-//    edited.flat = "Flat1";
-//    edited.house = "House1";
-//    edited.street = "Street1";
-//    edited.type = "REG";
-//    clientToSave.editedAddresses = new Address[1];
-//    clientToSave.editedAddresses[0] = edited;
+
 
     assertThat(clientRegister.get().save(clientToSave)).isNotNull();
   }
 
   @Test
-  public void testEditClientAddress() {
+  public void testEditClient() {
     ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = "Namy";
-    clientToSave.surname = "Andres";
+    clientToSave.name = "Neus";
+    clientToSave.surname = "Fiendir";
     clientToSave.patronymic = "Torpa";
     clientToSave.gender = "FEMALE";
     clientToSave.birthDate = new Date();
     clientToSave.charm = 2;
-    clientToSave.id = 2;
-
-//    Phone phone = new Phone();
-//    phone.number = RND.str(11);
-//    phone.type = "MOBILE";
-//
-//    clientToSave.addedPhones = new Phone[1];
-//    clientToSave.addedPhones[0] = phone;
-
+    clientToSave.id = 1;
 
     Address edited = new Address();
     edited.flat = "Flat1";
@@ -102,7 +89,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.editedAddresses = new Address[1];
     clientToSave.editedAddresses[0] = edited;
 
-    assertThat(clientRegister.get().save(clientToSave)).isNull();
+    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
   }
 
   @Test
@@ -123,7 +110,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void isSortedBySurnameNameAsc() {
+  public void testSortedByFIONameAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
     clientRecordFilter.paginationPage = 0;
@@ -132,15 +119,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
 
 
-    Comparator<ClientRecord> clientRecordAgeComparator = Comparator.comparing(o -> (o.surname + o.name + o.patronymic));
+    Comparator<ClientRecord> clientRecordFIOComparator = Comparator.comparing(o -> (o.surname + o.name + o.patronymic));
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedBySurnameNameDesc() {
+  public void testSortedByFIONameDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-surname";
     clientRecordFilter.paginationPage = 0;
@@ -152,15 +139,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> (o2.surname + o2.name + o2.patronymic).compareTo(o1.surname + o1.name + o1.patronymic);
+    Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) -> (o2.surname + o2.name + o2.patronymic).compareTo(o1.surname + o1.name + o1.patronymic);
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByMinAsc() {
+  public void testSortedByMinAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "min";
     clientRecordFilter.paginationPage = 0;
@@ -172,15 +159,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.minBalance >= o2.minBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordMinComparator = (o1, o2) -> o1.minBalance >= o2.minBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordMinComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByMinDesc() {
+  public void testSortedByMinDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-min";
     clientRecordFilter.paginationPage = 0;
@@ -192,15 +179,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.minBalance <= o2.minBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordMinComparator = (o1, o2) -> o1.minBalance <= o2.minBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordMinComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByMaxAsc() {
+  public void testSortedByMaxAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "max";
     clientRecordFilter.paginationPage = 0;
@@ -212,15 +199,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.maxBalance >= o2.maxBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordMaxComparator = (o1, o2) -> o1.maxBalance >= o2.maxBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordMaxComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByMaxDesc() {
+  public void testSortedByMaxDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-max";
     clientRecordFilter.paginationPage = 0;
@@ -232,15 +219,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.maxBalance <= o2.maxBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordMaxComparator = (o1, o2) -> o1.maxBalance <= o2.maxBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordMaxComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByTotalnAsc() {
+  public void testSortedByTotalAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "total";
     clientRecordFilter.paginationPage = 0;
@@ -252,15 +239,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.accBalance >= o2.accBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordTotalComparator = (o1, o2) -> o1.accBalance >= o2.accBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordTotalComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByTotalDesc() {
+  public void testSortedByTotalDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-total";
     clientRecordFilter.paginationPage = 0;
@@ -272,15 +259,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.accBalance <= o2.accBalance ? 1 : -1;
+    Comparator<ClientRecord> clientRecordTotalComparator = (o1, o2) -> o1.accBalance <= o2.accBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    assertThat(isSorted(clientRecordTotalComparator, records)).isTrue();
 
   }
 
   @Test
-  public void isSortedByAgeAsc() {
+  public void testSortedByAgeAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "age";
     clientRecordFilter.paginationPage = 0;
@@ -292,7 +279,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    // Compare
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age >= o2.age ? 1 : -1;
 
 
@@ -301,7 +287,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void isSortedByAgeDesc() {
+  public void testSortedByAgeDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-age";
     clientRecordFilter.paginationPage = 0;
@@ -381,27 +367,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
-  public void testCreateClient() {
-    ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = RND.str(10);
-    clientToSave.surname = RND.str(10);
-    clientToSave.patronymic = RND.str(10);
-    clientToSave.gender = "MALE";
-    clientToSave.birthDate = new Date();
-    clientToSave.id = null;
-
-    clientToSave.charm = 1;
-
-    //
-    //
-    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
-    //
-    //
-  }
-
-  @Test
   public void testCreateClientWithNotExistingCharacter() {
-
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
     clientToSave.surname = RND.str(10);
@@ -421,7 +387,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testCreateClientWithNonExistingGender() {
+  public void testCreateClientWithNotExistingGender() {
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
     clientToSave.surname = RND.str(10);
@@ -439,8 +405,4 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
   }
 
-  @Test
-  public void deleteNonExistingClient() {
-
-  }
 }
