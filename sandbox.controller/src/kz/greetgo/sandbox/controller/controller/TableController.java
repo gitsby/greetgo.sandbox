@@ -26,18 +26,8 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-table-data")
-    public ArrayList<TableModel> getTableData(@Par("skip") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
-        System.out.println(skipNumber);
-        System.out.println(limit);
-        System.out.println(sortDirection);
-        System.out.println(sortType);
-//        StandJsonDb.Users;
-
-        ArrayList<TableModel> Boi = tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
-        for(TableModel b: Boi){
-            System.out.println(b.toString());
-        }
-        return Boi;
+    public ArrayList<TableModel> getTableData(@Par("skipNumber") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
+        return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
     }
 
     @NoSecurity
@@ -52,7 +42,6 @@ public class TableController implements Controller{
     @ToJson
     @Mapping("/get-exact-user")
     public User getExactUser(@Par("userID") String userID){
-        System.out.println(userID);
         return tableRegister.get().getExactUser(userID);
     }
 
@@ -62,13 +51,7 @@ public class TableController implements Controller{
     @MethodFilter(POST)
     @Mapping("/create-user")
     public String createUser(@Par("user") @Json User user) {
-        System.out.println(user.toString());
-     try{
         return tableRegister.get().createUser(user);
-    }catch (Exception e){
-         e.printStackTrace();
-     }
-     return "goodtry";
     }
 
 
@@ -95,8 +78,6 @@ public class TableController implements Controller{
     @ToJson
     @Mapping("/check-if-there-user")
     public Boolean checkIfThereUser(@Par("userID") String userID) {
-
-        System.out.println(userID instanceof String);
         return tableRegister.get().checkIfThereUser(userID);
     }
 

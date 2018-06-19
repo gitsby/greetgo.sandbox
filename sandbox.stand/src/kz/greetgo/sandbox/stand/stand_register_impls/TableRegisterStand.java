@@ -13,11 +13,7 @@ import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.util.ServerUtil;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Bean
@@ -39,7 +35,6 @@ public class TableRegisterStand implements TableRegister {
     public ArrayList<TableModel> getTableData(int skipNumber, int limit, String sortDirection, String sortType){
         Table queriedTable  = new Table();
         queriedTable.data=db.get().table.data.stream().sorted(((o1, o2) -> {
-            System.out.println("sortType: " + sortType);
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
             switch (enumSortType) {
                 case FULLNAME:
@@ -59,31 +54,37 @@ public class TableRegisterStand implements TableRegister {
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
         return queriedTable.data;
-//        return db.get().table;
     }
 
     @Override
     public int tableSize(){
-//        return 1;
         try {
             return db.get().users.data.size();
         } catch (NullPointerException e) {
             e.printStackTrace();
-            return 9999;
+            return 0;
         }
     }
 
     @Override
     public User getExactUser(String userID){
-
-        return db.get().users.data.stream().filter((user) -> userID.equals(user.id)).findFirst().get();
+        try {
+            return db.get().users.data.stream().filter((user) -> userID.equals(user.id)).findFirst().get();
+        } catch (Exception e){
+            e.printStackTrace();
+            return new User();
+        }
     }
 
     @Override
     public Boolean checkIfThereUser(String userID){
-        return db.get().users.data.stream().anyMatch((user) -> userID.equals(user.id));
+        try {
+            return db.get().users.data.stream().anyMatch((user) -> userID.equals(user.id));
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
-//    public void print( string){System.out.print(string);}
 
     @Override
     public String createUser(User user){
@@ -99,7 +100,6 @@ public class TableRegisterStand implements TableRegister {
         account.moneyNumber=0;
         db.get().accounts.data.add(account);
         db.get().updateDB();
-        System.out.println(db.get().users.data.contains(user));
         return "User was successfully added";
     }
 
@@ -129,8 +129,6 @@ public class TableRegisterStand implements TableRegister {
         }
 
         return val;
-
-
     }
 
     @Override
@@ -141,7 +139,6 @@ public class TableRegisterStand implements TableRegister {
         db.get().users.data.removeIf(user1 -> user.id.equals(user1.id));
         db.get().users.data.add(user);
         db.get().updateDB();
-        System.out.println(db.get().users.data.contains(user));
         return "User was successfully updated";
     }
 
@@ -149,7 +146,6 @@ public class TableRegisterStand implements TableRegister {
     public String deleteUser(String userID){
         db.get().users.data.removeIf(user -> userID.equals(user.id));
         db.get().updateDB();
-        System.out.println(checkIfThereUser(userID));
         return "User was successfully deleted";
     }
 

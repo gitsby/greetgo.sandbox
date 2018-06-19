@@ -63,7 +63,7 @@ export class UserDialogComponent implements OnInit {
       surname: [surname, Validators.required],
       patronymic: [patronymic, Validators.required],
       charm: [charm, Validators.required],
-      birthDate: [birthDate, Validators.required],
+      birthDate: [new Date(birthDate/1000), Validators.required],
       genderType: [genderType, Validators.required],
       registeredAddress: this.formBuilder.group({
         street: [registeredAddress.street, Validators.required],
@@ -75,7 +75,6 @@ export class UserDialogComponent implements OnInit {
         house: factualAddress.house,
         flat: factualAddress.flat,
       }),
-
       phones: this.formBuilder.array(phones.map((userPhone) => this.phoneGroup(userPhone.number, userPhone.phoneType))),
     });
     this.form.controls['phones'].setValidators(mobileExistenceValidator());
@@ -86,14 +85,10 @@ export class UserDialogComponent implements OnInit {
   }
 
   public addNumber() {
-    console.log("trying to add number~!");
-    console.log(this.phonesFormArray);
     this.phonesFormArray.push(this.phoneGroup(''));
-    console.log("what was it???");
   }
 
   private phoneGroup(number: string, phoneType: PhoneType = PhoneType.MOBILE) {
-    console.log(number);
     return this.formBuilder.group({
       phoneType: this.formBuilder.control(phoneType),
       number: this.formBuilder.control(number.toString(), [
@@ -107,15 +102,14 @@ export class UserDialogComponent implements OnInit {
   }
 
   public submit(form) {
-    console.log('RawValue', this.form.getRawValue());
     let user = User.copy(this.form.getRawValue());
-    user.birthDate = user.birthDate.getTime();
+    user.birthDate = this.form.getRawValue().birthDate.getTime();
     if (this.data.titleType === "Update")
       this.httpService.post('/table/change-user', {
         user: JSON.stringify(user),
       }).toPromise().then(
         res => {
-          console.log(res);
+          alert(res.text());
           this.dialogRef.close(`${form.value.filename}`);
         }
       );
@@ -124,7 +118,7 @@ export class UserDialogComponent implements OnInit {
         user: JSON.stringify(user),
       }).toPromise().then(
         res => {
-          console.log(res);
+          alert(res.text());
           this.dialogRef.close(`${form.value.filename}`);
         }
       );
