@@ -58,5 +58,13 @@ public interface ClientRegister {
    */
   List<CharmRecord> getCharms();
 
-  void renderClientList(String name, String author, ClientRender render);
+  /**
+   * Передает файл отчета о клиентах к клиенту через сервлет
+   *
+   * @param name
+   * @param author
+   * @param filter параметры фильтров для списка слиентов
+   * @param render
+   */
+  void renderClientList(String name, String author, ClientFilter filter, ClientRender render);
 }

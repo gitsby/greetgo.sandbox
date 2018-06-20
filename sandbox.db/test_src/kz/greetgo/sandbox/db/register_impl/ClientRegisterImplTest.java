@@ -493,7 +493,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   private static class TestRender implements ClientRender {
 
     private String name;
-    private Date contractDate;
     private List<ClientRow> asdRows;
     private String authorName;
 
@@ -504,7 +503,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     @Override
     public void start(String name, Date contractDate) {
       this.name = name;
-      this.contractDate = contractDate;
     }
 
     @Override
@@ -523,7 +521,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     TestRender render = new TestRender();
 
     String name = RND.str(10);
-    String authorName = RND.str(10);
+    String author = RND.str(10);
     ClientDetails leftDetails;
 
     {
@@ -534,7 +532,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-    clientRegister.get().renderClientList(name, authorName, render);
+    clientRegister.get().renderClientList(name,author, new ClientFilter(), render);
     //
     //
     //
@@ -542,7 +540,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(render.asdRows).hasSize(1);
     assertThat(render.asdRows.get(0).id).isEqualTo(leftDetails.id);
     assertThat(render.name).isEqualTo(name);
-    assertThat(render.authorName).isEqualTo(authorName);
+    assertThat(render.authorName).isEqualTo(author);
   }
 
 
@@ -596,7 +594,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       (birthDate.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH ))){
       age--;
     }
-    return age;
+    return ++age;
   }
   private float getMinBalance(List<ClientAccount> clientAccounts) {
     float min_balance = Integer.MAX_VALUE;
@@ -659,7 +657,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     details.surname = RND.intStr(10);
     details.name = RND.intStr(10);
     details.patronymic = RND.intStr(10);
-    details.birthDate = RND.dateYears(1000, 2000);
+    details.birthDate = RND.dateYears(0, 1000);
     details.gender = GenderEnum.MALE;
     details.charmId = (int)(System.nanoTime() / 100000);
     details.addressFact = new ClientAddress(id, AddressTypeEnum.FACT, RND.str(10), RND.str(10), RND.str(10));
@@ -675,7 +673,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       ClientAccount clientAccount = new ClientAccount();
       clientAccount.client = id;
       clientAccount.number = RND.intStr(11);
-      clientAccount.money = (float) RND.plusDouble(10000, 3) + 100;
+      clientAccount.money = (float) RND.plusDouble(10000, 3);
       clientAccount.registeredAt = new Date();
       insertClientAccount(clientAccount);
     }

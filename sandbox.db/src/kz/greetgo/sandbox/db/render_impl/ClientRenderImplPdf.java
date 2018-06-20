@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.render_impl;
 
+import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.util.RND;
@@ -9,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+@Bean
 public class ClientRenderImplPdf implements ClientRender {
 
   private OutputStream out;
@@ -35,7 +37,7 @@ public class ClientRenderImplPdf implements ClientRender {
 
     ClientRenderImplXlsx asd = new ClientRenderImplXlsx(outf);
 
-    asd.start("fds gsdf", new Date());
+    asd.start( RND.str(10), new Date());
 
     for (int i=0;i<10; i++) {
       ClientRow row = new ClientRow();
@@ -50,6 +52,6 @@ public class ClientRenderImplPdf implements ClientRender {
       asd.append(row);
     }
 
-    asd.finish("Adilbek");
+    asd.finish( RND.str(10));
   }
 }

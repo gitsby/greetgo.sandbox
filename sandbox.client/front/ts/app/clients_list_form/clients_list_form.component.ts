@@ -5,6 +5,8 @@ import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
 import {SortByEnum} from "../../model/SortByEnum";
 import {ClientToSave} from "../../model/ClientToSave";
+import {HttpHeaderResponse} from "@angular/common/http";
+import {FileTypeEnum} from "../../model/FileTypeEnum";
 
 @Component({
   selector: 'clients-list-form-component',
@@ -165,6 +167,15 @@ export class ClientsListFormComponent implements AfterViewInit {
     if (this.editClientId == null) this.insertRecord(clientToSave);
     else this.updateClient(clientToSave);
     this.editClientId = null;
+  }
+
+  getRender() {
+    this.httpService.get('/client/get-report', {
+      "httpServletResponse" : JSON.stringify(new HttpHeaderResponse()),
+      "clientRenderEnum" : FileTypeEnum.PDF
+    }).toPromise().then(() => {
+
+    })
   }
 
   private insertRecord(clientToSave: ClientToSave) {

@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.render_impl;
 
+import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.render.ClientRender;
@@ -12,14 +13,12 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
+@Bean
 public class ClientRenderImplXlsx implements ClientRender {
 
   private final OutputStream out;
   private Xlsx xlsx;
   private Sheet sheet;
-
-  private int rowNo = 0;
 
   public ClientRenderImplXlsx(OutputStream out) {
     this.out = out;
@@ -74,16 +73,12 @@ public class ClientRenderImplXlsx implements ClientRender {
     xlsx.complete(out);
   }
 
-  private Integer getRowNo() {
-    return rowNo++;
-  }
-
   public static void main(String[] args) throws Exception {
     OutputStream outf = new FileOutputStream(new File("/Users/adilbekmailanov/Desktop/new.xlsx"));
 
     ClientRenderImplXlsx asd = new ClientRenderImplXlsx(outf);
 
-    asd.start("fds gsdf", new Date());
+    asd.start(RND.str(10), new Date());
 
     for (int i=0;i<10; i++) {
       ClientRow row = new ClientRow();
@@ -98,6 +93,6 @@ public class ClientRenderImplXlsx implements ClientRender {
       asd.append(row);
     }
 
-    asd.finish("Adilbek");
+    asd.finish(RND.str(10));
   }
 }
