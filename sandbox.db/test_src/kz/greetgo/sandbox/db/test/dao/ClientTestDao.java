@@ -67,5 +67,5 @@ public interface ClientTestDao {
       "DELETE FROM client_phone; " +
       "DELETE FROM client; " +
       "DELETE FROM charm")
-  void createAllTables();
+  void clearAllTables();
 }

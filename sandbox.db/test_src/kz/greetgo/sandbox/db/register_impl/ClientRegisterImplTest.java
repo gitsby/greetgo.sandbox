@@ -3,12 +3,14 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.db._develop_.RecreateDb;
+import kz.greetgo.sandbox.controller.render.ClientRender;
+import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,7 +30,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @BeforeMethod
   public void clearDB() throws Exception {
-    clientTestDao.get().createAllTables();
+    clientTestDao.get().clearAllTables();
   }
 
   @Test
@@ -295,6 +297,61 @@ public class ClientRegisterImplTest extends ParentTestNg {
     for (int i=0; i<charmRecords.size(); i++)
       assertThat(charmRecords.get(i).id).isEqualTo(insertedCharmRecords.get(i).id);
 
+  }
+
+  private static class TestRender implements ClientRender {
+
+    private String name;
+    private Date contractDate;
+    private List<ClientRow> asdRows;
+    private String authorName;
+
+    public TestRender() {
+      asdRows = Lists.newArrayList();
+    }
+
+    @Override
+    public void start(String name, Date contractDate) {
+      this.name = name;
+      this.contractDate = contractDate;
+    }
+
+    @Override
+    public void append(ClientRow asdRow) {
+      this.asdRows.add(asdRow);
+    }
+
+    @Override
+    public void finish(String authorName) {
+      this.authorName = authorName;
+    }
+  }
+
+  @Test
+  public void renderClientList() {
+    TestRender render = new TestRender();
+
+    String name = RND.str(10);
+    String authorName = RND.str(10);
+    Details leftDetails;
+
+    {
+      leftDetails = generateRandomClientDetails(RND.plusInt(10));
+      insertClient(leftDetails);
+    }
+
+    //
+    //
+    //
+    clientRegister.get().renderClientList(name, authorName, render);
+    //
+    //
+    //
+
+    assertThat(render.asdRows).hasSize(1);
+    assertThat(render.asdRows.get(0).id).isEqualTo(leftDetails.id);
+    assertThat(render.name).isEqualTo(name);
+    assertThat(render.authorName).isEqualTo(authorName);
   }
 
 

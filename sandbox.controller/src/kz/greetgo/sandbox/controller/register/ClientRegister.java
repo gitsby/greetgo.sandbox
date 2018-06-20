@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.controller.register;
 
 
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.render.ClientRender;
 
 import java.util.List;
 
@@ -56,4 +57,6 @@ public interface ClientRegister {
    * @return список характеров
    */
   List<CharmRecord> getCharms();
+
+  void renderClientList(String name, String author, ClientRender render);
 }

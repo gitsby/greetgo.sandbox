@@ -4,6 +4,8 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.ClientRender;
+import kz.greetgo.sandbox.db.callbacks.ClientReportCallback;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
@@ -219,17 +221,6 @@ public class ClientRegisterImpl implements ClientRegister {
     return clAddr;
   }
 
-  private void checkAndSaveClientAddresses(ClientAddress curAddr, ClientAddress editAddr) {
-    if (curAddr.equals(editAddr)) return;
-    jdbc.get().execute(connection -> {
-      try (PreparedStatement ps = connection.prepareStatement("UPDATE client_address SET street=?, house=?, flat=? WHERE client=? AND type=?")) {
-        appendParams(ps, curAddr, editAddr);
-        ps.execute();
-      }
-      return null;
-    });
-  }
-
   private void appendParams(PreparedStatement ps, ClientAddress curAddr, ClientAddress editAddr) throws SQLException {
     setObjects(1, ps,
       editAddr.street,
@@ -405,6 +396,11 @@ public class ClientRegisterImpl implements ClientRegister {
     });
 
     return charmRecords;
+  }
+
+  @Override
+  public void renderClientList(String name, String author, ClientRender render) {
+    jdbc.get().execute(new ClientReportCallback(name, author, render));
   }
 
   private CharmRecord getCharmFromResultSet(ResultSet rs) throws SQLException {
