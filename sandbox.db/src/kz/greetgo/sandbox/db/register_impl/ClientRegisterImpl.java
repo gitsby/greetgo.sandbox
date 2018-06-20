@@ -15,6 +15,8 @@ import java.util.List;
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
+  // FIXME: 6/20/18 Код формирующий запрос для селекта клиентов, количества клиентов и для отчета доложен быть один
+
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
@@ -40,6 +42,7 @@ public class ClientRegisterImpl implements ClientRegister {
     "          join client_account a on client.id = a.clientid\n" +
     "        group by clientid) as accountMoneys on client.id= accountMoneys.clientid";
 
+  // FIXME: 6/20/18 Дженерики не нужны. Не пиши лишнего и не усложняй код
   @Override
   public <T> List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
     StringBuilder query = new StringBuilder(clientRecordsQuery);

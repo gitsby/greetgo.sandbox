@@ -23,6 +23,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientTestDao> testDaoBeanGetter;
 
+  // FIXME: 6/20/18 Теты должны валидировать данные. А не просто вызывать методы или проверять на нот нул
+
   @Test
   public void checkCharactersNotNull() {
     assertThat(clientRegister.get().charm()).isNotNull();
@@ -31,6 +33,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void clientDetails() {
     ClientDetails details = clientRegister.get().details(testDaoBeanGetter.get().getFirstClient());
+    // FIXME: 6/20/18 Тест не валидирует данные в объекте
     assertThat(details).isNotNull();
   }
 
