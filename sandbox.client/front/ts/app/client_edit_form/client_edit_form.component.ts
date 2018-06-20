@@ -3,7 +3,7 @@ import {HttpService} from "../HttpService";
 import {ClientToSave} from "../../model/ClientToSave";
 import {CharmRecord} from "../../model/CharmRecord";
 import {Gender} from "../../model/Gender";
-import {Details} from "../../model/Details";
+import {ClientDetails} from "../../model/ClientDetails";
 
 @Component({
   selector: 'client-info-form-component',
@@ -37,7 +37,7 @@ export class ClientEditFormComponent implements OnInit {
       let clientId = this.clientId as number;
 
       this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
-        this.clientToSave = Details.copy(result.json()).toClientToSave();
+        this.clientToSave = ClientDetails.copy(result.json()).toClientToSave();
         this.formatAllPhoneNumbers();
       })
     }

@@ -1,31 +1,30 @@
 import {Gender} from "./Gender";
 import {ClientAddress} from "./ClientAddress";
 import {ClientPhone} from "./ClientPhone";
-import {CharmRecord} from "./CharmRecord";
 import {ClientToSave} from "./ClientToSave";
 
-export class Details {
+export class ClientDetails {
   public id: number;
   public surname: string;
   public name: string;
   public patronymic: string;
   public gender: Gender;
   public birthDate: Date;
-  public charm: CharmRecord;
+  public charmId: number;
   public addressFact: ClientAddress;
   public addressReg: ClientAddress;
   public homePhone: ClientPhone;
   public workPhone: ClientPhone;
   public mobilePhone: ClientPhone;
 
-  public assign(o: any): Details {
+  public assign(o: ClientDetails): ClientDetails {
     this.id = o.id;
     this.surname = o.surname;
     this.name = o.name;
     this.patronymic = o.patronymic;
     this.gender = o.gender;
     this.birthDate = new Date(o.birthDate);
-    this.charm = o.charm;
+    this.charmId = o.charmId;
     this.addressFact = o.addressFact;
     this.addressReg = o.addressReg;
     this.homePhone = o.homePhone;
@@ -34,8 +33,8 @@ export class Details {
     return this;
   }
 
-  public static copy(a: any): Details {
-    let ret = new Details();
+  public static copy(a: ClientDetails): ClientDetails {
+    let ret = new ClientDetails();
     ret.assign(a);
     return ret;
   }
@@ -48,7 +47,7 @@ export class Details {
     clientToSave.patronymic = this.patronymic;
     clientToSave.gender = this.gender;
     clientToSave.birthDate = this.birthDate;
-    clientToSave.charmId = this.charm.id;
+    clientToSave.charmId = this.charmId;
     clientToSave.addressFact = this.addressFact;
     clientToSave.addressReg = this.addressReg;
     clientToSave.homePhone = this.homePhone;

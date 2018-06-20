@@ -17,7 +17,7 @@ public interface ClientRegister {
    * @param clientId идентификатор клиента
    * @return детальная информация о клиенте
    */
-  Details detail(Integer clientId);
+  ClientDetails detail(Integer clientId);
 
   /**
    * Сохраняет или изменяет информацию о клиенте

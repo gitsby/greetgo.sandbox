@@ -20,7 +20,7 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/details")
-  public Details details(@Par("clientId") int clientId) {
+  public ClientDetails details(@Par("clientId") int clientId) {
     return clientRegister.get().detail(clientId);
   }
 

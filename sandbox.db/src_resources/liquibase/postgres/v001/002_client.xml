@@ -25,10 +25,10 @@
         patronymic VARCHAR(255),
         gender VARCHAR(255),
         birth_date DATE,
-        charm INTEGER,
+        charm_id INTEGER,
         actual SMALLINT NOT NULL DEFAULT 1,
         CONSTRAINT pk_tbl_Client_id PRIMARY KEY (id),
-        FOREIGN KEY (charm) REFERENCES charm(id)
+        FOREIGN KEY (charm_id) REFERENCES charm(id)
       );
     ]]></sql>
   </changeSet>
@@ -40,7 +40,7 @@
         type VARCHAR(255),
         number VARCHAR(255),
         actual SMALLINT NOT NULL DEFAULT 1,
-        PRIMARY KEY (client, number),
+        PRIMARY KEY (client, type),
         FOREIGN KEY (client) REFERENCES client(id)
       )
     ]]></sql>
@@ -76,33 +76,4 @@
     </sql>
   </changeSet>
 
-  <changeSet id="create-function-insert_client" author="adilbek">
-    <sql endDelimiter=";;"><![CDATA[
-      CREATE FUNCTION insert_client(in_id integer, in_surname VARCHAR(255), in_name VARCHAR(255), in_patronymic VARCHAR(255),
-      in_gender VARCHAR(255), in_birth_date DATE, in_charm INTEGER)
-        RETURNS INTEGER
-      AS
-      $$
-      BEGIN
-
-      IF in_id IS NULL OR in_id < 0 THEN
-
-        INSERT INTO client(surname, name, patronymic, gender, birth_date, charm)
-        VALUES(in_surname, in_name, in_patronymic, in_gender, in_birth_date, in_charm)
-        RETURNING id;
-
-      ELSE
-
-        UPDATE client SET
-        surname=in_surname, name=in_name, patronymic=in_patronymic, gender=in_gender,
-        birth_date=in_birth_date, charm=in_charm RETURNING id;
-
-      END IF;
-      RETURN(SELECT dblink_disconnect());
-      END;
-      $$
-      LANGUAGE plpgsql;
-    ]]>
-    </sql>
-  </changeSet>
 </databaseChangeLog>

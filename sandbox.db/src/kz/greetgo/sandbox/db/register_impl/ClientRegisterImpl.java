@@ -22,7 +22,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<JdbcSandbox> jdbc;
 
   @Override
-  public Details detail(Integer clientId) {
+  public ClientDetails detail(Integer clientId) {
     return getDetails(clientId);
   }
 
@@ -59,11 +59,11 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private String getClientInsertQuery() {
-    return "INSERT INTO client(surname, name, patronymic, gender, birth_date, charm) VALUES (?, ?, ?, ?, ?, ?) RETURNING id;";
+    return "INSERT INTO client(surname, name, patronymic, gender, birth_date, charm_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id;";
   }
 
   private String getClientUpdateQuery() {
-    return "UPDATE client SET surname=?, name=?, patronymic=?, gender=?, birth_date=?, charm=? WHERE id=? RETURNING id;";
+    return "UPDATE client SET surname=?, name=?, patronymic=?, gender=?, birth_date=?, charm_id=? WHERE id=? RETURNING id;";
   }
 
   private void insertPhonesAndAddresses(Integer client, ClientToSave clientToSave) {
@@ -100,7 +100,7 @@ public class ClientRegisterImpl implements ClientRegister {
   private String getPhoneInsertQuery() {
     return "INSERT INTO client_phone(client, type, number) " +
       "VALUES (?, ?, ?) " +
-      "ON CONFLICT(client, number) DO UPDATE SET " +
+      "ON CONFLICT(client, type) DO UPDATE SET " +
       "number=?";
   }
 
@@ -133,15 +133,8 @@ public class ClientRegisterImpl implements ClientRegister {
       "street=?, house=?, flat=?";
   }
 
-  private Details getDetails(Integer clientId) {
-    Client client = getClient(clientId);
-    Details details = new Details();
-    details.id = clientId;
-    details.surname = client.surname;
-    details.name = client.name;
-    details.patronymic = client.patronymic;
-    details.gender = client.gender;
-    details.charm = clientDao.get().getCharm(client.charm);
+  private ClientDetails getDetails(Integer clientId) {
+    ClientDetails details = clientDao.get().getDetails(clientId);
     details.addressFact = getClientAddress(clientId, AddressTypeEnum.FACT);
     details.addressReg = getClientAddress(clientId, AddressTypeEnum.REG);
     details.homePhone = getClientPhone(clientId, PhoneType.HOME);
@@ -191,9 +184,9 @@ public class ClientRegisterImpl implements ClientRegister {
     client.surname = rs.getString("surname");
     client.name = rs.getString("name");
     client.patronymic = rs.getString("patronymic");
-    client.gender = Gender.valueOf(rs.getString("gender"));
+    client.gender = GenderEnum.valueOf(rs.getString("gender"));
     client.birthDate = rs.getDate("birth_date");
-    client.charm = rs.getInt("charm");
+    client.charmId = rs.getInt("charm_id");
     return client;
   }
 
@@ -220,16 +213,6 @@ public class ClientRegisterImpl implements ClientRegister {
     clAddr.flat = rs.getString("flat");
     return clAddr;
   }
-
-  private void appendParams(PreparedStatement ps, ClientAddress curAddr, ClientAddress editAddr) throws SQLException {
-    setObjects(1, ps,
-      editAddr.street,
-      editAddr.house,
-      editAddr.flat,
-      curAddr.client,
-      curAddr.type.name());
-  }
-
 
   @Override
   public void delete(Integer clientId) {
@@ -272,7 +255,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private void appendRecordsSelect(StringBuilder sqlQuery) {
-    sqlQuery.append("SELECT m.id, surname, name, patronymic, DATE_PART('year', '2012-01-01'::date) - DATE_PART('year', '2011-10-02'::date) AS age, AVG(money) AS middle_balance, MAX(money) AS max_balance, MIN(money) AS min_balance ");
+    sqlQuery.append("SELECT m.id, surname, name, patronymic, date_part('year',age(birth_date)) AS age, AVG(x1.money) AS middle_balance, MAX(x1.money) AS max_balance, MIN(x1.money) AS min_balance ");
   }
 
   private void appendRecordsFrom(StringBuilder sqlQuery) {
@@ -312,18 +295,16 @@ public class ClientRegisterImpl implements ClientRegister {
           sqlQuery.append(String.format("ORDER BY m.surname %s, m.name %s, m.patronymic %s ", direct, direct, direct));
           return;
         case AGE:
-          sqlQuery.append(String.format("ORDER BY m.age %s ", direct));
+          sqlQuery.append(String.format("ORDER BY age %s ", direct));
           return;
         case MIDDLE_BALANCE:
           sqlQuery.append(String.format("ORDER BY middle_balance %s ", direct));
           return;
         case MAX_BALANCE:
           sqlQuery.append(String.format("ORDER BY max_balance %s ", direct));
-          params.add(direct);
           return;
         case MIN_BALANCE:
           sqlQuery.append(String.format("ORDER BY min_balance %s ", direct));
-          params.add(direct);
           return;
       }
     sqlQuery.append("ORDER BY m.id ");

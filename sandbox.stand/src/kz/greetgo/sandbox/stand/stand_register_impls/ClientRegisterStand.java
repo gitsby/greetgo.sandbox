@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
@@ -16,7 +17,7 @@ public class ClientRegisterStand implements ClientRegister {
   public BeanGetter<StandDb> db;
 
   @Override
-  public Details detail(Integer clientId) {
+  public ClientDetails detail(Integer clientId) {
     ClientDot clientDot = getClient(clientId);
     return toClientDetail(clientDot);
   }
@@ -101,6 +102,11 @@ public class ClientRegisterStand implements ClientRegister {
     return db.get().charms.stream().map(CharmDot::toCharm).collect(Collectors.toList());
   }
 
+  @Override
+  public void renderClientList(String name, String author, ClientRender render) {
+    throw new UnsupportedOperationException();
+  }
+
   private ClientDot getClient(int clientId) {
     return db.get().clientsStorage.stream().filter(clientDot -> clientDot.id == clientId).findFirst().get();
   }
@@ -173,14 +179,14 @@ public class ClientRegisterStand implements ClientRegister {
     return clientRecord;
   }
 
-  private Details toClientDetail(ClientDot clientDot) {
-    Details details = new Details();
+  private ClientDetails toClientDetail(ClientDot clientDot) {
+    ClientDetails details = new ClientDetails();
     details.id = clientDot.id;
     details.name = clientDot.name;
     details.surname = clientDot.surname;
     details.patronymic = clientDot.patronymic;
     details.birthDate = clientDot.birthDate;
-    details.charm = getCharm(clientDot.charmId);
+    details.charmId = clientDot.charmId;
     details.addressFact = getClientAddress(clientDot.id, AddressTypeEnum.FACT);
     details.addressReg = getClientAddress(clientDot.id, AddressTypeEnum.REG);
     details.homePhone = getClientPhone(clientDot.id, PhoneType.HOME);
