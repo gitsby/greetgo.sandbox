@@ -13,30 +13,12 @@ export class TableService{
 
   }
 
+   getOneValue=(url)=> this.httpService.get(url).toPromise().then(
+    response => response.text()
+   );
 
-  retrieveTable(
-    skipNumber:number,limit:number,
-    sortDirection:string, sortType:string):Observable<TableModel[]> {
-    console.log(skipNumber, limit, sortDirection, sortType);
-
-    // let somethingBad= this.http.get("/table/get-table-data",params:{
-    //    new HttpParams()
-    //     .set('skipNumber', skipNumber.toString)
-    //     .set('limit', limit.toString())
-    //     .set('sortDirection', sortDirection.toString())
-    //     .set('sortType', sortType.toString())
-    //   });
-    // // somethingBad.subscribe(response => console.log(response.text()));
-    // return somethingBad.pipe(map(res => res["payload"]));
-
-
-    let somethingGood = this.httpService.get("/table/get-table-data",
-      {
-        skipNumber: skipNumber, limit: limit,
-        sortDirection: sortDirection, sortType: sortType
-      });
-    somethingGood.subscribe(response => console.log(response.text()));
-    return somethingGood.pipe(map(res => res["payload"]));
-
+  retrieveArrayOfData(url,params){
+    return this.httpService.get(url,
+      params);
   }
 }

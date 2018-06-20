@@ -13,6 +13,7 @@ import {
   MatSortModule, MatButtonModule,
   MatButtonToggleModule, MatDialogModule, MatNativeDateModule
 } from '@angular/material';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { HttpService } from "../services/HttpService";
 import { UserDialogComponent } from './main-form/user-dialog/user-dialog.component';
 import { TableService }  from "../services/TableService";
@@ -31,6 +32,7 @@ import {MatSelectModule} from '@angular/material/select';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    MatProgressSpinnerModule,
     MatProgressBarModule,
     MatInputModule,
     MatTableModule,
@@ -46,6 +48,9 @@ import {MatSelectModule} from '@angular/material/select';
     MatDatepickerModule,
     MatNativeDateModule,
     MatSelectModule,
+  ],
+  exports: [
+    MatProgressSpinnerModule,
   ],
   providers: [HttpService, TableService],
   bootstrap: [AppComponent],

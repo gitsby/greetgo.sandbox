@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, OnChanges, SimpleChanges, Inject} from '@angular/core';
+import {Component, Input, OnInit, OnChanges, SimpleChanges, Inject, ViewChild} from '@angular/core';
 import { User } from "../../../models/User";
 import { HttpService } from "../../../services/HttpService";
 import {CharmType} from "../../../models/CharmType";
@@ -18,6 +18,8 @@ import {
 } from "@angular/forms";
 import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import {GenderType} from "../../../models/GenderType";
+import {UsersTableCustomDatasource} from "../users-table/users-table-custom-datasource";
+import {UsersTableComponent} from "../users-table/users-table.component";
 
 @Component({
   selector: 'app-user-dialog',
@@ -30,7 +32,8 @@ export class UserDialogComponent implements OnInit {
   charms = Object.keys(CharmType);
   phoneTypes = Object.keys(PhoneType);
   genderTypes = Object.keys(GenderType);
-
+  saveIsPressed :boolean=false;
+  user:User;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -38,32 +41,27 @@ export class UserDialogComponent implements OnInit {
     private httpService: HttpService,
     @Inject(MAT_DIALOG_DATA) private data,
     private picker: MatDatepickerModule,
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
-    console.log(this.charms);
-    console.log(this.data.user);
     const id = this.data.user.id;
     const name = this.data.user.name;
     const surname = this.data.user.surname;
     const patronymic = this.data.user.patronymic;
     const charm = this.data.user.charm;
-    const birthDate = new Date(this.data.user.birthDate * 1000);
+    const birthDate = new Date(this.data.user.birthDate);
     const titleType = this.data.user.titleType;
     let phones = this.data.user.phones;
     const factualAddress = this.data.user.factualAddress;
     const registeredAddress = this.data.user.registeredAddress;
     const genderType = this.data.user.genderType;
-    console.log(phones);
-
-    this.form = this.formBuilder.group({
+      this.form = this.formBuilder.group({
       id: id,
       name: [name, Validators.required],
       surname: [surname, Validators.required],
       patronymic: [patronymic, Validators.required],
       charm: [charm, Validators.required],
-      birthDate: [new Date(birthDate/1000), Validators.required],
+      birthDate: [birthDate, Validators.required],
       genderType: [genderType, Validators.required],
       registeredAddress: this.formBuilder.group({
         street: [registeredAddress.street, Validators.required],
@@ -101,27 +99,32 @@ export class UserDialogComponent implements OnInit {
     this.phonesFormArray.removeAt(elIndex);
   }
 
-  public submit(form) {
+  public submit() {
+    this.saveIsPressed=true;
     let user = User.copy(this.form.getRawValue());
     user.birthDate = this.form.getRawValue().birthDate.getTime();
-    if (this.data.titleType === "Update")
+    this.user=user;
+    if (this.data.titleType === "Update") {
       this.httpService.post('/table/change-user', {
-        user: JSON.stringify(user),
+        user: JSON.stringify(this.user),
       }).toPromise().then(
-        res => {
-          alert(res.text());
-          this.dialogRef.close(`${form.value.filename}`);
+        () => {
+          this.saveIsPressed = false;
+          console.log(user);
+          this.dialogRef.close(this.user);
         }
       );
-    else
+    }
+    else{
       this.httpService.post('/table/create-user', {
-        user: JSON.stringify(user),
+        user: JSON.stringify(this.user),
       }).toPromise().then(
-        res => {
-          alert(res.text());
-          this.dialogRef.close(`${form.value.filename}`);
+        () => {
+          this.saveIsPressed=false;
+          this.dialogRef.close(this.user);
         }
       );
+    }
   }
 }
 export function mobileExistenceValidator():ValidatorFn {

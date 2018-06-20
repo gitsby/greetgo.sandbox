@@ -1,3 +1,6 @@
+
+<mat-dialog-content *ngIf="saveIsPressed"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
+
 <form [formGroup]="form" (ngSubmit)="submit(form)">
   <h1 mat-dialog-title>{{this.data.titleType}} user</h1>
   <mat-dialog-content>
