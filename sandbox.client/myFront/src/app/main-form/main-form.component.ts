@@ -9,8 +9,9 @@ import { CharmType } from "../../models/CharmType";
 import { MatDialogRef,MatDialog, MatDialogConfig } from '@angular/material';
 import { UserDialogComponent } from './user-dialog/user-dialog.component';
 import {UsersTableComponent} from "./users-table/users-table.component";
-import {Subscription} from "rxjs/Subscription";
+import {Subscription} from "rxjs/";
 import {UsersTableCustomDatasource} from "./users-table/users-table-custom-datasource";
+// import Subscription = Rx.Subscription;
 
 @Component({
   selector: 'main-form-component',
@@ -26,7 +27,7 @@ export class MainFormComponent implements OnDestroy{
   loadUserInfoError: string | null;
   mockRequest: string | null = null;
   userIsLoading: boolean = false;
-  selectedUserID: string = '0';
+  selectedUserID: string = '-1';
   selectedUser: User = this.generateNewUser();
   isThereData: boolean = true;
   typeOfDialogCall: string | null = null;
@@ -42,7 +43,9 @@ export class MainFormComponent implements OnDestroy{
   }
 
   openDialog(titleType: string) {
+
     let clearlyOpenDialog=(user) => {
+      console.log(user);
       this.userDialogRef = this.dialog.open(UserDialogComponent, {
         hasBackdrop: true,
         minWidth: 400,
@@ -52,10 +55,17 @@ export class MainFormComponent implements OnDestroy{
         }
       });
       this.userDialogRef.afterClosed().subscribe((user)=> {
-        if (titleType === 'Update')
-          this.usersTableComponent.updateOneRow(user);
-        else
-          this.usersTableComponent.addOneRow(user);
+        console.log(user);
+        if(user===undefined||user===null||user.id==='-1'){
+
+          if (titleType === 'Update') {
+            this.usersTableComponent.updateOneRow(user);
+
+            this.selectedUserID= user.id;
+          }else
+            this.usersTableComponent.addOneRow(user);
+
+        }
       })};
 
       if(titleType==='Update') {

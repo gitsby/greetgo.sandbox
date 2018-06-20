@@ -7,6 +7,7 @@ import {TableModel} from "../../../models/TableModel";
 import {User} from "../../../models/User";
 import {TableService} from "../../../services/TableService";
 import {forEach} from "@angular/router/src/utils/collection";
+import {merge, Observable} from "rxjs/";
 
 
 
@@ -26,7 +27,7 @@ export class UsersTableComponent implements OnInit {
   displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
 
 
-  constructor(private tableService: TableService){
+  constructor(private httpService: HttpService){
 
   }
   onRowSelected(user) {
@@ -36,9 +37,7 @@ export class UsersTableComponent implements OnInit {
   }
   public addOneRow(user){
     let tableModel=new TableModel();
-    let setId = (id) =>{
-
-      tableModel.id=id;
+      tableModel.id=user.id;
       tableModel.fullName=user.surname+" "+user.name+" "+user.patronymic;
       tableModel.charm=user.charm;
       tableModel.age=user.birthDate;
@@ -47,9 +46,6 @@ export class UsersTableComponent implements OnInit {
       tableModel.totalBalance=0;
       this.dataSource.thisTable.push(tableModel);
       this.dataSource.tableSubject.next(this.dataSource.thisTable);
-    };
-
-    this.dataSource.getLastId(setId);
   }
 
   public updateOneRow(user){
@@ -78,32 +74,52 @@ export class UsersTableComponent implements OnInit {
       console.log(this.dataSource.thisTable);
       this.dataSource.thisTable[id].fullName=user.surname +" "+user.name+" "+user.patronymic;
       this.dataSource.thisTable[id].age= user.birthDate;
+      let data:TableModel[]=[];
+      this.dataSource.tableSubject.next(data);
+      this.dataSource.tableSubject.next(this.dataSource.thisTable);
+
+
   }
 
   ngOnInit() {
-    this.dataSource = new UsersTableCustomDatasource(this.tableService);
+    this.dataSource = new UsersTableCustomDatasource(this.tableFetcher(true));
     this.dataSource.loadTable();
   }
 
   ngAfterViewInit() {
-    // this.dataSource.paginator
-    this.sort.sortChange.pipe(
-      tap(() => this.loadTablePage())
-    )
-      .subscribe();
-    this.paginator.page.pipe(
-      tap(() => this.loadTablePage())
-    )
-      .subscribe();
+    merge(this.sort.sortChange,this.paginator.page).pipe(
+      tap(() => {
+        this.dataSource = new UsersTableCustomDatasource(this.tableFetcher());
+        this.dataSource.loadTable();
+      })).subscribe();
+
+  }
+  tableFetcher(ngInit=false){
+    let limit = 3;
+    let skipNumber = 0;
+    let sortDirection='asc';
+    let sortType='fullname';
+    if(!ngInit) {
+       limit = this.paginator.pageSize;
+       skipNumber = this.paginator.pageIndex*this.paginator.pageSize ;
+       sortDirection=this.sort.direction;
+       sortType=this.sort.active;
+    }
+
+    console.log(skipNumber,limit,sortDirection,sortType);
+
+    return this.httpService.get("/table/get-table-data", {
+      skipNumber:skipNumber,
+      limit: limit,
+      sortDirection:sortDirection,
+      sortType:sortType}
+    );
   }
 
   loadTablePage() {
-    this.dataSource.loadTable(
-      this.paginator.pageIndex,
-      this.paginator.pageSize,
-      this.sort.direction,
-      this.sort.active);
+    this.dataSource.loadTable();
   }
+
 
 
 

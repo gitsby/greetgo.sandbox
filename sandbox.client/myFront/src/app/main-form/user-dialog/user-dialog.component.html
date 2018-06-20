@@ -11,7 +11,7 @@
   </mat-dialog-content>
   <mat-dialog-content>
     <mat-form-field>
-      <input matInput formControlName="patronymic" placeholder="Patronymic" required>
+      <input matInput formControlName="patronymic" placeholder="Patronymic">
     </mat-form-field>
   </mat-dialog-content>
   <mat-dialog-content>
@@ -117,7 +117,7 @@
   </div>
   </mat-dialog-content>
   <mat-dialog-actions>
-    <button mat-stroked-button type="button" mat-dialog-close style="margin: 10px" >Cancel</button>
+    <button mat-stroked-button type="button" mat-dialog-close matDialogClose style="margin: 10px" >Cancel</button>
     <button mat-raised-button type="submit" style="margin: 10px" color="primary"  [disabled]="!form.valid">Save</button>
   </mat-dialog-actions>
 </form>

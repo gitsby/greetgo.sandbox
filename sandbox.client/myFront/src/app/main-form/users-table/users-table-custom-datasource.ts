@@ -15,7 +15,7 @@ export class UsersTableCustomDatasource implements DataSource<TableModel> {
   public tableSubject = new BehaviorSubject<TableModel[]>([]);
   public thisTable: TableModel[];
 
-  constructor(private tableService:TableService){
+  constructor(private fetchedTable){
   }
 
   connect(): Observable<TableModel[]>{
@@ -26,20 +26,16 @@ export class UsersTableCustomDatasource implements DataSource<TableModel> {
     this.tableSubject.complete();
   }
 
-  getLastId(setId){
-    this.tableService.getOneValue("/table/get-last-id").then(res=> setId(res));
-  }
 
-  loadTable(pageIndex=0,pageSize=3,
-            sortDirection='asc', active='fullName'){
-    let skipNumber = (pageIndex*pageSize);
+  loadTable()
+  {
+    this.fetchedTable.subscribe(table=>{
+      let data=table.json();
+      this.thisTable =data.table.map(TableModel.copy);
+      this.size = data.size;
+      this.tableSubject.next(this.thisTable);
+    });
 
-    this.tableService.retrieveArrayOfData("/table/get-table-data",{skipNumber: skipNumber, limit: pageSize,
-      sortDirection: sortDirection, sortType: active}).subscribe(
-      table => {
-        this.thisTable = table.json().map(TableModel.copy);
-        this.tableSubject.next(this.thisTable);
-      });
-    this.tableService.getOneValue("/table/get-table-size").then(res=>this.size=parseInt(res));
+    // this.tableService.getOneValue("/table/get-table-size").then(res=>this.size=parseInt(res));
   }
 }

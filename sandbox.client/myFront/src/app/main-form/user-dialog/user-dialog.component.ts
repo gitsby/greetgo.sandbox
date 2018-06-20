@@ -59,7 +59,7 @@ export class UserDialogComponent implements OnInit {
       id: id,
       name: [name, Validators.required],
       surname: [surname, Validators.required],
-      patronymic: [patronymic, Validators.required],
+      patronymic: [patronymic],
       charm: [charm, Validators.required],
       birthDate: [birthDate, Validators.required],
       genderType: [genderType, Validators.required],
@@ -119,8 +119,11 @@ export class UserDialogComponent implements OnInit {
       this.httpService.post('/table/create-user', {
         user: JSON.stringify(this.user),
       }).toPromise().then(
-        () => {
+        (res) => {
           this.saveIsPressed=false;
+          let id=res.text();
+          console.log(id);
+          this.user.id=id[1]+id[2];
           this.dialogRef.close(this.user);
         }
       );
