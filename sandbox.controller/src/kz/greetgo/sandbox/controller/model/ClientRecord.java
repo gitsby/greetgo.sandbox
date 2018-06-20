@@ -11,4 +11,19 @@ public class ClientRecord {
   public double accBalance = 0;
   public double maxBalance = 0;
   public double minBalance = 0;
+
+  @Override
+  public String toString() {
+    return "ClientRecord{" +
+      "id=" + id +
+      ", name='" + name + '\'' +
+      ", surname='" + surname + '\'' +
+      ", patronymic='" + patronymic + '\'' +
+      ", charm='" + charm + '\'' +
+      ", age=" + age +
+      ", accBalance=" + accBalance +
+      ", maxBalance=" + maxBalance +
+      ", minBalance=" + minBalance +
+      '}';
+  }
 }
