@@ -6,8 +6,7 @@ import java.util.Date;
 
 public class ClientAccountDot {
   public Integer id;
-  // FIXME: 6/15/18 clientId
-  public Integer client;
+  public Integer clientId;
   public float money;
   public String number;
   public Date registeredAt;
@@ -15,7 +14,7 @@ public class ClientAccountDot {
   public ClientAccount toClientAccount() {
     ClientAccount clientAccount = new ClientAccount();
     clientAccount.id = this.id;
-    clientAccount.client = client;
+    clientAccount.client = this.clientId;
     clientAccount.money = this.money;
     clientAccount.number = this.number;
     clientAccount.registeredAt = this.registeredAt;

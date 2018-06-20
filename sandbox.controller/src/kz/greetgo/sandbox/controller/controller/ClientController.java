@@ -28,8 +28,8 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.POST)
   @Mapping("/save")
-  public void save(@Par("clientToSave") @Json ClientToSave client) {
-    clientRegister.get().save(client);
+  public Integer save(@Par("clientToSave") @Json ClientToSave client) {
+    return clientRegister.get().save(client);
   }
 
   @ToJson
@@ -55,7 +55,6 @@ public class ClientController implements Controller {
 
   @ToJson
   @MethodFilter(RequestMethod.GET)
-  // FIXME: 6/15/18 mapper: get-charms
-  @Mapping("/getCharms")
-  public List<Charm> charms() { return clientRegister.get().getCharms(); }
+  @Mapping("/get-charms")
+  public List<CharmRecord> charms() { return clientRegister.get().getCharms(); }
 }

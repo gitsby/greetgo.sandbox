@@ -1,7 +1,7 @@
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientToSave} from "../../model/ClientToSave";
-import {Charm} from "../../model/Charm";
+import {CharmRecord} from "../../model/CharmRecord";
 import {Gender} from "../../model/Gender";
 import {Details} from "../../model/Details";
 
@@ -12,14 +12,14 @@ import {Details} from "../../model/Details";
 })
 export class ClientEditFormComponent implements OnInit {
   @Input() clientId: number;
-  @Output() onClose = new EventEmitter<boolean>();
+  @Output() onClose = new EventEmitter<ClientToSave>();
 
   @ViewChild('birthDayInput') birthDayInput: ElementRef;
 
   title = "Новый клиент";
   buttonTitle = "Добавить";
 
-  charms: Array<Charm> = [];
+  charms: Array<CharmRecord> = [];
   wrongMessageEnable: boolean = false;
   clientToSave: ClientToSave = new ClientToSave();
 
@@ -37,9 +37,7 @@ export class ClientEditFormComponent implements OnInit {
       let clientId = this.clientId as number;
 
       this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
-        console.log(result.json());
         this.clientToSave = Details.copy(result.json()).toClientToSave();
-        console.log(this.clientToSave);
         this.formatAllPhoneNumbers();
       })
     }
@@ -51,10 +49,9 @@ export class ClientEditFormComponent implements OnInit {
   }
 
   loadCharms() {
-    this.httpService.get("/client/getCharms").toPromise().then(result => {
+    this.httpService.get("/client/get-charms").toPromise().then(result => {
       for (let res of result.json())
-        this.charms.push(Charm.copy(res));
-      console.log(this.charms);
+        this.charms.push(CharmRecord.copy(res));
 
     })
   }
@@ -121,13 +118,14 @@ export class ClientEditFormComponent implements OnInit {
   saveClient() {
     this.httpService.post("/client/save", {
       "clientToSave": JSON.stringify(this.clientToSave)
-    }).toPromise().then(() => {
-      this.onClose.emit(true);
+    }).toPromise().then(res => {
+      this.clientToSave.id = res.json();
+      this.onClose.emit(this.clientToSave);
     })
   }
 
-  closeButtonClicked(clientSaved: boolean) {
-    this.onClose.emit(clientSaved);
+  closeButtonClicked() {
+    this.onClose.emit(null);
   }
 
   setBDate(dateText: string) {

@@ -5,17 +5,13 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
-
-  // FIXME: 6/15/18 izbavlyaisya ot zheltih v kode
 
   public BeanGetter<StandDb> db;
 
@@ -26,11 +22,11 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public void save(ClientToSave clientToSave) {
+  public Integer save(ClientToSave clientToSave) {
     ClientDot clientDot;
     if (clientToSave.id == null) {
       clientDot = new ClientDot();
-      db.get().clientsStorage.add(0, clientDot);
+      db.get().clientsStorage.add(clientDot);
       clientDot.id = db.get().clientsStorage.size();
     } else clientDot = getClient(clientToSave.id);
     System.out.println(clientToSave.birthDate);
@@ -39,17 +35,18 @@ public class ClientRegisterStand implements ClientRegister {
     clientDot.patronymic = clientToSave.patronymic;
     clientDot.gender = clientToSave.gender;
     clientDot.birthDate = clientToSave.birthDate;
-    saveClientAddress(clientToSave.addressFact).client = clientToSave.id;
-    saveClientAddress(clientToSave.addressReg).client = clientToSave.id;
-    saveClientPhone(clientToSave.homePhone).client = clientToSave.id;
-    saveClientPhone(clientToSave.workPhone).client = clientToSave.id;
-    saveClientPhone(clientToSave.mobilePhone).client = clientToSave.id;
+    saveClientAddress(clientDot.id, clientToSave.addressFact);
+    saveClientAddress(clientDot.id, clientToSave.addressReg);
+    saveClientPhone(clientDot.id, clientToSave.homePhone);
+    saveClientPhone(clientDot.id, clientToSave.workPhone);
+    saveClientPhone(clientDot.id, clientToSave.mobilePhone);
     clientDot.charmId = clientToSave.charmId;
+    return clientDot.id;
   }
 
   @Override
   public void delete(Integer clientId) {
-    db.get().clientsStorage.removeIf(clientDot -> clientDot.id == clientId);
+    db.get().clientsStorage.removeIf(clientDot -> clientDot.id.equals(clientId));
   }
 
   @Override
@@ -100,8 +97,8 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public List<Charm> getCharms() {
-    return db.get().charms.stream().map(charmDot -> charmDot.toCharm()).collect(Collectors.toList());
+  public List<CharmRecord> getCharms() {
+    return db.get().charms.stream().map(CharmDot::toCharm).collect(Collectors.toList());
   }
 
   private ClientDot getClient(int clientId) {
@@ -138,7 +135,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMiddleBalance(ClientDot clientDot) {
     float middle_balance = 0;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       middle_balance += clientAccount.money;
@@ -147,7 +144,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMaxBalance(ClientDot clientDot) {
     float max_balance = -1;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money > max_balance) max_balance = clientAccount.money;
@@ -156,7 +153,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private float getMinBalance(ClientDot clientDot) {
     float min_balance = Integer.MAX_VALUE;
-    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(clientAccountDot -> clientAccountDot.toClientAccount()).filter(clientAccountDot -> clientAccountDot.client == clientDot.id).collect(Collectors.toList());
+    List<ClientAccount> clientAccounts = db.get().accounts.stream().map(ClientAccountDot::toClientAccount).filter(clientAccountDot -> clientAccountDot.client.equals(clientDot.id)).collect(Collectors.toList());
     if(clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money < min_balance) min_balance = clientAccount.money;
@@ -193,21 +190,21 @@ public class ClientRegisterStand implements ClientRegister {
     return details;
   }
 
-  private Charm getCharm(int clientCharmId) {
-    return db.get().charms.stream().filter(charm -> charm.id == clientCharmId).findFirst().get().toCharm();
+  private CharmRecord getCharm(int clientCharmId) {
+    return db.get().charms.stream().filter(charm -> charm.id.equals(clientCharmId)).findFirst().get().toCharm();
   }
 
-  private ClientAddress getClientAddress(int clientAddressId, AddressTypeEnum type) {
-    return db.get().addresses.stream().filter(clientAddress -> clientAddress.client == clientAddressId && clientAddress.type == type).findFirst().get().toClientAddress();
+  private ClientAddress getClientAddress(int client, AddressTypeEnum type) {
+    return db.get().addresses.stream().filter(clientAddress -> clientAddress.client.equals(client) && clientAddress.type.equals(type)).findFirst().get().toClientAddress();
   }
 
-  private ClientPhone getClientPhone(int clientId, PhoneType type) {
-    return db.get().phones.stream().filter(clientPhone -> clientPhone.client == clientId && clientPhone.type == type).findFirst().get().toClientPhone();
+  private ClientPhone getClientPhone(int client, PhoneType type) {
+    return db.get().phones.stream().filter(clientPhone -> clientPhone.client.equals(client) && clientPhone.type.equals(type)).findFirst().get().toClientPhone();
   }
 
-  private ClientAddress saveClientAddress(ClientAddress saveClientAddress) {
+  private ClientAddress saveClientAddress(Integer client, ClientAddress saveClientAddress) {
     if (saveClientAddress.client == null) {
-      saveClientAddress.client = db.get().addresses.size();
+      saveClientAddress.client = client;
       db.get().addresses.add(new ClientAddressDot(saveClientAddress));
       return saveClientAddress;
     } else {
@@ -219,9 +216,9 @@ public class ClientRegisterStand implements ClientRegister {
     }
   }
 
-  private ClientPhone saveClientPhone(ClientPhone saveClientPhone) {
+  private ClientPhone saveClientPhone(Integer client, ClientPhone saveClientPhone) {
     if (saveClientPhone.client == null) {
-      saveClientPhone.client = db.get().phones.size();
+      saveClientPhone.client = client;
       db.get().phones.add(new ClientPhoneDot(saveClientPhone));
       return saveClientPhone;
     } else {

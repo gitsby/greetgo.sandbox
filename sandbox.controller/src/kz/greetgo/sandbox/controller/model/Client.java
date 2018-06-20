@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.controller.model;
 import java.util.Date;
 
 public class Client {
-  public String id;
+  public Integer id;
   public String surname;
   public String name;
   public String patronymic;

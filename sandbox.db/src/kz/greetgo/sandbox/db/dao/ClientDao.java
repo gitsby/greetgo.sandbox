@@ -25,7 +25,11 @@ public interface ClientDao {
   ClientPhone getPhone(@Param("clientId") Integer clientId, @Param("type")PhoneType type);
 
   @Select("SELECT * FROM charm WHERE id=#{id}")
-  Charm getCharm(@Param("id") Integer charmId);
+  CharmRecord getCharm(@Param("id") Integer charmId);
+
+  @Select("${query}")
+  Integer selectCount(@Param("query") String query);
+
 
   /** INSERT */
 
@@ -63,19 +67,11 @@ public interface ClientDao {
                    @Param("number") String number);
 
 
+
+
+
+
   /** UPDATES */
-
-  @Update("UPDATE client_address SET ${fieldName}=#{fieldValue} WHERE client=#{client} AND type=#{type}")
-  void updateAddressField(@Param("client") Integer clientId,
-                          @Param("type") AddressTypeEnum type,
-                          @Param("fieldName") String fieldName,
-                          @Param("fieldValue") Object fieldValue);
-
-  @Update("UPDATE client_phone SET ${fieldName}=#{fieldValue} WHERE client=#{client} AND number=#{number}")
-  void updatePhoneField(@Param("client") Integer clientId,
-                        @Param("number") String number,
-                        @Param("fieldName") String fieldName,
-                        @Param("fieldValue") Object fieldValue);
 
   @Update("UPDATE client_phone SET number=#{number}, type=#{type} WHERE client=#{client} AND number=#{oldNumber}")
   void updatePhone(@Param("client") Integer client,
@@ -104,4 +100,5 @@ public interface ClientDao {
 
   @Select("${query}")
   List<ClientRecord> select(@Param("query") String query);
+
 }

@@ -1,14 +1,13 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.Gender;
-import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.*;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.Date;
+import java.util.List;
 
 public interface ClientTestDao {
 
@@ -21,12 +20,12 @@ public interface ClientTestDao {
   @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm) " +
     "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm});")
   void insertClient(@Param("id") Integer id,
-                       @Param("surname") String surname,
-                       @Param("name") String name,
-                       @Param("patronymic") String patronymic,
-                       @Param("gender") Gender gender,
-                       @Param("birth_date") Date birthDate,
-                       @Param("charm") Integer charm);
+                    @Param("surname") String surname,
+                    @Param("name") String name,
+                    @Param("patronymic") String patronymic,
+                    @Param("gender") Gender gender,
+                    @Param("birth_date") Date birthDate,
+                    @Param("charm") Integer charm);
 
   @Insert("INSERT INTO charm(id, name, description, energy) VALUES (#{id}, #{name}, #{description}, #{energy})")
   void insertCharm(@Param("id") Integer id,
@@ -50,4 +49,23 @@ public interface ClientTestDao {
 
   @Select("SELECT ${fieldName} FROM client WHERE id=#{clientId}")
   String loadParamValue(@Param("clientId") Integer clientId, @Param("fieldName") String fieldName);
+
+  @Insert("INSERT INTO client_account(client, number, money, registered_at) VALUES(#{client}, #{number}, #{money}, #{registered_at})")
+  void insertClientAccount(@Param("client") Integer client,
+                           @Param("number") String number,
+                           @Param("money") float money,
+                           @Param("registered_at") Date registeredAt);
+
+  @Select("SELECT * FROM client_account WHERE client=#{id}")
+  List<ClientAccount> getClientAccounts(@Param("id") Integer id);
+
+  @Select("SELECT * FROM client")
+  List<Client> details();
+
+  @Delete("DELETE FROM client_account; " +
+    "DELETE FROM client_address; " +
+      "DELETE FROM client_phone; " +
+      "DELETE FROM client; " +
+      "DELETE FROM charm")
+  void createAllTables();
 }

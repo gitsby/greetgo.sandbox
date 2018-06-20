@@ -1,7 +1,7 @@
 import {Gender} from "./Gender";
 import {ClientAddress} from "./ClientAddress";
 import {ClientPhone} from "./ClientPhone";
-import {Charm} from "./Charm";
+import {CharmRecord} from "./CharmRecord";
 import {ClientToSave} from "./ClientToSave";
 
 export class Details {
@@ -11,7 +11,7 @@ export class Details {
   public patronymic: string;
   public gender: Gender;
   public birthDate: Date;
-  public charm: Charm;
+  public charm: CharmRecord;
   public addressFact: ClientAddress;
   public addressReg: ClientAddress;
   public homePhone: ClientPhone;
