@@ -5,7 +5,7 @@ public class ClientRecord {
   public String name;
   public String surname;
   public String patronymic;
-  public String character;
+  public String charm;
 
   public int age = 0;
   public double accBalance = 0;

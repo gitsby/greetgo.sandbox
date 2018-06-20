@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.db.dao;
 
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -27,44 +26,15 @@ public interface ClientDao {
 
 
   // ---------------------------------------
-  @Select("select * from client")
-  <T> List<T> getClients();
+
+  @Select("select count(*) from client where concat(Lower(surname),Lower(name),Lower(patronymic)) like '%'||#{searchName}||'%")
+  int getClientCount(ClientRecordFilter filter);
 
   @Select("select id, name from characters")
-  List<CharmRecord> getCharacters();
+  List<CharmRecord> getCharms();
 
-  @Select("select\n" +
-    "  client.id,\n" +
-    "  client.name,\n" +
-    "  client.surname,\n" +
-    "  client.patronymic,\n" +
-    "  gender,\n" +
-    "  c2.name as character\n" +
-    "  from client\n" +
-    "  join characters c2 on client.charm = c2.id\n" +
-    "  where concat(Lower(client.name),Lower(client.surname), Lower(client.patronymic)) like '%' || #{searchName} ||'%'" +
-    "  limit #{sliceNum} * #{paginationPage} + #{sliceNum} offset #{sliceNum}*#{paginationPage}")
-  List<ClientRecord> getClientRecords(ClientRecordFilter clientRecordFilter);
-
-  @Select("select\n" +
-    "  id,\n" +
-    "  name,\n" +
-    "  surname,\n" +
-    "  patronymic,\n" +
-    "  gender,\n" +
-    "  character\n" +
-    "  from v_client_with_character\n" +
-    "  where concat(Lower(name),Lower(surname), Lower(patronymic)) like '%' || #{searchName} ||'%'" +
-    "  order by #{columnName} asc " +
-    "  limit #{sliceNum} * #{paginationPage} + #{sliceNum} offset #{sliceNum}*#{paginationPage} ")
-  List<ClientRecord> getClientRecordsAsc(ClientRecordFilter clientRecordFilter);
-
-
-  @Select("")
-  List<ClientRecord> getClientRecordsDesc(ClientRecordFilter clientRecordFilter);
-
-  @Select("select * from v_client_with_character " +
-    "where client.id=#{id}")
+  @Select("select client.id, client.name, client.surname, client.patronymic, client.gender, client.birth_date, client.charm\n" +
+    "from client where client.id=#{id}")
   ClientDetails getClientById(int id);
 
   @Select("select " +
@@ -80,7 +50,7 @@ public interface ClientDao {
   // ---------------------------------------
 
   @Update("update client set name=#{name}, surname=#{surname}, patronymic=#{patronymic}," +
-    " gender=#{gender}, birth_date=#{birthDate}, charm=#{charm}")
+    " gender=#{gender}, birth_date=#{birthDate}, charm=#{charm} where id=#{id}")
   void updateClient(ClientToSave client);
 
   @Update("update client_phone set phone=#{editedTo} " +

@@ -41,7 +41,7 @@ public class ClientRegisterStand implements ClientRegister {
     clientRecord.surname = clientDot.surname;
     clientRecord.patronymic = clientDot.patronymic;
     clientRecord.age = getDiffYears(clientDot.birthDate, new Date());
-    clientRecord.character = getCharacterById(clientDot.charm);
+    clientRecord.charm = getCharacterById(clientDot.charm);
 
     clientRecord.minBalance = minMoneyInClientAccounts(clientDot.id);
     clientRecord.maxBalance = maxMoneyInClientAccounts(clientDot.id);

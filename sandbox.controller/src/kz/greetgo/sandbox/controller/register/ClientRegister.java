@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ClientRegister {
 
-  List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter);
+  <T>List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter);
 
   void deleteClient(int clientId);
 
