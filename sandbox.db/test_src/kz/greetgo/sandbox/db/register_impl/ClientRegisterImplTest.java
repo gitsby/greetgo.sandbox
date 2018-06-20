@@ -1,9 +1,19 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientFilter;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Details;
+import kz.greetgo.sandbox.controller.model.Gender;
+import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.SortByEnum;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.db._develop_.RecreateDb;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -22,6 +32,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * Набор автоматизированных тестов для тестирования методов класса {@link ClientRegisterImpl}
  */
 public class ClientRegisterImplTest extends ParentTestNg {
+
+  // FIXME: 6/20/18 нужны тесты для всех видов сортировки
 
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
@@ -48,7 +60,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-
+    // FIXME: 6/20/18 Нужно валидировать все поля в детейлс
     assertThat(resultDetail).isNotNull();
     assertThat(resultDetail.surname).isEqualTo(details.surname);
     assertThat(resultDetail.charm.id).isEqualTo(details.charm.id);
@@ -67,7 +79,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-
+    // FIXME: 6/20/18 Нужно валидировать, что поля ложаться правильно
     {
       int count = clientTestDao.get().count();
       assertThat(count).isEqualTo(1);
@@ -97,7 +109,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       int count = clientTestDao.get().count();
       assertThat(count).isEqualTo(1);
     }
-
+    // FIXME: 6/20/18 Нужно валидировать все поля
     {
       String actualName = clientTestDao.get().loadParamValue(clientId, "name");
       ClientAddress actualAddressReg = clientTestDao.get().getAddress(clientId, AddressTypeEnum.REG);
@@ -121,7 +133,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-
+    // FIXME: 6/20/18 Вытащи поле и чекай его актуал
     {
       int count = clientTestDao.get().count();
       assertThat(count).isZero();
@@ -130,14 +142,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
-  public void getRecordsWithEmptyFilter() throws Exception  {
+  public void getRecordsWithEmptyFilter() throws Exception {
 
     ClientFilter emptyFilter = new ClientFilter();
     emptyFilter.offset = 0;
     emptyFilter.limit = 10;
 
     for (int i = 0; i < 40; i++) {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
@@ -154,21 +166,22 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void getRecordsWithFilter() throws Exception  {
+  public void getRecordsWithFilter() throws Exception {
 
-    String rName= RND.str(5);
+    String rName = RND.str(5);
     ClientFilter filter = new ClientFilter();
     filter.fio = rName;
 
     for (int i = 0; i < 20; i++) {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
 
-    Integer clientId = (int)(System.nanoTime()/10000);
+    Integer clientId = (int) (System.nanoTime() / 10000);
     Details details = generateRandomClientDetails(clientId);
-    details.name = rName + RND.str(10);
+    // FIXME: 6/20/18 А фамилия и очество?
+    details.name = RND.str(10) + rName + RND.str(10);
     insertClient(details);
 
     //
@@ -190,7 +203,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientRecord> clientRecords = new ArrayList<>();
 
     for (int i = 0; i < 20; i++) {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
       generateRandomAccountsFor(details.id, RND.plusInt(50));
@@ -209,19 +222,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(result.size()).isEqualTo(clientRecords.size());
-    for(int i=0; i<result.size(); i++)
+    for (int i = 0; i < result.size(); i++)
       assertThat(clientRecords.get(i).id).isEqualTo(result.get(i).id);
   }
 
   @Test
-  public void getRecordsCountWithEmptyFilter() throws Exception  {
+  public void getRecordsCountWithEmptyFilter() throws Exception {
 
     int randomCount = RND.plusInt(40);
 
     ClientFilter filter = new ClientFilter();
 
     for (int i = 0; i < randomCount; i++) {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
@@ -238,7 +251,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void getRecordsCountWithFilter() throws Exception  {
+  public void getRecordsCountWithFilter() throws Exception {
 
     int randomCount = RND.plusInt(40);
     String randomFio = RND.str(10);
@@ -247,13 +260,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
     filter.fio = randomFio;
 
     for (int i = 0; i < randomCount; i++) {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       insertClient(details);
     }
 
     {
-      Integer clientId = (int)(System.nanoTime()/10000);
+      Integer clientId = (int) (System.nanoTime() / 10000);
       Details details = generateRandomClientDetails(clientId);
       details.name = randomFio;
       insertClient(details);
@@ -292,7 +305,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(charmRecords.size()).isEqualTo(randomCount);
-    for (int i=0; i<charmRecords.size(); i++)
+    for (int i = 0; i < charmRecords.size(); i++)
       assertThat(charmRecords.get(i).id).isEqualTo(insertedCharmRecords.get(i).id);
 
   }
@@ -313,7 +326,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private float getMinBalance(List<ClientAccount> clientAccounts) {
     float min_balance = Integer.MAX_VALUE;
-    if(clientAccounts.size() == 0) return 0;
+    if (clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money < min_balance) min_balance = clientAccount.money;
     return min_balance;
@@ -321,7 +334,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private float getMaxBalance(List<ClientAccount> clientAccounts) {
     float max_balance = -1;
-    if(clientAccounts.size() == 0) return 0;
+    if (clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       if (clientAccount.money > max_balance) max_balance = clientAccount.money;
     return max_balance;
@@ -329,7 +342,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private float getMiddleBalance(List<ClientAccount> clientAccounts) {
     float middle_balance = 0;
-    if(clientAccounts.size() == 0) return 0;
+    if (clientAccounts.size() == 0) return 0;
     for (ClientAccount clientAccount : clientAccounts)
       middle_balance += clientAccount.money;
     return middle_balance / clientAccounts.size();
@@ -372,7 +385,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     details.patronymic = RND.str(10);
     details.birthDate = new Date();
     details.gender = Gender.MALE;
-    details.charm = new CharmRecord((int)(System.nanoTime()/100000), RND.str(10), RND.str(10), RND.rnd.nextFloat());
+    details.charm = new CharmRecord((int) (System.nanoTime() / 100000), RND.str(10), RND.str(10), RND.rnd.nextFloat());
     details.addressFact = new ClientAddress(id, AddressTypeEnum.FACT, RND.str(10), RND.str(10), RND.str(10));
     details.addressReg = new ClientAddress(id, AddressTypeEnum.REG, RND.str(10), RND.str(10), RND.str(10));
     details.homePhone = new ClientPhone(id, PhoneType.HOME, RND.intStr(11));
@@ -382,11 +395,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private void generateRandomAccountsFor(Integer id, int i) {
-    for (int c=0; c<i; c++) {
+    for (int c = 0; c < i; c++) {
       ClientAccount clientAccount = new ClientAccount();
       clientAccount.client = id;
       clientAccount.number = RND.intStr(11);
-      clientAccount.money = (float)RND.plusDouble(10000, 3);
+      clientAccount.money = (float) RND.plusDouble(10000, 3);
       clientAccount.registeredAt = new Date();
       insertClientAccount(clientAccount);
     }

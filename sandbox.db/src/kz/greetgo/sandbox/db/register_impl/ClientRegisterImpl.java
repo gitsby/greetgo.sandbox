@@ -134,6 +134,7 @@ public class ClientRegisterImpl implements ClientRegister {
   private Details getDetails(Integer clientId) {
     Client client = getClient(clientId);
     Details details = new Details();
+    // FIXME: 6/20/18 можно через майбатис. кода меньше будет
     details.id = clientId;
     details.surname = client.surname;
     details.name = client.name;
