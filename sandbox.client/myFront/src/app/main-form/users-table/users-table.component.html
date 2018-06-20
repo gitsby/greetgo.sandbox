@@ -1,5 +1,6 @@
 <div class="mat-elevation-z8">
-  <mat-table #table [dataSource]="dataSource" matSort aria-label="Elements">
+  <mat-table #table [dataSource]="dataSource" matSort aria-label="Elements"
+             matSort matSortActive="fullName" matSortDirection="asc" matSortDisableClear>
 
     <ng-container matColumnDef="fullName">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Full Name</mat-header-cell>
@@ -8,7 +9,7 @@
 
     <ng-container matColumnDef="age">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Age</mat-header-cell>
-      <mat-cell *matCellDef="let tableModel">{{tableModel.age}}</mat-cell>
+      <mat-cell *matCellDef="let tableModel">{{ ((currentTime - tableModel.age) / (1000 * 60 * 60 * 24 * 365))| number:'1.0-0'}}</mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="charm">
@@ -32,16 +33,17 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"
-      (click)="onRowSelected(row)"
+    <mat-row *matRowDef="let user; columns: displayedColumns;"
+             [ngClass]="{'highlight': selectedRowIndex == user.id}"
+             (click)="onRowSelected(user)"
 
     ></mat-row>
   </mat-table>
 
   <mat-paginator #paginator
-    [length]="dataSource.data.length"
+    [length]="dataSource.size"
     [pageIndex]="0"
-    [pageSize]="3"
-    [pageSizeOptions]="[3, 6, 9, 12]">
+    [pageSize]="INIT_PAGE_SIZE"
+    [pageSizeOptions]="[3, 6, 9]">
   </mat-paginator>
 </div>

@@ -5,11 +5,14 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.ArrayUsers;
 import kz.greetgo.sandbox.controller.model.Table;
+import kz.greetgo.sandbox.controller.model.TableModel;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 import kz.greetgo.sandbox.controller.model.User;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 import static kz.greetgo.mvc.core.RequestMethod.POST;
@@ -23,12 +26,7 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-table-data")
-    public Table getTableData(@Par("skip") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
-        System.out.println(skipNumber);
-        System.out.println(limit);
-        System.out.println(sortDirection);
-        System.out.println(sortType);
-//        StandJsonDb.Users;
+    public ArrayList<TableModel> getTableData(@Par("skipNumber") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
         return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
     }
 
@@ -53,15 +51,7 @@ public class TableController implements Controller{
     @MethodFilter(POST)
     @Mapping("/create-user")
     public String createUser(@Par("user") @Json User user) {
-        System.out.println(user.toString());
-     try{
         return tableRegister.get().createUser(user);
-    }catch (Exception e){
-         e.printStackTrace();
-     }
-     finally {
-         return "fuck you and your user";
-     }
     }
 
 
@@ -88,8 +78,6 @@ public class TableController implements Controller{
     @ToJson
     @Mapping("/check-if-there-user")
     public Boolean checkIfThereUser(@Par("userID") String userID) {
-
-        System.out.println(userID instanceof String);
         return tableRegister.get().checkIfThereUser(userID);
     }
 

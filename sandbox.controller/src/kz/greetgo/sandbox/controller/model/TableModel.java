@@ -13,4 +13,5 @@ public class TableModel {
     public String toString(){
         return id +" "+ fullName +" "+ charm +" "+ age +" "+ totalBalance +" "+ minBalance +" "+ maxBalance;
     }
+
 }

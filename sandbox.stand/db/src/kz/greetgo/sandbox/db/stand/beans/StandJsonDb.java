@@ -22,21 +22,20 @@ import java.util.List;
 public class StandJsonDb implements HasAfterInject{
 
     public ArrayUsers users = new ArrayUsers();
+    public String lastId = "0";
     public Accounts accounts = new Accounts();
     public Table table = new Table();
     
-    //    private final String path = "./StandDbJsonData.json";
     public  Gson gson  = new Gson();
+    /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
+    * */
     public String usersPath="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
     public String accountsPath = "D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandAccountsDb.json";
 
     @Override
     public void afterInject() throws Exception {
-//        byte[] encoded = Files.readAllBytes(Paths.get("./StandDbJsonData.json"));
-//        String json = new String(encoded, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(usersPath));
         users = gson.fromJson(bufferedReader, ArrayUsers.class);
-        System.out.println(users.toString());
 
         bufferedReader = new BufferedReader(new FileReader(accountsPath));
         accounts = gson.fromJson(bufferedReader,Accounts.class);
@@ -44,7 +43,11 @@ public class StandJsonDb implements HasAfterInject{
     }
 
     public void tableCreate(){
+        table.data.clear();
         for(int i=0; i<users.data.size(); i++){
+            if(Integer.parseInt(users.data.get(i).id)>Integer.parseInt(lastId)){
+                lastId=users.data.get(i).id;
+            }
             TableModel tableModel = new TableModel();
             tableModel.fullName= users.data.get(i).surname + " " + users.data.get(i).name + " " + users.data.get(i).patronymic;
             tableModel.id = users.data.get(i).id;
@@ -55,7 +58,6 @@ public class StandJsonDb implements HasAfterInject{
             tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id.equals(account.userID)).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
             table.data.add(tableModel);
         }
-        System.out.println(table.toString());
     }
 
     public void updateDB() {

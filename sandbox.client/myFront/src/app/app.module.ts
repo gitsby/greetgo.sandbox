@@ -1,18 +1,23 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpModule, JsonpModule } from "@angular/http";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { AppComponent } from './app.component';
 import { LoginComponent } from "./input/login.component";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UsersTableComponent } from './main-form/users-table/users-table.component';
 import { MainFormComponent } from "./main-form/main-form.component";
-import { MatTableModule, MatInputModule,
+import {
+  MatTableModule, MatInputModule,
   MatProgressBarModule, MatPaginatorModule,
   MatSortModule, MatButtonModule,
-  MatButtonToggleModule,MatDialogModule } from '@angular/material';
+  MatButtonToggleModule, MatDialogModule, MatNativeDateModule
+} from '@angular/material';
 import { HttpService } from "../services/HttpService";
 import { UserDialogComponent } from './main-form/user-dialog/user-dialog.component';
+import { TableService }  from "../services/TableService";
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import {MatSelectModule} from '@angular/material/select';
 // import { ControlsComponent } from './main-form/controls/controls.component';
 
 @NgModule({
@@ -36,9 +41,13 @@ import { UserDialogComponent } from './main-form/user-dialog/user-dialog.compone
     FormsModule,
     MatButtonModule,
     MatButtonToggleModule,
-    MatDialogModule
+    MatDialogModule,
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
   ],
-  providers: [HttpService],
+  providers: [HttpService, TableService],
   bootstrap: [AppComponent],
   entryComponents: [UserDialogComponent]
 })

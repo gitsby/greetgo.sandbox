@@ -1,6 +1,6 @@
 
 <div style="margin: 20px 0; padding-left: 10%; padding-right: 10%;">
-  <!--<h2>Main Form Component</h2>-->
+
   <div style="margin: 0 auto;">
 
     <button mat-stroked-button (click)="createButtonClicked()" color="basic" style="margin: 10px">Create</button>
@@ -12,68 +12,7 @@
     <button mat-stroked-button (click)="exit.emit()" style="margin: 10px">Выход</button>
 
   </div>
-
-  <users-table style="width: 80%" ></users-table>
-<!--[selectedUserID]="selectedUserID" -->
-<!--[typeOfDialogCall]="typeOfDialogCall"-->
-
-  <!--<div *ngIf="!userInfo">-->
-    <!--<button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">-->
-      <!--Загрузить данные пользователя-->
-    <!--</button>-->
-    <!--<div *ngIf="loadUserInfoError">-->
-      <!--{{loadUserInfoError}}-->
-    <!--</div>-->
-  <!--</div>-->
-  <!--<div>-->
-    <!--<button (click)="loadMockRequestClicked()">-->
-      <!--mockRequest-->
-    <!--</button>-->
-  <!--</div>-->
-
-  <!--<div *ngIf="userInfo">-->
-
-    <!--<table>-->
-      <!--<tbody>-->
-
-      <!--<tr>-->
-        <!--<td>ID</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.id}}</b></td>-->
-      <!--</tr>-->
-      <!--<tr>-->
-        <!--<td>Account name</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.accountName}}</b></td>-->
-      <!--</tr>-->
-      <!--<tr>-->
-        <!--<td>Surname</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.surname}}</b></td>-->
-      <!--</tr>-->
-      <!--<tr>-->
-        <!--<td>Name</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.name}}</b></td>-->
-      <!--</tr>-->
-      <!--<tr>-->
-        <!--<td>Patronymic</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.patronymic}}</b></td>-->
-      <!--</tr>-->
-      <!--<tr>-->
-        <!--<td>Phone type</td>-->
-        <!--<td>&nbsp;:&nbsp;</td>-->
-        <!--<td><b>{{userInfo.phoneType}}</b></td>-->
-      <!--</tr>-->
-
-      <!--</tbody>-->
-    <!--</table>-->
-    <!--<app-controls></app-controls>-->
-
-    </div>
-<!--</div>-->
-<!--<div *ngIf="mockRequest">-->
-  <!--{{mockRequest}}-->
-<!--</div>-->
+  <mat-dialog-content *ngIf="userIsLoading"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
+  <users-table style="width: 80%" (selectedUserID)="selectedUserIDChange($event)"></users-table>
+</div>
 
