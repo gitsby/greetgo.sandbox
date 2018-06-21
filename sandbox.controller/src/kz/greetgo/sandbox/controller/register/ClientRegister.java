@@ -62,9 +62,8 @@ public interface ClientRegister {
    * Передает файл отчета о клиентах к клиенту через сервлет
    *
    * @param name
-   * @param author
    * @param filter параметры фильтров для списка слиентов
    * @param render
    */
-  void renderClientList(String name, String author, ClientFilter filter, ClientRender render);
+  void renderClientList(String name, ClientFilter filter, ClientRender render);
 }

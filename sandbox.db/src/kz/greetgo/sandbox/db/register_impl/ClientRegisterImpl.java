@@ -344,7 +344,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public void renderClientList(String name, String author, ClientFilter filter, ClientRender render) {
+  public void renderClientList(String name, ClientFilter filter, ClientRender render) {
     List<Object> params = Lists.newArrayList();
     StringBuilder sqlQuery = new StringBuilder();
 
@@ -368,7 +368,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
           render.start(name, new Date());
           while (rs.next()) render.append(getClientRowFromResultSet(rs));
-          render.finish(author);
+          render.finish();
 
         } finally {
           rs.close();

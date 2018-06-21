@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.render_impl;
+package kz.greetgo.sandbox.controller.render.impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
@@ -63,12 +63,8 @@ public class ClientRenderImplXlsx implements ClientRender {
   }
 
   @Override
-  public void finish(String userName) {
+  public void finish() {
     sheet.skipRow();
-
-    sheet.row().start();
-    sheet.cellStr(1, "Сформирован: " + userName);
-    sheet.row().finish();
 
     xlsx.complete(out);
   }
@@ -93,6 +89,6 @@ public class ClientRenderImplXlsx implements ClientRender {
       asd.append(row);
     }
 
-    asd.finish(RND.str(10));
+    asd.finish();
   }
 }

@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.render_impl;
+package kz.greetgo.sandbox.controller.render.impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.render.ClientRender;
@@ -29,7 +29,7 @@ public class ClientRenderImplPdf implements ClientRender {
 
   }
   @Override
-  public void finish(String authorName) {
+  public void finish() {
   }
 
   public static void main(String[] args) throws Exception {
@@ -52,6 +52,6 @@ public class ClientRenderImplPdf implements ClientRender {
       asd.append(row);
     }
 
-    asd.finish( RND.str(10));
+    asd.finish();
   }
 }

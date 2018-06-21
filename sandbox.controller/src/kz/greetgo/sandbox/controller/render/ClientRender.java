@@ -9,5 +9,5 @@ public interface ClientRender {
 
   void append(ClientRow asdRow);
 
-  void finish(String authorName);
+  void finish();
 }

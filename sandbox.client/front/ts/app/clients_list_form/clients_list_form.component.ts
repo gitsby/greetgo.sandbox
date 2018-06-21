@@ -5,7 +5,6 @@ import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
 import {SortByEnum} from "../../model/SortByEnum";
 import {ClientToSave} from "../../model/ClientToSave";
-import {HttpHeaderResponse} from "@angular/common/http";
 import {FileTypeEnum} from "../../model/FileTypeEnum";
 
 @Component({
@@ -170,9 +169,10 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   getRender() {
-    this.httpService.get('/client/get-report', {
-      "httpServletResponse" : JSON.stringify(new HttpHeaderResponse()),
-      "clientRenderEnum" : FileTypeEnum.PDF
+    this.httpService.get('/client/get-render', {
+      "fileName" : "NEW FILE.xlsx",
+      "clientFilter" : JSON.stringify(this.clientFilter),
+      "fileTypeEnum" : FileTypeEnum.PDF
     }).toPromise().then(() => {
 
     })

@@ -494,7 +494,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     private String name;
     private List<ClientRow> asdRows;
-    private String authorName;
 
     public TestRender() {
       asdRows = Lists.newArrayList();
@@ -511,9 +510,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Override
-    public void finish(String authorName) {
-      this.authorName = authorName;
-    }
+    public void finish() {}
   }
 
   @Test
@@ -521,7 +518,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     TestRender render = new TestRender();
 
     String name = RND.str(10);
-    String author = RND.str(10);
     ClientDetails leftDetails;
 
     {
@@ -532,7 +528,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-    clientRegister.get().renderClientList(name,author, new ClientFilter(), render);
+    clientRegister.get().renderClientList(name, new ClientFilter(), render);
     //
     //
     //
@@ -540,7 +536,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(render.asdRows).hasSize(1);
     assertThat(render.asdRows.get(0).id).isEqualTo(leftDetails.id);
     assertThat(render.name).isEqualTo(name);
-    assertThat(render.authorName).isEqualTo(author);
   }
 
 
@@ -673,7 +668,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
       ClientAccount clientAccount = new ClientAccount();
       clientAccount.client = id;
       clientAccount.number = RND.intStr(11);
-      clientAccount.money = (float) RND.plusDouble(10000, 3);
+      while (clientAccount.money < 1)
+        clientAccount.money = (float) RND.plusDouble(10000, 3);
       clientAccount.registeredAt = new Date();
       insertClientAccount(clientAccount);
     }
