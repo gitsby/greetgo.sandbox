@@ -1,4 +1,4 @@
-import {AfterViewInit, Component} from "@angular/core";
+import {AfterViewInit, Component, Input} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientRecord} from "../../model/ClientRecord";
 import {ClientFilter} from "../../model/ClientFilter";
@@ -14,6 +14,8 @@ import {FileTypeEnum} from "../../model/FileTypeEnum";
 })
 
 export class ClientsListFormComponent implements AfterViewInit {
+  @Input() userName: string;
+
   searchInputText: string = "";
   editClientId: number | null = null;
 
@@ -27,7 +29,9 @@ export class ClientsListFormComponent implements AfterViewInit {
   sortIndex: number = -1;
   numberOfItemInPage: number = 10;
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService) {
+
+  }
 
   ngAfterViewInit(): void {
     this.loadRecordsCount();
@@ -168,16 +172,6 @@ export class ClientsListFormComponent implements AfterViewInit {
     this.editClientId = null;
   }
 
-  getRender() {
-    this.httpService.get('/client/get-render', {
-      "fileName" : "NEW FILE.xlsx",
-      "clientFilter" : JSON.stringify(this.clientFilter),
-      "fileTypeEnum" : FileTypeEnum.PDF
-    }).toPromise().then(() => {
-
-    })
-  }
-
   private insertRecord(clientToSave: ClientToSave) {
     if (this.isLastPage() && this.clientRecords.length < this.numberOfItemInPage) {
       let clientRecord = new ClientRecord();
@@ -202,5 +196,22 @@ export class ClientsListFormComponent implements AfterViewInit {
         record.patronymic = clientToSave.patronymic;
         break;
       }
+  }
+
+  getRenderClicked(i: number) {
+    switch (i) {
+      case 0:
+        this.getRender(FileTypeEnum.XLSX);
+        break;
+      case 1:
+        this.getRender(FileTypeEnum.PDF);
+        break;
+    }
+  }
+
+  getRender(fileType: FileTypeEnum) {
+    let url = "/record/get-render?fileName="+this.userName+"&clientFilter="+JSON.stringify(this.clientFilter)+"&fileTypeEnum="+JSON.stringify(fileType);
+    window.open(this.httpService.url(url));
+    this.httpService.token;
   }
 }

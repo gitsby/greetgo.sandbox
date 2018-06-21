@@ -65,8 +65,12 @@ public class ClientRenderImplXlsx implements ClientRender {
   @Override
   public void finish() {
     sheet.skipRow();
-
     xlsx.complete(out);
+    try {
+      out.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) throws Exception {

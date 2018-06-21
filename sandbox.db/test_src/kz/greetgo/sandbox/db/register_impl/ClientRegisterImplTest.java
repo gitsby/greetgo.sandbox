@@ -493,10 +493,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
   private static class TestRender implements ClientRender {
 
     private String name;
-    private List<ClientRow> asdRows;
+    private List<ClientRow> clientRows;
 
     public TestRender() {
-      asdRows = Lists.newArrayList();
+      clientRows = Lists.newArrayList();
     }
 
     @Override
@@ -506,7 +506,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     @Override
     public void append(ClientRow asdRow) {
-      this.asdRows.add(asdRow);
+      this.clientRows.add(asdRow);
     }
 
     @Override
@@ -520,6 +520,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     String name = RND.str(10);
     ClientDetails leftDetails;
 
+    ClientFilter filter = new ClientFilter();
+
     {
       leftDetails = generateRandomClientDetails(RND.plusInt(10));
       insertClient(leftDetails);
@@ -528,17 +530,60 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
-    clientRegister.get().renderClientList(name, new ClientFilter(), render);
+    clientRegister.get().renderClientList(name, filter, render);
     //
     //
     //
 
-    assertThat(render.asdRows).hasSize(1);
-    assertThat(render.asdRows.get(0).id).isEqualTo(leftDetails.id);
     assertThat(render.name).isEqualTo(name);
+    assertThat(render.clientRows).hasSize(1);
+    assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
   }
 
+  @Test(dataProvider = "filter_DP")
+  public void renderClientList_withFilter(FioEnum fioEnum) {
+    TestRender render = new TestRender();
 
+    String name = RND.str(10);
+
+    String rFio = RND.str(10);
+
+    ClientFilter filter = new ClientFilter();
+    filter.fio = rFio;
+
+    ClientDetails leftDetails;
+
+    {
+      leftDetails = generateRandomClientDetails(RND.plusInt(10));
+      switch (fioEnum) {
+        case SURNAME:
+          leftDetails.surname = RND.str(10) + rFio + RND.str(10);
+          break;
+        case NAME:
+          leftDetails.name = RND.str(10) + rFio + RND.str(10);
+          break;
+        case PATRONYMIC:
+          leftDetails.patronymic = RND.str(10) + rFio + RND.str(10);
+      }
+      insertClient(leftDetails);
+    }
+
+    {
+      for (int i = 0; i < 10; i++)
+        insertClient(generateRandomClientDetails((int) (System.nanoTime() / 10000)));
+    }
+
+    //
+    //
+    //
+    clientRegister.get().renderClientList(name, filter, render);
+    //
+    //
+    //
+    assertThat(render.name).isEqualTo(name);
+    assertThat(render.clientRows).hasSize(1);
+    assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
+  }
 
   private List<ClientDetails> getClientDetailsList() {
     List<Client> clients = clientTestDao.get().getClients();

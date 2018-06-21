@@ -13,18 +13,14 @@ import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.dao.AuthDao;
-import kz.greetgo.sandbox.db.errors.RedPoliceResponse;
-import kz.greetgo.sandbox.db.in_service.PoliceCheckService;
-import kz.greetgo.sandbox.db.in_service.model.CheckPoliceResponse;
 import kz.greetgo.sandbox.db.in_service.model.NaturalPersonCheckParams;
-import kz.greetgo.sandbox.db.in_service.model.PoliceStatus;
 
 @Bean
 public class AuthRegisterImpl implements AuthRegister {
 
   public BeanGetter<AuthDao> authDao;
 
-  public BeanGetter<PoliceCheckService> policeCheckService;
+//  public BeanGetter<PoliceCheckService> policeCheckService;
 
   @Override
   public void saveParam(String personId, UserParamName name, String value) {
@@ -95,9 +91,9 @@ public class AuthRegisterImpl implements AuthRegister {
       in.surname = userInfo.surname;
       in.name = userInfo.name;
       in.patronymic = userInfo.patronymic;
-      CheckPoliceResponse out = policeCheckService.get().checkNaturalPerson(in);
-      if (out.status == PoliceStatus.RED) throw new RedPoliceResponse();
-      userInfo.yellow = out.status == PoliceStatus.YELLOW;
+//      CheckPoliceResponse out = policeCheckService.get().checkNaturalPerson(in);
+//      if (out.status == PoliceStatus.RED) throw new RedPoliceResponse();
+      userInfo.yellow = true;
     }
     return userInfo;
   }

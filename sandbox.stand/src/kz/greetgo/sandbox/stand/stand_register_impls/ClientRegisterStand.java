@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
+import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
@@ -52,6 +53,51 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public List<ClientRecord> getRecords(ClientFilter clientFilter) {
+    List<ClientRecord> clientRecords = getAllRecordWithFilter(clientFilter);
+
+    if (clientFilter.limit < 0) clientFilter.limit = 0;
+    if (clientFilter.offset < 0) clientFilter.offset = 0;
+
+    if (clientFilter.limit > clientRecords.size()) clientFilter.limit = clientRecords.size();
+    if (clientFilter.offset > clientRecords.size()) clientFilter.offset = clientRecords.size();
+
+    return clientRecords.subList(clientFilter.offset, clientFilter.limit);
+  }
+
+  @Override
+  public int getRecordsCount(ClientFilter clientFilter) {
+    return getRecordsList(clientFilter).size();
+  }
+
+  @Override
+  public List<CharmRecord> getCharms() {
+    return db.get().charms.stream().map(CharmDot::toCharm).collect(Collectors.toList());
+  }
+
+  @Override
+  public void renderClientList(String name, ClientFilter clientFilter, ClientRender render) {
+    List<ClientRecord> clientRecords = getAllRecordWithFilter(clientFilter);
+    render.start(name, new Date());
+    for (ClientRecord clientRecord : clientRecords) {
+      render.append(getClientFowFromRecord(clientRecord));
+    }
+    render.finish();
+  }
+
+  private ClientRow getClientFowFromRecord(ClientRecord clientRecord) {
+    ClientRow clientRow = new ClientRow();
+    clientRow.id = clientRecord.id;
+    clientRow.surname = clientRecord.surname;
+    clientRow.name = clientRecord.name;
+    clientRow.patronymic = clientRecord.patronymic;
+    clientRow.age = clientRecord.age;
+    clientRow.middle_balance = clientRecord.middle_balance;
+    clientRow.max_balance = clientRecord.max_balance;
+    clientRow.min_balance = clientRecord.min_balance;
+    return clientRow;
+  }
+
+  private List<ClientRecord> getAllRecordWithFilter(ClientFilter clientFilter) {
     List<ClientRecord> clientRecords = getRecordsList(clientFilter);
 
     Comparator<ClientRecord> comparator = null;
@@ -82,29 +128,7 @@ public class ClientRegisterStand implements ClientRegister {
 
     if (clientFilter.sortDirection != null)
       if (clientFilter.sortDirection == SortDirection.DESCENDING) Collections.reverse(clientRecords);
-
-    if (clientFilter.limit < 0) clientFilter.limit = 0;
-    if (clientFilter.offset < 0) clientFilter.offset = 0;
-
-    if (clientFilter.limit > clientRecords.size()) clientFilter.limit = clientRecords.size();
-    if (clientFilter.offset > clientRecords.size()) clientFilter.offset = clientRecords.size();
-
-    return clientRecords.subList(clientFilter.offset, clientFilter.limit);
-  }
-
-  @Override
-  public int getRecordsCount(ClientFilter clientFilter) {
-    return getRecordsList(clientFilter).size();
-  }
-
-  @Override
-  public List<CharmRecord> getCharms() {
-    return db.get().charms.stream().map(CharmDot::toCharm).collect(Collectors.toList());
-  }
-
-  @Override
-  public void renderClientList(String name, String author, ClientRender render) {
-    throw new UnsupportedOperationException();
+    return clientRecords;
   }
 
   private ClientDot getClient(int clientId) {

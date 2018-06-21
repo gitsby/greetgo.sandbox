@@ -29,6 +29,7 @@
     "bootstrap": "^3.3.7",
     "browser-sync": "^2.18.13",
     "core-js": "^2.5.1",
+    "cors": "^2.8.4",
     "del": "^3.0.0",
     "gulp": "github:gulpjs/gulp#6d71a65",
     "gulp-clean-css": "^3.9.0",
@@ -55,5 +56,8 @@
     "typescript": "^2.5.2",
     "webpack": "^3.6.0",
     "zone.js": "^0.8.17"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.4"
   }
 }
