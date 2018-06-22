@@ -12,7 +12,7 @@ public class ClientDetails {
   public String gender;
   public Date birthDate;
 
-
+  // FIXME: 6/22/18 Зачем тебе age?
   public int age = 0;
 
   public int charm;

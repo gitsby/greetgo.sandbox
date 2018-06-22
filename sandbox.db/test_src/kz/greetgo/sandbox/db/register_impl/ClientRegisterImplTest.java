@@ -1,9 +1,9 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -58,7 +58,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
 
-    clientToSave.charm = ((Integer) testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
+    clientToSave.charm = (testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
     clientToSave.id = null;
 
     Phone phone = new Phone();
@@ -86,7 +86,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     createNewClient();
 
     ClientDetails details = clientRegister.get().details(1);
-
     boolean isValid = true;
 
     if (details.name == null || details.surname == null
@@ -226,6 +225,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
 
+    ClientRecord r = new ClientRecord();
+    ClientDot cd = new ClientDot();
   }
 
   @Test
@@ -350,6 +351,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
+  public void testT1() {
+    testDaoBeanGetter.get().deleteAll();
+  }
+
+  @Test
   public void testSortedByTotalDesc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-total";
@@ -369,6 +375,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
+  //BeforeMethod, dataProvider
   @Test
   public void testSortedByAgeAsc() {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();

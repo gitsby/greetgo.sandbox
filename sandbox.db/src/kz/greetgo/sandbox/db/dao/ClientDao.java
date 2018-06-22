@@ -15,6 +15,7 @@ public interface ClientDao {
     "                  values ( #{name}, #{surname}, #{patronymic}, #{gender},#{charm},#{birthDate})")
   void insertIntoClient(ClientToSave personDot);
 
+  // FIXME: 6/22/18 client_id, 
   @Insert("insert into client_address (   clientid,    type,    street,    house, flat) " +
     "                  values ( #{clientId}, #{type}, #{street}, #{house},#{flat})")
   void insertIntoAddress(Address address);
@@ -60,7 +61,7 @@ public interface ClientDao {
 
 
   // ---------------------------------------
-
+  // FIXME: 6/22/18 Нельзя удалять. set actual=0
   @Delete("delete from client where id=#{id}")
   void deleteClient(int id);
 

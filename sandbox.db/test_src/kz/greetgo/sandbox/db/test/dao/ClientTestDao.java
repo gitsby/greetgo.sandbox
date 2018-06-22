@@ -4,9 +4,11 @@ import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 public interface ClientTestDao {
 
+  // FIXME: 6/22/18 returning id
   @Insert("insert into characters (name) values(#{charm})")
   void insertNewCharacter(String charm);
 
@@ -45,4 +47,7 @@ public interface ClientTestDao {
 
   @Select("select name from client where id=#{id}")
   String clientExists(int id);
+
+  @Update("update client set actual = 0")
+  void deleteAll();
 }
