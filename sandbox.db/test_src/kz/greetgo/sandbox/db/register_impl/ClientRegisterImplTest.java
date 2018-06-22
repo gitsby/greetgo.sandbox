@@ -23,34 +23,42 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientTestDao> testDaoBeanGetter;
 
-  // FIXME: 6/20/18 Теты должны валидировать данные. А не просто вызывать методы или проверять на нот нул
-
   @Test
   public void checkCharactersNotNull() {
-    assertThat(clientRegister.get().charm()).isNotNull();
-  }
+    List<CharmRecord> charmRecords = clientRegister.get().charm();
 
-  @Test
-  public void clientDetails() {
-    ClientDetails details = clientRegister.get().details(testDaoBeanGetter.get().getFirstClient());
-    // FIXME: 6/20/18 Тест не валидирует данные в объекте
-    assertThat(details).isNotNull();
+    boolean isValid = true;
+    for (CharmRecord charmRecord : charmRecords) {
+      if (charmRecord.name == null) {
+        isValid = false;
+        break;
+      } else if (charmRecord.name.length() == 0) {
+        isValid = false;
+        break;
+      }
+    }
+    assertThat(isValid).isTrue();
   }
 
   @Test
   public void deleteClient() {
-    clientRegister.get().deleteClient(testDaoBeanGetter.get().getFirstClient());
+    int id = testDaoBeanGetter.get().getFirstClient();
+    clientRegister.get().deleteClient(id);
+    assertThat(testDaoBeanGetter.get().clientExists(id)).isNull();
   }
 
   @Test
   public void createNewClient() {
+    testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
+
     ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = "Famir";
-    clientToSave.surname = "Fill";
-    clientToSave.patronymic = "Tindra";
+    clientToSave.name = RND.str(10);
+    clientToSave.surname = RND.str(10);
+    clientToSave.patronymic = RND.str(10);
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
-    clientToSave.charm = 1;
+
+    clientToSave.charm = ((Integer) testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
     clientToSave.id = null;
 
     Phone phone = new Phone();
@@ -74,15 +82,94 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
+  public void clientDetails() {
+    createNewClient();
+
+    ClientDetails details = clientRegister.get().details(1);
+
+    boolean isValid = true;
+
+    if (details.name == null || details.surname == null
+      || details.gender == null || details.birthDate == null) {
+      isValid = false;
+    }
+
+    assertThat(isValid).isTrue();
+
+    for (Address address : details.addresses) {
+      if (address.type.equals("REG")) {
+        isValid = true;
+        break;
+      } else {
+        isValid = false;
+      }
+    }
+
+    assertThat(isValid).isTrue();
+
+    for (Phone phone : details.phones) {
+      if (phone.type.equals("MOBILE")) {
+        isValid = true;
+        break;
+      } else {
+        isValid = false;
+      }
+    }
+
+    assertThat(isValid).isTrue();
+  }
+
+  @Test
+  public void testCreateClientWithNotExistingGender() {
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.name = RND.str(10);
+    clientToSave.surname = RND.str(10);
+    clientToSave.patronymic = RND.str(10);
+    clientToSave.gender = "OTHER";
+    clientToSave.birthDate = new Date();
+    clientToSave.id = null;
+
+    clientToSave.charm = 1;
+
+    //
+    //
+    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    //
+    //
+  }
+
+  @Test
+  public void testCreateClientWithNotExistingCharacter() {
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.name = RND.str(10);
+    clientToSave.surname = RND.str(10);
+    clientToSave.patronymic = RND.str(10);
+    clientToSave.gender = "MALE";
+    clientToSave.birthDate = new Date();
+    clientToSave.id = null;
+
+    clientToSave.charm = -1;
+    // Send new client
+
+    //
+    //
+    assertThat(clientRegister.get().save(clientToSave)).isNull();
+    //
+    //
+  }
+
+  @Test
   public void testEditClient() {
+    testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
+
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = "Neus";
     clientToSave.surname = "Fiendir";
     clientToSave.patronymic = "Torpa";
     clientToSave.gender = "FEMALE";
     clientToSave.birthDate = new Date();
-    clientToSave.charm = 2;
-    clientToSave.id = 1;
+    clientToSave.charm = ((Integer) testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
+    clientToSave.id = testDaoBeanGetter.get().getFirstClient();
 
     Address edited = new Address();
     edited.flat = "Flat1";
@@ -92,7 +179,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.editedAddresses = new Address[1];
     clientToSave.editedAddresses[0] = edited;
 
-    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    boolean clientUpdated = true;
+    ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+
+    ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientToSave.id);
+
+    if (!clientRecord.name.equals(clientRecordFromTest.name) || !clientRecord.surname.equals(clientRecordFromTest.surname)
+      || !clientRecord.patronymic.equals(clientRecordFromTest.patronymic)
+      || !clientRecord.charm.equals(clientRecordFromTest.charm) || clientRecord.maxBalance != clientRecordFromTest.maxBalance
+      || clientRecord.minBalance != clientRecordFromTest.minBalance || clientRecord.accBalance != clientRecordFromTest.accBalance) {
+      clientUpdated = false;
+    }
+
+    assertThat(clientUpdated).isTrue();
   }
 
   @Test
@@ -122,8 +221,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
 
 
-    Comparator<ClientRecord> clientRecordFIOComparator = Comparator.comparing(o -> (o.surname + o.name + o.patronymic));
-
+    Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) ->
+      (o2.surname).compareTo(o1.surname) * (o2.name).compareTo(o1.name) * (o2.patronymic).compareTo(o1.patronymic);
 
     assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
 
@@ -142,7 +241,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) -> (o2.surname + o2.name + o2.patronymic).compareTo(o1.surname + o1.name + o1.patronymic);
+    Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) ->
+      -(o2.surname).compareTo(o1.surname) * (o2.name).compareTo(o1.name) * (o2.patronymic).compareTo(o1.patronymic);
 
 
     assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
@@ -313,7 +413,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientRecord previous = null;
 
     for (ClientRecord clientRecord : records) {
-      if (previous != null && comparator.compare(previous, clientRecord) == -1) {
+      if (previous != null && comparator.compare(previous, clientRecord) < 0) {
+        System.out.println(previous.surname + " " + clientRecord.surname + " " + (comparator.compare(previous, clientRecord)));
         return false;
       }
       previous = clientRecord;
@@ -329,7 +430,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.sliceNum = -1;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
   }
 
   @Test
@@ -368,44 +469,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
   }
 
-
   @Test
-  public void testCreateClientWithNotExistingCharacter() {
-    ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = RND.str(10);
-    clientToSave.surname = RND.str(10);
-    clientToSave.patronymic = RND.str(10);
-    clientToSave.gender = "MALE";
-    clientToSave.birthDate = new Date();
-    clientToSave.id = null;
+  public void clientCountIsValid() {
+    ClientRecordFilter filter = new ClientRecordFilter();
+    filter.searchName = "amd";
 
-    clientToSave.charm = -1;
-    // Send new client
+    int clientCount = testDaoBeanGetter.get().getClientCount(filter);
 
-    //
-    //
-    assertThat(clientRegister.get().save(clientToSave)).isNull();
-    //
-    //
-  }
+    int clientCountFromImpl = clientRegister.get().getClientCount(filter);
 
-  @Test
-  public void testCreateClientWithNotExistingGender() {
-    ClientToSave clientToSave = new ClientToSave();
-    clientToSave.name = RND.str(10);
-    clientToSave.surname = RND.str(10);
-    clientToSave.patronymic = RND.str(10);
-    clientToSave.gender = "OTHER";
-    clientToSave.birthDate = new Date();
-    clientToSave.id = null;
+    boolean requestAreEqual = false;
 
-    clientToSave.charm = 1;
-
-    //
-    //
-    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
-    //
-    //
+    if (clientCount == clientCountFromImpl) {
+      requestAreEqual = true;
+    }
+    assertThat(requestAreEqual).isTrue();
   }
 
 }

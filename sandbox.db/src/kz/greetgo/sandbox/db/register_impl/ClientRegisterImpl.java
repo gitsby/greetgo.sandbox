@@ -15,8 +15,6 @@ import java.util.List;
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
-  // FIXME: 6/20/18 Код формирующий запрос для селекта клиентов, количества клиентов и для отчета доложен быть один
-
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
@@ -42,22 +40,17 @@ public class ClientRegisterImpl implements ClientRegister {
     "          join client_account a on client.id = a.clientid\n" +
     "        group by clientid) as accountMoneys on client.id= accountMoneys.clientid";
 
-  // FIXME: 6/20/18 Дженерики не нужны. Не пиши лишнего и не усложняй код
   @Override
-  public <T> List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
+  public List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
     StringBuilder query = new StringBuilder(clientRecordsQuery);
 
-    if (clientRecordFilter.searchName != null) {
-      if (clientRecordFilter.searchName.length() != 0) {
-        query.append(" WHERE concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||?||'%' ");
-      } else {
-        clientRecordFilter.searchName = null;
-      }
-    }
+    query.append(validateSearchName(clientRecordFilter));
 
     switch (clientRecordFilter.columnName) {
       case "surname":
-        query.append(" ORDER BY surname, name, patronymic ASC ");
+        query.append(" ORDER BY surname asc ,\n" +
+          "  name asc ,\n" +
+          "  patronymic asc ");
         break;
       case "age":
         query.append(" ORDER BY age ASC ");
@@ -72,7 +65,9 @@ public class ClientRegisterImpl implements ClientRegister {
         query.append(" ORDER BY min ASC ");
         break;
       case "-surname":
-        query.append(" ORDER BY surname, name, patronymic DESC ");
+        query.append(" ORDER BY surname desc ,\n" +
+          "  name desc ,\n" +
+          "  patronymic desc ");
         break;
       case "-age":
         query.append(" ORDER BY age DESC ");
@@ -93,17 +88,28 @@ public class ClientRegisterImpl implements ClientRegister {
     clientRecordFilter.sliceNum = clientRecordFilter.sliceNum > 0 ? clientRecordFilter.sliceNum : 0;
     clientRecordFilter.paginationPage = clientRecordFilter.paginationPage > 0 ? clientRecordFilter.paginationPage : 0;
 
-    List<T> params = new ArrayList<>();
+    List params = new ArrayList();
     if (clientRecordFilter.searchName != null) {
-      params.add((T) clientRecordFilter.searchName);
+      params.add(clientRecordFilter.searchName);
     }
-    params.add((T) ((Integer) (clientRecordFilter.sliceNum * clientRecordFilter.paginationPage + clientRecordFilter.sliceNum)));
-    params.add((T) ((Integer) (clientRecordFilter.sliceNum * clientRecordFilter.paginationPage)));
+    params.add((clientRecordFilter.sliceNum * clientRecordFilter.paginationPage + clientRecordFilter.sliceNum));
+    params.add((clientRecordFilter.sliceNum * clientRecordFilter.paginationPage));
 
     return executeClientRecordsQuery(query.toString(), params);
   }
 
-  private <T> List<ClientRecord> executeClientRecordsQuery(String query, List<T> params) {
+  private String validateSearchName(ClientRecordFilter clientRecordFilter) {
+    if (clientRecordFilter.searchName != null) {
+      if (clientRecordFilter.searchName.length() != 0) {
+        return " WHERE concat(Lower(client.name), Lower(client.surname), Lower(client.patronymic)) like '%'||?||'%' ";
+      } else {
+        clientRecordFilter.searchName = null;
+      }
+    }
+    return "";
+  }
+
+  private List<ClientRecord> executeClientRecordsQuery(String query, List params) {
     List<ClientRecord> clientRecords = new ArrayList<>();
     jdbc.get().execute(ConnectionCallback -> {
       PreparedStatement statement = ConnectionCallback.prepareStatement(query);
@@ -118,7 +124,7 @@ public class ClientRegisterImpl implements ClientRegister {
           ClientRecord clientRecord = new ClientRecord();
           clientRecord.surname = resultSet.getString("surname");
           clientRecord.name = resultSet.getString("name");
-          clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("name") : "";
+          clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("patronymic") : "";
           clientRecord.charm = resultSet.getString("charm");
 
           clientRecord.age = resultSet.getInt("age");
@@ -127,7 +133,6 @@ public class ClientRegisterImpl implements ClientRegister {
           clientRecord.minBalance = resultSet.getDouble("minBalance");
           clientRecord.accBalance = resultSet.getDouble("accBalance");
 
-          System.out.println(clientRecord.name + " " + clientRecord.surname);
           clientRecords.add(clientRecord);
         }
       } catch (Exception e) {
@@ -209,7 +214,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
     List<Integer> param = new ArrayList<>();
     param.add(editedClient.id);
-    return executeClientRecordsQuery(clientRecordsQuery + " where client.id=?", param).get(0);
+    StringBuilder builder = new StringBuilder(clientRecordsQuery);
+    builder.append(" where client.id=?");
+    return executeClientRecordsQuery(builder.toString(), param).get(0);
   }
 
   private boolean characterIdExists(int id) {
@@ -228,7 +235,16 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public int getClientCount(ClientRecordFilter clientRecordFilter) {
-    return clientDao.get().getClientCount(clientRecordFilter);
+    StringBuilder builder = new StringBuilder(clientRecordsQuery);
+    builder.append(validateSearchName(clientRecordFilter));
+
+    List params = new ArrayList();
+
+    if (clientRecordFilter.searchName != null) {
+      params.add(clientRecordFilter.searchName);
+    }
+
+    return executeClientRecordsQuery(builder.toString(), params).size();
   }
 
 }

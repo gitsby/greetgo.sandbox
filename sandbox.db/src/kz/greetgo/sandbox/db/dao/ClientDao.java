@@ -1,11 +1,6 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.Address;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -31,14 +26,11 @@ public interface ClientDao {
 
 
   // ---------------------------------------
-// FIXME: 6/20/18 Что будет если searchName==null || ''
-  @Select("select count(*) from client where concat(Lower(surname),Lower(name),Lower(patronymic)) like '%'||#{searchName}||'%")
-  int getClientCount(ClientRecordFilter filter);
 
   @Select("select id, name from characters")
   List<CharmRecord> getCharms();
 
-  @Select("select client.id, client.name, client.surname, client.patronymic, client.gender, client.birth_date, client.charm\n" +
+  @Select("select client.id, client.name, client.surname, client.patronymic, client.gender, client.birth_date as birthDate, client.charm\n" +
     "from client where client.id=#{id}")
   ClientDetails getClientById(int id);
 
