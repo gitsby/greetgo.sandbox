@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.stand.beans;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.Gender;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.db.stand.model.*;
 import kz.greetgo.util.RND;
@@ -143,7 +143,7 @@ public class StandDb implements HasAfterInject {
       clientDot.id = i;
       clientDot.name = NameGenerator.generateName();
       clientDot.surname = NameGenerator.generateName();
-      clientDot.gender = random.nextInt(1) == 0 ? Gender.FEMALE : Gender.MALE;
+      clientDot.gender = random.nextInt(1) == 0 ? GenderEnum.FEMALE : GenderEnum.MALE;
       clientDot.patronymic = NameGenerator.generateName();
       Calendar cal = Calendar.getInstance();
       cal.set(Calendar.YEAR,random.nextInt(70) + 1930);

@@ -81,7 +81,7 @@
     </table>
   </div>
 
-  <clients-list-form-component (editClient)="editClient($event)"
+  <clients-list-form-component [userName]="userInfo.accountName" (editClient)="editClient($event)"
                                *ngIf="loadClientInfoListButtonEnable"></clients-list-form-component>
 
 </div>

@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.controller.register;
 
 
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.render.ClientRender;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public interface ClientRegister {
    * @param clientId идентификатор клиента
    * @return детальная информация о клиенте
    */
-  Details detail(Integer clientId);
+  ClientDetails detail(Integer clientId);
 
   /**
    * Сохраняет или изменяет информацию о клиенте
@@ -56,4 +57,13 @@ public interface ClientRegister {
    * @return список характеров
    */
   List<CharmRecord> getCharms();
+
+  /**
+   * Передает файл отчета о клиентах к клиенту через сервлет
+   *
+   * @param name
+   * @param filter параметры фильтров для списка слиентов
+   * @param render
+   */
+  void renderClientList(String name, ClientFilter filter, ClientRender render);
 }

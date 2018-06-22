@@ -1,10 +1,11 @@
-import {AfterViewInit, Component} from "@angular/core";
+import {AfterViewInit, Component, Input} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientRecord} from "../../model/ClientRecord";
 import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
 import {SortByEnum} from "../../model/SortByEnum";
 import {ClientToSave} from "../../model/ClientToSave";
+import {FileTypeEnum} from "../../model/FileTypeEnum";
 
 @Component({
   selector: 'clients-list-form-component',
@@ -13,6 +14,8 @@ import {ClientToSave} from "../../model/ClientToSave";
 })
 
 export class ClientsListFormComponent implements AfterViewInit {
+  @Input() userName: string;
+
   searchInputText: string = "";
   editClientId: number | null = null;
 
@@ -26,7 +29,9 @@ export class ClientsListFormComponent implements AfterViewInit {
   sortIndex: number = -1;
   numberOfItemInPage: number = 10;
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService) {
+
+  }
 
   ngAfterViewInit(): void {
     this.loadRecordsCount();
@@ -191,5 +196,22 @@ export class ClientsListFormComponent implements AfterViewInit {
         record.patronymic = clientToSave.patronymic;
         break;
       }
+  }
+
+  getRenderClicked(i: number) {
+    switch (i) {
+      case 0:
+        this.getRender(FileTypeEnum.XLSX);
+        break;
+      case 1:
+        this.getRender(FileTypeEnum.PDF);
+        break;
+    }
+  }
+
+  getRender(fileType: FileTypeEnum) {
+    let url = "/record/get-render?fileName="+this.userName+"&clientFilter="+JSON.stringify(this.clientFilter)+"&fileTypeEnum="+JSON.stringify(fileType);
+    window.open(this.httpService.url(url));
+    this.httpService.token;
   }
 }

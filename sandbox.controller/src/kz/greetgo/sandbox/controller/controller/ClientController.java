@@ -4,10 +4,14 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.core.RequestMethod;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplPdf;
+import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplXlsx;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -20,7 +24,7 @@ public class ClientController implements Controller {
   @ToJson
   @MethodFilter(RequestMethod.GET)
   @Mapping("/details")
-  public Details details(@Par("clientId") int clientId) {
+  public ClientDetails details(@Par("clientId") int clientId) {
     return clientRegister.get().detail(clientId);
   }
 
@@ -57,4 +61,5 @@ public class ClientController implements Controller {
   @MethodFilter(RequestMethod.GET)
   @Mapping("/get-charms")
   public List<CharmRecord> charms() { return clientRegister.get().getCharms(); }
+
 }
