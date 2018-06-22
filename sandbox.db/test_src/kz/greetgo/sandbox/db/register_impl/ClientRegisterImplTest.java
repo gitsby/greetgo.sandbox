@@ -80,6 +80,25 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(phoneDot.type.equals(phone.type)).isTrue();
   }
 
+  public void compareWithClientDot(int clientId, ClientRecord clientRecord) {
+
+    ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientId);
+    assertThat(clientRecord.name.equals(clientRecordFromTest.name)).isTrue();
+    assertThat(clientRecord.surname.equals(clientRecordFromTest.surname)).isTrue();
+    assertThat(clientRecord.patronymic.equals(clientRecordFromTest.patronymic)).isTrue();
+    assertThat(clientRecord.charm.equals(clientRecordFromTest.charm)).isTrue();
+    assertThat(clientRecord.maxBalance == clientRecordFromTest.maxBalance).isTrue();
+    assertThat(clientRecord.minBalance == clientRecordFromTest.minBalance).isTrue();
+    assertThat(clientRecord.accBalance == clientRecordFromTest.accBalance).isTrue();
+  }
+
+  private void compareWithAddressDot(AddressDot addressDot, Address address) {
+    assertThat(addressDot.flat.equals(address.flat)).isTrue();
+    assertThat(addressDot.street.equals(address.street)).isTrue();
+    assertThat(addressDot.house.equals(address.house)).isTrue();
+  }
+
+
   private int insertNewClient() {
     testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
     ClientDot clientDot = new ClientDot();
@@ -119,18 +138,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientDot.surname.equals(details.surname));
     assertThat(clientDot.patronymic.equals(details.patronymic));
     assertThat(clientDot.gender.equals(details.gender));
-  }
-
-  public void compareWithClientDot(int clientId, ClientRecord clientRecord) {
-
-    ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientId);
-    assertThat(clientRecord.name.equals(clientRecordFromTest.name)).isTrue();
-    assertThat(clientRecord.surname.equals(clientRecordFromTest.surname)).isTrue();
-    assertThat(clientRecord.patronymic.equals(clientRecordFromTest.patronymic)).isTrue();
-    assertThat(clientRecord.charm.equals(clientRecordFromTest.charm)).isTrue();
-    assertThat(clientRecord.maxBalance == clientRecordFromTest.maxBalance).isTrue();
-    assertThat(clientRecord.minBalance == clientRecordFromTest.minBalance).isTrue();
-    assertThat(clientRecord.accBalance == clientRecordFromTest.accBalance).isTrue();
   }
 
   @Test
@@ -207,12 +214,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     compareWithClientDot(clientToSave.id, clientRecord);
     compareWithAddressDot(testDaoBeanGetter.get().getAddressDot(clientRecord.id), editedAddress);
-  }
-
-  private void compareWithAddressDot(AddressDot addressDot, Address address) {
-    assertThat(addressDot.flat.equals(address.flat)).isTrue();
-    assertThat(addressDot.street.equals(address.street)).isTrue();
-    assertThat(addressDot.house.equals(address.house)).isTrue();
   }
 
   @Test

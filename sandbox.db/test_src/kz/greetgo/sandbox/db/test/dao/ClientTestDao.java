@@ -13,10 +13,6 @@ import java.util.List;
 
 public interface ClientTestDao {
 
-  @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
-    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")
-  int insertNewClient(ClientDot clientDot);
-
 
   @Insert("insert into client_address (client_id, type, street, house, flat) values " +
     "(#{client_id}, #{type},#{street},#{house},#{flat})")
@@ -28,6 +24,9 @@ public interface ClientTestDao {
 
 
   // ------------------------------------
+  @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
+    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")
+  int insertNewClient(ClientDot clientDot);
 
   @Select("insert into characters (name) values(#{charm}) RETURNING id;")
   int insertNewCharacter(String charm);

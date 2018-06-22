@@ -40,7 +40,6 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public ClientRecord save(ClientToSave editedClient) {
-
     if (!characterIdExists(editedClient.charm)) {
       return null;
     }
