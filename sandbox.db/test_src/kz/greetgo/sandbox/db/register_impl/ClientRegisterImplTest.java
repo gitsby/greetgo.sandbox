@@ -24,6 +24,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
  */
 public class ClientRegisterImplTest extends ParentTestNg {
 
+  // FIXME: 6/22/18 Тестоы на сортировку должны быть
+
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
 
