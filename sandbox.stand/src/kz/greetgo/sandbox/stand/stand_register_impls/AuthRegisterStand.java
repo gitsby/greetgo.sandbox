@@ -124,12 +124,12 @@ public class AuthRegisterStand implements AuthRegister {
   }
 
 //    @Override
-//    public boolean deleteClient(String clientId) {
-//        if (clientId == null) {
+//    public boolean deleteClient(String client_id) {
+//        if (client_id == null) {
 //            System.out.println("NULL");
 //            return false;
 //        }
-//        db.get().deleteClient(clientId);
+//        db.get().deleteClient(client_id);
 //        return true;
 //    }
 //
@@ -139,9 +139,9 @@ public class AuthRegisterStand implements AuthRegister {
 //    }
 //
 //    @Override
-//    public Client getClientById(String clientId) {
+//    public Client getClientById(String client_id) {
 //
-//        return db.get().getClientById(clientId);
+//        return db.get().getClientById(client_id);
 //    }
 //
 //    @Override

@@ -3,15 +3,16 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.PhoneDot;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.text.Collator;
+import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -27,17 +28,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void checkCharactersNotNull() {
     List<CharmRecord> charmRecords = clientRegister.get().charm();
 
-    boolean isValid = true;
     for (CharmRecord charmRecord : charmRecords) {
-      if (charmRecord.name == null) {
-        isValid = false;
-        break;
-      } else if (charmRecord.name.length() == 0) {
-        isValid = false;
-        break;
-      }
+      assertThat(charmRecord.name == null || charmRecord.name.length() == 0).isFalse();
     }
-    assertThat(isValid).isTrue();
   }
 
   @Test
@@ -49,8 +42,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void createNewClient() {
-    testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
-
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
     clientToSave.surname = RND.str(10);
@@ -58,7 +49,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.gender = "MALE";
     clientToSave.birthDate = new Date();
 
-    clientToSave.charm = (testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
+    clientToSave.charm = testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
     clientToSave.id = null;
 
     Phone phone = new Phone();
@@ -71,55 +62,80 @@ public class ClientRegisterImplTest extends ParentTestNg {
     address.street = "Street";
     address.type = "REG";
 
-    clientToSave.addedPhones = new Phone[1];
-    clientToSave.addedPhones[0] = phone;
+    clientToSave.addedPhones = new ArrayList<>();
+    clientToSave.addedPhones.add(phone);
 
-    clientToSave.addedAddresses = new Address[1];
-    clientToSave.addedAddresses[0] = address;
+    clientToSave.addedAddresses = new ArrayList<>();
+    clientToSave.addedAddresses.add(address);
 
+    ClientRecord record = clientRegister.get().save(clientToSave);
 
-    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    compareWithClientDot(record.id, record);
+    compareWithAddressDot(testDaoBeanGetter.get().getAddressDot(record.id), address);
+    compareWithPhoneDot(testDaoBeanGetter.get().getPhoneDot(record.id), phone);
+  }
+
+  private void compareWithPhoneDot(PhoneDot phoneDot, Phone phone) {
+    assertThat(phoneDot.number.equals(phone.number)).isTrue();
+    assertThat(phoneDot.type.equals(phone.type)).isTrue();
+  }
+
+  private int insertNewClient() {
+    testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
+    ClientDot clientDot = new ClientDot();
+
+    clientDot.name = RND.str(10);
+    clientDot.surname = RND.str(10);
+    clientDot.patronymic = RND.str(10);
+    clientDot.gender = RND.str(4);
+    clientDot.birthDate = new Date();
+    clientDot.charm = 1;
+    clientDot.id = testDaoBeanGetter.get().insertNewClient(clientDot);
+
+    AddressDot addressDot = new AddressDot();
+    addressDot.client_id = clientDot.id;
+    addressDot.flat = RND.str(10);
+    addressDot.house = RND.str(10);
+    addressDot.street = RND.str(10);
+    addressDot.type = "REG";
+    testDaoBeanGetter.get().insertNewAddressDot(addressDot);
+
+    PhoneDot phoneDot = new PhoneDot();
+    phoneDot.type = "MOBILE";
+    phoneDot.number = RND.str(10);
+    phoneDot.client_id = clientDot.id;
+    testDaoBeanGetter.get().insertNewPhoneDot(phoneDot);
+
+    return clientDot.id;
   }
 
   @Test
   public void clientDetails() {
-    createNewClient();
+    int newClientId = insertNewClient();
+    ClientDetails details = clientRegister.get().details(newClientId);
 
-    ClientDetails details = clientRegister.get().details(1);
-    boolean isValid = true;
+    ClientDot clientDot = testDaoBeanGetter.get().getClientDotById(newClientId);
+    assertThat(clientDot.name.equals(details.name));
+    assertThat(clientDot.surname.equals(details.surname));
+    assertThat(clientDot.patronymic.equals(details.patronymic));
+    assertThat(clientDot.gender.equals(details.gender));
+  }
 
-    if (details.name == null || details.surname == null
-      || details.gender == null || details.birthDate == null) {
-      isValid = false;
-    }
+  public void compareWithClientDot(int clientId, ClientRecord clientRecord) {
 
-    assertThat(isValid).isTrue();
-
-    for (Address address : details.addresses) {
-      if (address.type.equals("REG")) {
-        isValid = true;
-        break;
-      } else {
-        isValid = false;
-      }
-    }
-
-    assertThat(isValid).isTrue();
-
-    for (Phone phone : details.phones) {
-      if (phone.type.equals("MOBILE")) {
-        isValid = true;
-        break;
-      } else {
-        isValid = false;
-      }
-    }
-
-    assertThat(isValid).isTrue();
+    ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientId);
+    assertThat(clientRecord.name.equals(clientRecordFromTest.name)).isTrue();
+    assertThat(clientRecord.surname.equals(clientRecordFromTest.surname)).isTrue();
+    assertThat(clientRecord.patronymic.equals(clientRecordFromTest.patronymic)).isTrue();
+    assertThat(clientRecord.charm.equals(clientRecordFromTest.charm)).isTrue();
+    assertThat(clientRecord.maxBalance == clientRecordFromTest.maxBalance).isTrue();
+    assertThat(clientRecord.minBalance == clientRecordFromTest.minBalance).isTrue();
+    assertThat(clientRecord.accBalance == clientRecordFromTest.accBalance).isTrue();
   }
 
   @Test
   public void testCreateClientWithNotExistingGender() {
+
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
     clientToSave.surname = RND.str(10);
@@ -132,7 +148,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     //
     //
-    assertThat(clientRegister.get().save(clientToSave)).isNotNull();
+    ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+    ClientDot dot = testDaoBeanGetter.get().getClientDotById(clientRecord.id);
+    assertThat(dot.gender.equals("OTHER")).isTrue();
     //
     //
   }
@@ -148,18 +166,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.id = null;
 
     clientToSave.charm = -1;
-    // Send new client
 
     //
     //
-    assertThat(clientRegister.get().save(clientToSave)).isNull();
+    clientRegister.get().save(clientToSave);
+    assertThat(testDaoBeanGetter.get().getClientDotWithCharmId(-1) == null).isTrue();
     //
     //
   }
 
   @Test
   public void testEditClient() {
-    testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
 
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = "Neus";
@@ -167,51 +184,79 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.patronymic = "Torpa";
     clientToSave.gender = "FEMALE";
     clientToSave.birthDate = new Date();
-    clientToSave.charm = ((Integer) testDaoBeanGetter.get().getFirstCharacterId() == null) ? 1 : 1;
-    clientToSave.id = testDaoBeanGetter.get().getFirstClient();
+    clientToSave.charm = testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
+    clientToSave.id = insertNewClient();
 
-    Address edited = new Address();
-    edited.flat = "Flat1";
-    edited.house = "House1";
-    edited.street = "Street1";
-    edited.type = "REG";
-    clientToSave.editedAddresses = new Address[1];
-    clientToSave.editedAddresses[0] = edited;
+    Address editedAddress = new Address();
+    editedAddress.clientId = clientToSave.id;
+    editedAddress.flat = "Flat1";
+    editedAddress.house = "House1";
+    editedAddress.street = "Street1";
+    editedAddress.type = "REG";
+    clientToSave.editedAddresses = new ArrayList<>();
+    clientToSave.editedAddresses.add(editedAddress);
 
-    boolean clientUpdated = true;
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
 
-    ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientToSave.id);
 
-    if (!clientRecord.name.equals(clientRecordFromTest.name) || !clientRecord.surname.equals(clientRecordFromTest.surname)
-      || !clientRecord.patronymic.equals(clientRecordFromTest.patronymic)
-      || !clientRecord.charm.equals(clientRecordFromTest.charm) || clientRecord.maxBalance != clientRecordFromTest.maxBalance
-      || clientRecord.minBalance != clientRecordFromTest.minBalance || clientRecord.accBalance != clientRecordFromTest.accBalance) {
-      clientUpdated = false;
-    }
+    AddressDot addressDot = new AddressDot();
+    addressDot.flat = "Flat1";
+    addressDot.house = "House1";
+    addressDot.street = "Street1";
+    addressDot.type = "REG";
 
-    assertThat(clientUpdated).isTrue();
+    compareWithClientDot(clientToSave.id, clientRecord);
+    compareWithAddressDot(testDaoBeanGetter.get().getAddressDot(clientRecord.id), editedAddress);
+  }
+
+  private void compareWithAddressDot(AddressDot addressDot, Address address) {
+    assertThat(addressDot.flat.equals(address.flat)).isTrue();
+    assertThat(addressDot.street.equals(address.street)).isTrue();
+    assertThat(addressDot.house.equals(address.house)).isTrue();
   }
 
   @Test
-  public void testGetClientDetails() {
-    assertThat(clientRegister.get().details(-100)).isNull();
+  public void testGetNotExistingClientDetails() {
+    assertThat(testDaoBeanGetter.get().getClientDotById(-100) == null &&
+      clientRegister.get().details(-100) == null).isTrue();
   }
 
   @Test
   public void searchForEmptyName() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
     clientRecordFilter.searchName = "";
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter));
+    List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+
+    List<ClientDot> dots = testDaoBeanGetter.get().getClientDotsWithFIO("");
+
+    assertThat(records.size() == dots.size()).isTrue();
+
+    for (int i = 0; i < records.size(); i++) {
+      assertThat(records.get(i).name.equals(dots.get(i).name));
+      assertThat(records.get(i).surname.equals(dots.get(i).name));
+      assertThat(records.get(i).patronymic.equals(dots.get(i).name));
+    }
 
   }
 
   @Test
   public void testSortedByFIONameAsc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
     clientRecordFilter.paginationPage = 0;
@@ -219,18 +264,20 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
 
-
     Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) ->
-      (o2.surname).compareTo(o1.surname) * (o2.name).compareTo(o1.name) * (o2.patronymic).compareTo(o1.patronymic);
+      Collator.getInstance(new Locale("ru", "RU")).compare(o2.surname + o2.name + o2.patronymic, o1.surname + o1.name + o1.patronymic);
 
-    assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
-
-    ClientRecord r = new ClientRecord();
-    ClientDot cd = new ClientDot();
+    isSorted(clientRecordFIOComparator, records);
   }
 
   @Test
   public void testSortedByFIONameDesc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-surname";
     clientRecordFilter.paginationPage = 0;
@@ -243,15 +290,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     Comparator<ClientRecord> clientRecordFIOComparator = (o1, o2) ->
-      -(o2.surname).compareTo(o1.surname) * (o2.name).compareTo(o1.name) * (o2.patronymic).compareTo(o1.patronymic);
+      -Collator.getInstance(new Locale("ru", "RU")).compare(o2.surname + o2.name + o2.patronymic, o1.surname + o1.name + o1.patronymic);
 
 
-    assertThat(isSorted(clientRecordFIOComparator, records)).isTrue();
+    isSorted(clientRecordFIOComparator, records);
 
   }
 
   @Test
   public void testSortedByMinAsc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "min";
     clientRecordFilter.paginationPage = 0;
@@ -266,12 +319,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordMinComparator = (o1, o2) -> o1.minBalance >= o2.minBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordMinComparator, records)).isTrue();
+    isSorted(clientRecordMinComparator, records);
 
   }
 
   @Test
   public void testSortedByMinDesc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-min";
     clientRecordFilter.paginationPage = 0;
@@ -286,12 +345,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordMinComparator = (o1, o2) -> o1.minBalance <= o2.minBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordMinComparator, records)).isTrue();
+    isSorted(clientRecordMinComparator, records);
 
   }
 
   @Test
   public void testSortedByMaxAsc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "max";
     clientRecordFilter.paginationPage = 0;
@@ -306,12 +371,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordMaxComparator = (o1, o2) -> o1.maxBalance >= o2.maxBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordMaxComparator, records)).isTrue();
+    isSorted(clientRecordMaxComparator, records);
 
   }
 
   @Test
   public void testSortedByMaxDesc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-max";
     clientRecordFilter.paginationPage = 0;
@@ -326,12 +397,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordMaxComparator = (o1, o2) -> o1.maxBalance <= o2.maxBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordMaxComparator, records)).isTrue();
+    isSorted(clientRecordMaxComparator, records);
 
   }
 
   @Test
   public void testSortedByTotalAsc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "total";
     clientRecordFilter.paginationPage = 0;
@@ -346,17 +423,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordTotalComparator = (o1, o2) -> o1.accBalance >= o2.accBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordTotalComparator, records)).isTrue();
+    isSorted(clientRecordTotalComparator, records);
 
   }
 
-  @Test
-  public void testT1() {
-    testDaoBeanGetter.get().deleteAll();
-  }
 
   @Test
   public void testSortedByTotalDesc() {
+    testDaoBeanGetter.get().deleteAll();
+
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-total";
     clientRecordFilter.paginationPage = 0;
@@ -371,13 +450,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordTotalComparator = (o1, o2) -> o1.accBalance <= o2.accBalance ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordTotalComparator, records)).isTrue();
+    isSorted(clientRecordTotalComparator, records);
 
   }
 
   //BeforeMethod, dataProvider
   @Test
   public void testSortedByAgeAsc() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "age";
     clientRecordFilter.paginationPage = 0;
@@ -392,12 +476,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age >= o2.age ? 1 : -1;
 
 
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    isSorted(clientRecordAgeComparator, records);
 
   }
 
   @Test
   public void testSortedByAgeDesc() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-age";
     clientRecordFilter.paginationPage = 0;
@@ -411,86 +500,103 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age <= o2.age ? 1 : -1;
 
-
-    assertThat(isSorted(clientRecordAgeComparator, records)).isTrue();
+    isSorted(clientRecordAgeComparator, records);
 
   }
 
-  private boolean isSorted(Comparator<ClientRecord> comparator, List<ClientRecord> records) {
+  private void isSorted(Comparator<ClientRecord> comparator, List<ClientRecord> records) {
     ClientRecord previous = null;
 
     for (ClientRecord clientRecord : records) {
-      if (previous != null && comparator.compare(previous, clientRecord) < 0) {
-        System.out.println(previous.surname + " " + clientRecord.surname + " " + (comparator.compare(previous, clientRecord)));
-        return false;
+      if (previous != null) {
+        assertThat(comparator.compare(previous, clientRecord) < 0).isFalse();
       }
       previous = clientRecord;
     }
-    return true;
   }
 
   @Test
   public void testInvalidSliceNum() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = -1;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
   }
 
   @Test
   public void tooBigSliceNum() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 10; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 1000000000;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(20);
   }
 
   @Test
   public void invalidPaginationPage() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 100; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = -1;
     clientRecordFilter.sliceNum = 10;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
   }
 
   @Test
   public void getNonExistingPaginationPage() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 100; i++) {
+      insertNewClient();
+    }
+
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
-    clientRecordFilter.paginationPage = 900;
+    clientRecordFilter.paginationPage = -1;
     clientRecordFilter.sliceNum = 10;
     clientRecordFilter.searchName = null;
 
     //
     //
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).isNotNull();
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
     //
     //
   }
 
   @Test
   public void clientCountIsValid() {
+    testDaoBeanGetter.get().deleteAll();
+    for (int i = 0; i < 100; i++) {
+      insertNewClient();
+    }
     ClientRecordFilter filter = new ClientRecordFilter();
-    filter.searchName = "amd";
+    filter.searchName = "";
 
     int clientCount = testDaoBeanGetter.get().getClientCount(filter);
 
     int clientCountFromImpl = clientRegister.get().getClientCount(filter);
 
-    boolean requestAreEqual = false;
-
-    if (clientCount == clientCountFromImpl) {
-      requestAreEqual = true;
-    }
-    assertThat(requestAreEqual).isTrue();
+    assertThat(clientCount == clientCountFromImpl).isTrue();
   }
 
 }

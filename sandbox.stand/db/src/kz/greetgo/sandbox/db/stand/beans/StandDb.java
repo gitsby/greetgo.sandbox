@@ -77,13 +77,13 @@ public class StandDb implements HasAfterInject {
   private void initClientPhones() {
     for (int i = 0; i < 100; i++) {
       PhoneDot mobile1 = new PhoneDot();
-      mobile1.client = i;
+      mobile1.client_id = i;
       mobile1.number = 7 + "" + random.nextInt(1000) + 1000;
       mobile1.type = "MOBILE";
       phoneDots.add(mobile1);
 
       PhoneDot home = new PhoneDot();
-      home.client = i;
+      home.client_id = i;
       home.number = 7 + "" + random.nextInt(1000) + 1000;
       home.type = "HOME";
 
@@ -95,8 +95,7 @@ public class StandDb implements HasAfterInject {
     int id = 0;
     for (int i = 0; i < 100; i++) {
       AddressDot fact = new AddressDot();
-      fact.id = id;
-      fact.clientId = i;
+      fact.client_id = i;
       fact.flat = RND.str(10);
       fact.street = RND.str(10);
       fact.house = RND.str(10);
@@ -106,8 +105,7 @@ public class StandDb implements HasAfterInject {
       addressDots.add(fact);
 
       AddressDot reg = new AddressDot();
-      reg.id = id;
-      reg.clientId = i;
+      reg.client_id = i;
       reg.flat = RND.str(10);
       reg.street = RND.str(10);
       reg.house = RND.str(10);

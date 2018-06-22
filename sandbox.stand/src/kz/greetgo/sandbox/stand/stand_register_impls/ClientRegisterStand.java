@@ -112,7 +112,7 @@ public class ClientRegisterStand implements ClientRegister {
     for (PhoneDot phoneDot : phoneDotList) {
       Phone phone = new Phone();
       phone.number = phoneDot.number;
-      phone.clientid = phoneDot.client;
+      phone.client_id = phoneDot.client_id;
       phone.type = phoneDot.type;
       foundClient.phones.add(phone);
     }
@@ -122,8 +122,8 @@ public class ClientRegisterStand implements ClientRegister {
 
     for (AddressDot addressDot : addressDotList) {
       Address address = new Address();
-      address.id = addressDot.id;
-      address.clientId = addressDot.clientId;
+      address.id = addressDot.client_id;
+      address.clientId = addressDot.client_id;
       address.house = addressDot.house;
       address.flat = addressDot.flat;
       address.street = addressDot.street;
@@ -138,7 +138,7 @@ public class ClientRegisterStand implements ClientRegister {
   private List<PhoneDot> getPhoneDotsWithId(int clientId) {
     List<PhoneDot> phones = new ArrayList<>();
     for (PhoneDot phoneDot : db.get().phoneDots) {
-      if (phoneDot.client == clientId) {
+      if (phoneDot.client_id == clientId) {
         phones.add(phoneDot);
       }
     }
@@ -148,7 +148,7 @@ public class ClientRegisterStand implements ClientRegister {
   private List<AddressDot> getAddressesWithClientId(int id) {
     List<AddressDot> addressDots = new ArrayList<>();
     for (AddressDot addressDot : db.get().addressDots) {
-      if (addressDot.clientId == id) {
+      if (addressDot.client_id == id) {
         addressDots.add(addressDot);
       }
     }
@@ -212,8 +212,8 @@ public class ClientRegisterStand implements ClientRegister {
     if (editedClient.addedAddresses != null) {
       for (Address address : editedClient.addedAddresses) {
         AddressDot addressDot = new AddressDot();
-        addressDot.id = db.get().addressDots.size();
-        addressDot.clientId = clientDot.id;
+        addressDot.client_id = db.get().addressDots.size();
+        addressDot.client_id = clientDot.id;
         addressDot.type = address.type;
         addressDot.flat = address.flat;
         addressDot.street = address.street;
@@ -238,7 +238,7 @@ public class ClientRegisterStand implements ClientRegister {
       // Delete
       for (Address address : editedClient.deletedAddresses) {
         for (AddressDot addressDot : getAddressDotsWithId(address.clientId)) {
-          if (address.id == addressDot.id) {
+          if (address.id == addressDot.client_id) {
             db.get().addressDots.remove(addressDot);
             break;
           }
@@ -250,7 +250,7 @@ public class ClientRegisterStand implements ClientRegister {
       for (Phone phone : editedClient.addedPhones) {
         PhoneDot phoneDot = new PhoneDot();
         phoneDot.type = phone.type;
-        phoneDot.client = clientDot.id;
+        phoneDot.client_id = clientDot.id;
         phoneDot.number = phone.number;
         db.get().phoneDots.add(phoneDot);
       }
@@ -259,7 +259,7 @@ public class ClientRegisterStand implements ClientRegister {
     if (editedClient.editedPhones != null) {
       for (Phone phone : editedClient.editedPhones) {
         for (PhoneDot phoneDot : db.get().phoneDots) {
-          if (phoneDot.client == phone.clientid && phoneDot.number.equals(phone.number)) {
+          if (phoneDot.client_id == phone.client_id && phoneDot.number.equals(phone.number)) {
             phoneDot.number = phone.editedTo;
             break;
           }
@@ -278,7 +278,7 @@ public class ClientRegisterStand implements ClientRegister {
   private List<AddressDot> getAddressDotsWithId(int clientId) {
     List<AddressDot> addresses = new ArrayList<>();
     for (AddressDot addressDot : db.get().addressDots) {
-      if (addressDot.clientId == clientId) {
+      if (addressDot.client_id == clientId) {
         addresses.add(addressDot);
       }
     }
@@ -287,7 +287,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   private AddressDot getAddressWithId(int id) {
     for (AddressDot addressDot : db.get().addressDots) {
-      if (id == addressDot.id) {
+      if (id == addressDot.client_id) {
         return addressDot;
       }
     }
