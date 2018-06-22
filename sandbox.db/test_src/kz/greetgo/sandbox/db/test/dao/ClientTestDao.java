@@ -1,6 +1,13 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
+import kz.greetgo.sandbox.controller.model.PhoneType;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -27,7 +34,7 @@ public interface ClientTestDao {
                    @Param("description") String description,
                    @Param("energy") Float energy);
 
-  @Insert("INSERT INTO client_address (client, type, street, house, flat) "+
+  @Insert("INSERT INTO client_address (client, type, street, house, flat) " +
     "VALUES (#{client}, #{type}, #{street}, #{house}, #{flat});")
   void insertClientAddress(@Param("client") Integer client,
                            @Param("type") AddressTypeEnum type,
@@ -52,11 +59,12 @@ public interface ClientTestDao {
   List<ClientAccount> getClientAccounts(@Param("id") Integer id);
 
 
+  // FIXME: 6/22/18 Есть truncate cascade. Но делай actual=0
   @Delete("DELETE FROM client_account; " +
     "DELETE FROM client_address; " +
     "DELETE FROM client_phone; " +
     "DELETE FROM client; " +
-      "DELETE FROM charm")
+    "DELETE FROM charm")
   void clearAllTables();
 
   @Select("SELECT id, surname, name, patronymic, gender, birth_date as birthDate, charm_id as charmId FROM client")

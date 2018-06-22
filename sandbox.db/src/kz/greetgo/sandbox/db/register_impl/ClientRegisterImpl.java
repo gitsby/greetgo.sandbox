@@ -2,7 +2,15 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientFilter;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.controller.render.model.ClientRow;
@@ -20,6 +28,8 @@ import java.util.List;
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
+  // FIXME: 6/22/18 генерацию sql вынеси в отдельный колбак
+
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
@@ -35,7 +45,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
   private Integer insertOrUpdateClient(ClientToSave clientToSave) {
     return jdbc.get().execute(connection -> {
-      String sql = clientToSave.id==null?getClientInsertQuery():getClientUpdateQuery();
+      String sql = clientToSave.id == null ? getClientInsertQuery() : getClientUpdateQuery();
+
+      // FIXME: 6/22/18 Use try with resources
       PreparedStatement ps = connection.prepareStatement(sql);
       setObjectsToPS(ps, clientToSave);
       try {
@@ -64,7 +76,7 @@ public class ClientRegisterImpl implements ClientRegister {
       clientToSave.gender.name(),
       new java.sql.Date(clientToSave.birthDate.getTime()),
       clientToSave.charmId);
-    if (clientToSave.id!=null) ps.setObject(7, clientToSave.id);
+    if (clientToSave.id != null) ps.setObject(7, clientToSave.id);
   }
 
   private String getClientInsertQuery() {
@@ -198,7 +210,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private void appendParams(PreparedStatement ps, List<Object> params) throws SQLException {
-    for (int i = 1; i <= params.size(); i++) ps.setObject(i, params.get(i-1));
+    for (int i = 1; i <= params.size(); i++) ps.setObject(i, params.get(i - 1));
   }
 
   private void selectRecords(StringBuilder sqlQuery) {
@@ -224,9 +236,9 @@ public class ClientRegisterImpl implements ClientRegister {
     if (filter.fio != null) {
       if (!filter.fio.isEmpty()) {
         sqlQuery.append("AND (client.name LIKE ? OR client.surname LIKE ? OR client.patronymic LIKE ?) ");
-        params.add("%"+filter.fio+"%");
-        params.add("%"+filter.fio+"%");
-        params.add("%"+filter.fio+"%");
+        params.add("%" + filter.fio + "%");
+        params.add("%" + filter.fio + "%");
+        params.add("%" + filter.fio + "%");
       }
     }
   }
@@ -304,7 +316,7 @@ public class ClientRegisterImpl implements ClientRegister {
     return jdbc.get().execute(connection -> {
       try (PreparedStatement ps = connection.prepareStatement(sqlQuery.toString())) {
         appendParams(ps, params);
-        try(ResultSet rs = ps.executeQuery()) {
+        try (ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
             return rs.getInt("result");
           }
@@ -395,7 +407,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private void setObjects(int from, PreparedStatement ps, Object... objects) throws SQLException {
-    for (int i = from; i < objects.length+from; i++)
-      ps.setObject(i, objects[i-from]);
+    for (int i = from; i < objects.length + from; i++)
+      ps.setObject(i, objects[i - from]);
   }
 }

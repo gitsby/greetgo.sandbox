@@ -44,6 +44,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     //
+    // FIXME: 6/22/18 Вытаскивай целую строку (Client, ClientAddress и тд) и проверяй их. В тестах ниже также
     ClientDetails resultDetail = clientRegister.get().detail(clientId);
     //
     //
@@ -169,6 +170,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
+    // FIXME: 6/22/18 У тебя есть два теста для сейва. Assertы можно вытащить в отдельный метод
+
     List<ClientDetails> detailsList;
 
     {
@@ -226,6 +229,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Integer rClientId = RND.plusInt(100);
 
     {
+      // FIXME: 6/22/18 Используй ClientDot.class или его аналог. Детейлс может меняться с бизнесом.
       ClientDetails leftDetails = generateRandomClientDetails(rClientId);
       insertClient(leftDetails);
     }
@@ -255,6 +259,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       for (int i = 0; i < 40; i++) {
+        // FIXME: 6/22/18 RND.plusInt
         Integer clientId = (int) (System.nanoTime() / 10000);
         ClientDetails details = generateRandomClientDetails(clientId);
         insertClient(details);
@@ -490,6 +495,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
+  // FIXME: 6/22/18 Если не нужно делать static, то убери access level и будет работать
   private static class TestRender implements ClientRender {
 
     private String name;
