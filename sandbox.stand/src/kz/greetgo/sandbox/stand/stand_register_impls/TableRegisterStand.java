@@ -4,14 +4,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.errors.AuthError;
-import kz.greetgo.sandbox.controller.register.AuthRegister;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
-import kz.greetgo.sandbox.controller.register.model.UserParamName;
-import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
-import kz.greetgo.sandbox.db.stand.model.PersonDot;
-import kz.greetgo.util.ServerUtil;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -32,7 +25,7 @@ public class TableRegisterStand implements TableRegister {
     }
 
     @Override
-    public ArrayList<TableModel> getTableData(int skipNumber, int limit, String sortDirection, String sortType){
+    public TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType){
         Table queriedTable  = new Table();
         queriedTable.data=db.get().table.data.stream().sorted(((o1, o2) -> {
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
@@ -53,7 +46,10 @@ public class TableRegisterStand implements TableRegister {
                     return "desc".equals(sortDirection)?-o1.id.compareTo(o2.id):o1.id.compareTo(o2.id);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        return queriedTable.data;
+        TableToSend table = new TableToSend();
+        table.table=queriedTable.data;
+        table.size=tableSize();
+        return table;
     }
 
     @Override
@@ -65,6 +61,17 @@ public class TableRegisterStand implements TableRegister {
             return 0;
         }
     }
+
+    @Override
+    public String getLastId(){
+        try {
+            return db.get().lastId;
+        }catch(Exception e){
+            e.printStackTrace();
+            return "-1";
+        }
+    }
+
 
     @Override
     public User getExactUser(String userID){
@@ -100,18 +107,18 @@ public class TableRegisterStand implements TableRegister {
         account.moneyNumber=0;
         db.get().accounts.data.add(account);
         db.get().updateDB();
-        return "User was successfully added";
+        return getLastId();
     }
 
 
     private Boolean checkForValidity(User user){
 
-        if ("".equals(user.name) ||"".equals(user.surname) ||"".equals(user.patronymic)){
+        if ("".equals(user.name) ||"".equals(user.surname)){
             return false;
         }
 
         if (user.charm==null || user.genderType==null
-                || user.name==null || user.surname==null || user.patronymic==null
+                || user.name==null || user.surname==null
                 || user.phones==null || user.registeredAddress==null){
             return false;
         }

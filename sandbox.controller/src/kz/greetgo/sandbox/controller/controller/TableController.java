@@ -3,18 +3,16 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
-import kz.greetgo.sandbox.controller.model.ArrayUsers;
-import kz.greetgo.sandbox.controller.model.Table;
-import kz.greetgo.sandbox.controller.model.TableModel;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
-import kz.greetgo.sandbox.controller.model.User;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+import static kz.greetgo.mvc.core.RequestMethod.GET;
 import static kz.greetgo.mvc.core.RequestMethod.POST;
 
 @Bean
@@ -26,7 +24,7 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-table-data")
-    public ArrayList<TableModel> getTableData(@Par("skipNumber") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
+    public TableToSend getTableData(@Par("skipNumber") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
         return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
     }
 
@@ -54,6 +52,12 @@ public class TableController implements Controller{
         return tableRegister.get().createUser(user);
     }
 
+    @NoSecurity
+    @ToJson
+    @Mapping("/get-last-id")
+    public String getLastId(){
+        return tableRegister.get().getLastId();
+    }
 
 
     @NoSecurity

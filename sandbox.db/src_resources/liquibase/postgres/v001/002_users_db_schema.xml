@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="arpanetus" id="create-db-schema">
+        <sql endDelimiter=";;"><![CDATA[
+        create table charm (
+            id serial primary key,
+            name varchar(255) not null,
+            description varchar(255) not null,
+            energy float
+        );
+
+        create table client (
+            id serial primary key,
+            surname varchar(255) not null,
+            name varchar(255) not null,
+            patronymic varchar(255),
+            gender char(6) not null,
+            birth_date  Date not null,
+            charm integer not null references charm(id) on delete cascade
+        );
+
+        create table client_addr (
+            type varchar(4),
+            street varchar(255),
+            house varchar(255),
+            flat varchar(255),
+            client  int not null references client(id) on delete cascade
+        );
+
+        create table client_account (
+            id serial primary key,
+            client int not null,
+            number varchar(255),
+            money float,
+            registered_at timestamp,
+            client int not null references client(id) on delete cascade
+        );
+
+        create table transaction_type (
+            id serial primary key,
+            code varchar(255),
+            name varchar(255)
+        );
+
+        create table client_account_transaction (
+            id serial primary key,
+            account int not null references client_account(id),
+            money float,
+            finished_at timestamp not null,
+            type int references transaction_type(id))
+        );
+    ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>
+

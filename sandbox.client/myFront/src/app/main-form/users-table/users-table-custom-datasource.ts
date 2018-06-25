@@ -6,14 +6,16 @@ import {catchError, finalize, map} from "rxjs/operators";
 import {MatPaginator, MatSort} from "@angular/material";
 import {HttpService} from "../../../services/HttpService";
 
+
+
 export class UsersTableCustomDatasource implements DataSource<TableModel> {
 
-  data: TableModel[] = [];
+  // public data: TableModel[] = [];
   public size:number=0;
-  private tableSubject = new BehaviorSubject<TableModel[]>([]);
-  private thisTable: TableModel[];
+  public tableSubject = new BehaviorSubject<TableModel[]>([]);
+  public thisTable: TableModel[];
 
-  constructor(private httpService:HttpService){
+  constructor(private fetchedTable){
   }
 
   connect(): Observable<TableModel[]>{
@@ -24,18 +26,16 @@ export class UsersTableCustomDatasource implements DataSource<TableModel> {
     this.tableSubject.complete();
   }
 
-  loadTable(pageIndex=0,pageSize=3,
-            sortDirection='asc', active='fullName'){
-    let skipNumber = (pageIndex*pageSize);
-    this.httpService.get("/table/get-table-data",
-      {skipNumber: skipNumber, limit: pageSize,
-        sortDirection: sortDirection, sortType: active})
-        .subscribe(table =>{
-        this.thisTable=table.json().map(TableModel.copy);
-        this.tableSubject.next(this.thisTable);
+
+  loadTable()
+  {
+    this.fetchedTable.subscribe(table=>{
+      let data=table.json();
+      this.thisTable =data.table.map(TableModel.copy);
+      this.size = data.size;
+      this.tableSubject.next(this.thisTable);
     });
-    this.httpService.get('/table/get-table-size').toPromise().then(
-      response => this.size= parseInt(response.text())
-    );
+
+    // this.tableService.getOneValue("/table/get-table-size").then(res=>this.size=parseInt(res));
   }
 }
