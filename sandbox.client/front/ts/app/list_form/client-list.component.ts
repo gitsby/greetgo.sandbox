@@ -181,6 +181,9 @@ export class ClientListComponent {
   }
 
   renderIn(type: string) {
+    this.httpService.get("/report/render").toPromise().then(res => {
+      alert("Finished")
+    });
     let url = "/report/render?filter=" + JSON.stringify(this.clientRecordFilter)
       + "&fileName=" + type + "&fileType=" + type;
     window.open(this.httpService.url(url))

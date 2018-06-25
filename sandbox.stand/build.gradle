@@ -23,6 +23,11 @@ dependencies {
 
   compile 'jstl:jstl:1.2'
 
+  // https://mvnrepository.com/artifact/com.itextpdf/itextpdf
+  compile group: 'com.itextpdf', name: 'itextpdf', version: '5.0.6'
+
+// https://mvnrepository.com/artifact/org.apache.poi/poi
+  compile group: 'org.apache.poi', name: 'poi', version: '3.9'
 
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
 

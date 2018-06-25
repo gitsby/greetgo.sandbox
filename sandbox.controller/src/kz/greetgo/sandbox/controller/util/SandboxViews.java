@@ -5,11 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.ParSession;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.mvc.annotations.ToXml;
-import kz.greetgo.mvc.interfaces.MethodInvokedResult;
-import kz.greetgo.mvc.interfaces.MethodInvoker;
-import kz.greetgo.mvc.interfaces.RequestTunnel;
-import kz.greetgo.mvc.interfaces.SessionParameterGetter;
-import kz.greetgo.mvc.interfaces.Views;
+import kz.greetgo.mvc.interfaces.*;
 import kz.greetgo.sandbox.controller.errors.JsonRestError;
 import kz.greetgo.sandbox.controller.errors.RestError;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
@@ -119,14 +115,16 @@ public abstract class SandboxViews implements Views {
    *
    * @throws Exception нужно чтобы не ставить надоедливые try/catch-блоки
    */
-  private void beforeRequestWithSession() throws Exception {}
+  private void beforeRequestWithSession() throws Exception {
+  }
 
   /**
    * Этот метод вызывается всегда перед вызовом метода контроллера
    *
    * @throws Exception нужно чтобы не ставить надоедливые try/catch-блоки
    */
-  protected void beforeRequest() throws Exception {}
+  protected void beforeRequest() throws Exception {
+  }
 
   /**
    * Осуществляет подготовку сессии и сохранения её в LocalThread-переменной.
