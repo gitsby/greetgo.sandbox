@@ -1,12 +1,11 @@
 package kz.greetgo.sandbox.db.stand.beans;
 
-import com.google.gson.Gson;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.*;
 //import kz.greetgo.sandbox.db.stand.model.PersonDot;
 
-
+import com.google.gson.Gson;
 import java.io.*;
 
 //import java.io.InputStreamReader;
