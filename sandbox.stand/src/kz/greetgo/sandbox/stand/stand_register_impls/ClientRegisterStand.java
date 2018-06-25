@@ -220,10 +220,6 @@ public class ClientRegisterStand implements ClientRegister {
     return details;
   }
 
-  private CharmRecord getCharm(int clientCharmId) {
-    return db.get().charms.stream().filter(charm -> charm.id.equals(clientCharmId)).findFirst().get().toCharm();
-  }
-
   private ClientAddress getClientAddress(int client, AddressTypeEnum type) {
     return db.get().addresses.stream().filter(clientAddress -> clientAddress.client.equals(client) && clientAddress.type.equals(type)).findFirst().get().toClientAddress();
   }
@@ -233,6 +229,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private ClientAddress saveClientAddress(Integer client, ClientAddress saveClientAddress) {
+    System.out.println(client);
     if (saveClientAddress.client == null) {
       saveClientAddress.client = client;
       db.get().addresses.add(new ClientAddressDot(saveClientAddress));

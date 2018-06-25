@@ -1,13 +1,6 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.model.GenderEnum;
-import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -58,20 +51,15 @@ public interface ClientTestDao {
   @Select("SELECT id, client, money, number, registered_at AS registeredAt FROM client_account WHERE client=#{id}")
   List<ClientAccount> getClientAccounts(@Param("id") Integer id);
 
-
-  // FIXME: 6/22/18 Есть truncate cascade. Но делай actual=0
-  @Delete("DELETE FROM client_account; " +
-    "DELETE FROM client_address; " +
-    "DELETE FROM client_phone; " +
-    "DELETE FROM client; " +
-    "DELETE FROM charm")
+  @Delete("UPDATE client SET actual=0;" +
+    "UPDATE client_phone SET actual=0;" +
+    "UPDATE client_address SET actual=0;" +
+    "UPDATE client_account SET actual=0;" +
+    "TRUNCATE charm CASCADE;")
   void clearAllTables();
 
   @Select("SELECT id, surname, name, patronymic, gender, birth_date as birthDate, charm_id as charmId FROM client")
   List<Client> getClients();
-
-  @Select("SELECT * FROM charm WHERE id=#{charmId}")
-  CharmRecord getCharm(@Param("charmId") Integer charm);
 
   @Select("SELECT * FROM client_address WHERE client=#{clientId} AND type=#{type}")
   ClientAddress getClientAddress(@Param("clientId") Integer clientId, @Param("type") AddressTypeEnum fact);

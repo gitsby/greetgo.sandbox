@@ -210,7 +210,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   getRender(fileType: FileTypeEnum) {
-    let url = "/record/get-render?fileName="+this.userName+"&clientFilter="+JSON.stringify(this.clientFilter)+"&fileTypeEnum="+JSON.stringify(fileType);
+    let url = "/report/get-render?fileName="+this.userName+"&clientFilter="+JSON.stringify(this.clientFilter)+"&fileTypeEnum="+JSON.stringify(fileType);
     window.open(this.httpService.url(url));
     this.httpService.token;
   }
