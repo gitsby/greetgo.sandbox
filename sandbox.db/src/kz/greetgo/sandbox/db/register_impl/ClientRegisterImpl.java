@@ -6,9 +6,15 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsCounter;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsQuery;
+import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsReportView;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 
 @Bean
@@ -83,10 +89,26 @@ public class ClientRegisterImpl implements ClientRegister {
           case "delete":
             clientDao.get().deletePhone(phone);
             break;
-
         }
       }
     }
+  }
+
+  @Override
+  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) {
+    ClientRecordsReportView reportView;
+    switch (type) {
+      case "pdf":
+        reportView = new ClientRecordsViewPdf(outputStream);
+        break;
+      case "xlsx":
+        reportView = new ClientRecordsViewXlsx(outputStream);
+        break;
+      default:
+        reportView = null;
+    }
+    jdbc.get().execute(new ClientRecordsRender(filter, reportView));
+    reportView.finish(userName, new Date());
   }
 
   private void saveAddresses(List<Address> addresses, String type, int clientId) {

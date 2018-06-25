@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.register;
 
 import kz.greetgo.sandbox.controller.model.*;
 
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 public interface ClientRegister {
@@ -19,4 +19,5 @@ public interface ClientRegister {
 
   int getClientCount(ClientRecordFilter clientRecordFilter);
 
+  void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream);
 }

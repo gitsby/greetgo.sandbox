@@ -22,7 +22,6 @@ public interface ClientTestDao {
     "values(#{client_id},#{number},#{type})")
   void insertNewPhoneDot(PhoneDot phoneDot);
 
-
   // ------------------------------------
   @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
     "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")

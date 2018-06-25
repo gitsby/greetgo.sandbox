@@ -530,7 +530,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.sliceNum = -1;
     clientRecordFilter.searchName = null;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
+    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(1);
   }
 
   @Test

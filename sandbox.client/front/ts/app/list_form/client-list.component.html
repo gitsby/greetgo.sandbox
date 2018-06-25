@@ -26,7 +26,6 @@
     <tbody>
     <tr class="headers">
       <th (click)="sortBy('surname')">
-
         <p>Surname
           Name Middle Name
           <i class="down" *ngIf="this.clientRecordFilter.columnName=='surname'"></i>
@@ -74,7 +73,7 @@
       <th>Delete</th>
     </tr>
     <tr *ngFor="let client of clients; let i = index">
-      <td>{{client.name + " " +client.surname + " " + client.patronymic}}</td>
+      <td>{{client.surname + " " +client.name + " " + client.patronymic}}</td>
       <td>{{client.character}}</td>
       <td>{{client.age}}</td>
       <td>{{client.accBalance}}</td>
@@ -119,7 +118,12 @@
     <br><br>
     <p>Total number of clients:{{totalClients}}</p>
   </div>
-
+  <div class="col-lg-1 options">
+    <a class="btn" (click)="renderIn('pdf')">PDF</a>
+  </div>
+  <div class="col-lg-1 options">
+    <a class="btn" (click)="renderIn('xlsx')">XLSX</a>
+  </div>
 </div>
 
 <edit-form-component (onClose)="closeEditingForm()" [ngStyle]="{display:openEditingClient ? 'block': 'none'}"

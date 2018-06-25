@@ -4,7 +4,7 @@ export class ClientRecord {
   public name: string;
   public surname: string;
   public patronymic: string;
-  public character: string = "";
+  public charm: string = "";
 
   public age: number = 0;
   public accBalance: number = 10;

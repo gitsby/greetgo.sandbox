@@ -180,6 +180,12 @@ export class ClientListComponent {
     }
   }
 
+  renderIn(type: string) {
+    let url = "/report/render?filter=" + JSON.stringify(this.clientRecordFilter)
+      + "&fileName=" + type + "&fileType=" + type;
+    window.open(this.httpService.url(url))
+  }
+
   notExistedClient(id: number): Boolean {
     for (let client of this.clients) {
       if (client.id == id) {
