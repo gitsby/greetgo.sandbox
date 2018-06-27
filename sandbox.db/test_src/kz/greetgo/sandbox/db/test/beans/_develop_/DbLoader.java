@@ -5,6 +5,8 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.register_impl.TokenRegister;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
+import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
+
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import org.apache.log4j.Logger;
 
@@ -15,6 +17,8 @@ public class DbLoader {
   final Logger logger = Logger.getLogger(getClass());
 
   public BeanGetter<StandDb> standDb;
+//  public BeanGetter<StandJsonDb> standJsonDb;
+
   public BeanGetter<AuthTestDao> authTestDao;
   public BeanGetter<TokenRegister> tokenManager;
 

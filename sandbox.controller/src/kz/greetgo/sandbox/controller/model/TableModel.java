@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
 public class TableModel {
-    public String id;
+    public int id;
     public String fullName;
     public CharmType charm;
     public long age;

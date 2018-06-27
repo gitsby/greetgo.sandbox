@@ -1,0 +1,123 @@
+
+<mat-dialog-content *ngIf="saveIsPressed"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
+
+<form [formGroup]="form" (ngSubmit)="submit(form)">
+  <h1 mat-dialog-title>{{this.data.titleType}} user</h1>
+  <mat-dialog-content>
+  <mat-dialog-content>
+    <mat-form-field>
+      <input matInput formControlName="name" placeholder="Name" required>
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-content>
+    <mat-form-field>
+      <input matInput formControlName="patronymic" placeholder="Patronymic">
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-content>
+    <mat-form-field>
+      <input matInput formControlName="surname" placeholder="Surname" required>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-content>
+    <mat-form-field>
+      <input matInput formControlName="birthDate" [matDatepicker]="picker" placeholder="Birth date" required>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-content>
+    <mat-form-field>
+     <mat-select placeholder="Charm" formControlName="charm" required>
+        <mat-option *ngFor="let charm of charms" [value]="charm">
+          {{ charm }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-content>
+    <mat-form-field>
+      <mat-select placeholder="Sex" formControlName="genderType" required>
+        <mat-option *ngFor="let gender of genderTypes" [value]="gender">
+          {{gender}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+
+  <mat-dialog-content formGroupName="factualAddress">
+      <h3 mat-dialog-title="">
+        Factual Address
+      </h3>
+      <mat-dialog-content>
+        <mat-form-field>
+         <input matInput placeholder="street"  formControlName="street">
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-content>
+        <mat-form-field>
+          <input matInput placeholder="house"  formControlName="house">
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-content>
+        <mat-form-field>
+          <input matInput placeholder="flat"  formControlName="flat">
+        </mat-form-field>
+      </mat-dialog-content>
+
+  </mat-dialog-content>
+
+  <mat-dialog-content formGroupName="registeredAddress" >
+      <h3 mat-dialog-title="" >
+        Registered Address
+      </h3>
+      <mat-dialog-content>
+        <mat-form-field>
+          <input matInput placeholder="street"  formControlName="street" required>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-content>
+        <mat-form-field>
+          <input matInput placeholder="house"  formControlName="house" required>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-content>
+        <mat-form-field>
+          <input matInput placeholder="flat"  formControlName="flat" required>
+        </mat-form-field>
+      </mat-dialog-content>
+    </mat-dialog-content>
+
+    <div formArrayName = "phones">
+    <div *ngFor="let phone of phonesFormArray.controls; let elIndex = index" [formGroupName]="elIndex">
+        <mat-dialog-content>
+
+          <mat-form-field>
+            <input matInput type="tel" formControlName="number" required placeholder="Enter num"/>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-select placeholder="Select type" required formControlName="phoneType">
+              <mat-option *ngFor="let phoneType of phoneTypes" [value]="phoneType">
+                {{phoneType}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-button (click)="deleteNumber(elIndex)" type="button ">Delete phone </button>
+
+        </mat-dialog-content>
+
+    </div>
+    <button mat-button (click)="addNumber()" type="button">
+      Add phone
+    </button>
+  </div>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-stroked-button type="button" mat-dialog-close matDialogClose style="margin: 10px" >Cancel</button>
+    <button mat-raised-button type="submit" style="margin: 10px" color="primary"  [disabled]="!form.valid">Save</button>
+  </mat-dialog-actions>
+</form>

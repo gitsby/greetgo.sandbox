@@ -21,7 +21,7 @@ import java.util.List;
 public class StandJsonDb implements HasAfterInject{
 
     public ArrayUsers users = new ArrayUsers();
-    public String lastId = "0";
+    public int lastId = 0;
     public Accounts accounts = new Accounts();
     public Table table = new Table();
     
@@ -44,7 +44,7 @@ public class StandJsonDb implements HasAfterInject{
     public void tableCreate(){
         table.data.clear();
         for(int i=0; i<users.data.size(); i++){
-            if(Integer.parseInt(users.data.get(i).id)>Integer.parseInt(lastId)){
+            if(users.data.get(i).id>lastId){
                 lastId=users.data.get(i).id;
             }
             TableModel tableModel = new TableModel();
@@ -52,9 +52,9 @@ public class StandJsonDb implements HasAfterInject{
             tableModel.id = users.data.get(i).id;
             tableModel.charm = users.data.get(i).charm;
             tableModel.age = users.data.get(i).birthDate;
-            tableModel.minBalance=accounts.data.stream().filter((account) -> tableModel.id.equals(account.userID)).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-            tableModel.maxBalance=accounts.data.stream().filter((account) -> tableModel.id.equals(account.userID)).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-            tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id.equals(account.userID)).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
+            tableModel.minBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+            tableModel.maxBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+            tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
             table.data.add(tableModel);
         }
     }

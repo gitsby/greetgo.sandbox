@@ -23,6 +23,14 @@
             charm integer not null references charm(id) on delete cascade
         );
 
+        create table phone (
+            number varchar(11),
+            type varchar(6),
+            client int not null references client(id) on delete cascade
+        );
+
+
+
         create table client_addr (
             type varchar(4),
             street varchar(255),
@@ -33,7 +41,6 @@
 
         create table client_account (
             id serial primary key,
-            client int not null,
             number varchar(255),
             money float,
             registered_at timestamp,
@@ -51,10 +58,48 @@
             account int not null references client_account(id),
             money float,
             finished_at timestamp not null,
-            type int references transaction_type(id))
+            type int references transaction_type(id)
         );
-    ]]></sql>
-    </changeSet>
 
+
+
+
+
+    ]]></sql>
+    <!--select client.id as id, concat_ws(' ', client.name::text, client.surname::text, client.patronymic::text) as fullName,
+           cast(extract(epoch from client.birthDate) as integer) as age,
+           max(client_account.money) as max, min(client_account.money) as min, sum(client_account.money) as total, charm.name as charm
+        FROM client, client_account, charm
+        WHERE client.id = client_account.client AND client.charm = charm.id
+        GROUP BY client.id, charm.name;-->
+    </changeSet>
+    <changeSet id="create-get-table-function" author="arpanetus">
+        <sql endDelimiter=";;"><![CDATA[
+        create function table_to_view(limitNum int, skip int, sortType varchar(255), sortDirection varchar(255), filter varchar(255), filterType varchar(255))
+        returns table(id int, fullName text, age integer, charm varchar(255), totalBalance int,minBalance int, maxBalance int)
+        as select id, fullName, age, charm, totalBalance, minBalance, maxBalance from (
+           select client.id as id, concat_ws(' ', client.name::text, client.surname::text, client.patronymic::text) as fullName,
+           cast(extract(epoch from client.birthDate) as integer) as age,
+           max(client_account.money) as max, min(client_account.money) as min, sum(client_account.money) as total, charm.name as charm
+            from client, client_account, charm
+            where client.id = client_account.client AND client.charm = charm.id)
+           order by
+           case sortType
+                when 'fullName' then fullName
+                when 'age' then age
+                when 'totalBalance' then totalBalance
+                when 'minBalance' then minBalance
+                when 'maxBalance' then maxBalance
+                else fullName
+                end
+           case sortDirection
+                when 'desc' then DESC
+                else ASC
+           end
+           limit limitNum offset skip
+        ]]>
+
+        </sql>
+    </changeSet>
 </databaseChangeLog>
 

@@ -35,14 +35,6 @@ export class UserDialogComponent implements OnInit {
   saveIsPressed :boolean=false;
   user:User;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private dialogRef: MatDialogRef<UserDialogComponent>,
-    private httpService: HttpService,
-    @Inject(MAT_DIALOG_DATA) private data,
-    private picker: MatDatepickerModule,
-  ) {}
-
   ngOnInit() {
     const id = this.data.user.id;
     const name = this.data.user.name;
@@ -77,6 +69,14 @@ export class UserDialogComponent implements OnInit {
     });
     this.form.controls['phones'].setValidators(mobileExistenceValidator());
   }
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private dialogRef: MatDialogRef<UserDialogComponent>,
+    private httpService: HttpService,
+    @Inject(MAT_DIALOG_DATA) public data,
+    private picker: MatDatepickerModule,
+  ) {}
 
   get phonesFormArray(): FormArray {
     return this.form.get('phones') as FormArray;

@@ -60,7 +60,6 @@ export class MainFormComponent implements OnDestroy{
 
           if (titleType === 'Update') {
             this.usersTableComponent.updateOneRow(user);
-
             this.selectedUserID= user.id;
           }else
             this.usersTableComponent.addOneRow(user);

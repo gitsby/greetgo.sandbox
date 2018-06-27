@@ -43,7 +43,7 @@ public class TableRegisterStand implements TableRegister {
                 case MINBALANCE:
                     return "desc".equals(sortDirection)?-Double.compare(o1.minBalance,o2.minBalance):Double.compare(o1.minBalance,o2.minBalance);
                 default:
-                    return "desc".equals(sortDirection)?-o1.id.compareTo(o2.id):o1.id.compareTo(o2.id);
+                    return "desc".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
         TableToSend table = new TableToSend();
@@ -52,7 +52,6 @@ public class TableRegisterStand implements TableRegister {
         return table;
     }
 
-    @Override
     public int tableSize(){
         try {
             return db.get().users.data.size();
@@ -62,43 +61,33 @@ public class TableRegisterStand implements TableRegister {
         }
     }
 
-    @Override
-    public String getLastId(){
+    public int getLastId(){
         try {
             return db.get().lastId;
         }catch(Exception e){
             e.printStackTrace();
-            return "-1";
+            return -1;
         }
     }
 
 
     @Override
-    public User getExactUser(String userID){
+    public User getExactUser(int userID){
         try {
-            return db.get().users.data.stream().filter((user) -> userID.equals(user.id)).findFirst().get();
+            return db.get().users.data.stream().filter((user) -> userID==user.id).findFirst().get();
         } catch (Exception e){
             e.printStackTrace();
             return new User();
         }
     }
 
-    @Override
-    public Boolean checkIfThereUser(String userID){
-        try {
-            return db.get().users.data.stream().anyMatch((user) -> userID.equals(user.id));
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     @Override
-    public String createUser(User user){
+    public Integer createUser(User user){
         if(!checkForValidity(user)){
-            return "User is not valid!";
+            return -1;
         }
-        user.id = Integer.toString(Integer.parseInt(db.get().lastId)+1);
+        user.id = db.get().lastId+1;
         db.get().users.data.add(user);
         Account account = new Account();
         account.registeredAt = System.currentTimeMillis();
@@ -150,8 +139,8 @@ public class TableRegisterStand implements TableRegister {
     }
 
     @Override
-    public String deleteUser(String userID){
-        db.get().users.data.removeIf(user -> userID.equals(user.id));
+    public String deleteUser(int userID){
+        db.get().users.data.removeIf(user -> userID==user.id);
         db.get().updateDB();
         return "User was successfully deleted";
     }

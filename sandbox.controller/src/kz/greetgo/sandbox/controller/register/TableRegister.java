@@ -8,12 +8,14 @@ import java.util.List;
 
 public interface TableRegister {
     TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType);
-    int tableSize();
-    User getExactUser(String userID);
-    String getLastId();
-    String createUser(User user);
+
+    User getExactUser(int userID);
+
+    int createUser(User user);
+
     String changeUser(User user);
-    String deleteUser(String userID);
-    Boolean checkIfThereUser(String userID);
+
+    String deleteUser(int userID);
+
 
 }
