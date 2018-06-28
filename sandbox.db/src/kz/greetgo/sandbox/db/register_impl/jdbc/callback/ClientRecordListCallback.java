@@ -57,6 +57,7 @@ public class ClientRecordListCallback extends SqlExecuteConnection<List<ClientRe
 
   @Override
   public void where() {
+    // FIXME: 6/28/18 where общий для count and recordsList
     sql.append("WHERE client.actual=1 ");
     if (filter.fio != null) {
       if (!filter.fio.isEmpty()) {

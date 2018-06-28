@@ -1,6 +1,12 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
+import kz.greetgo.sandbox.controller.model.PhoneType;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -51,6 +57,7 @@ public interface ClientTestDao {
   @Select("SELECT id, client, money, number, registered_at AS registeredAt FROM client_account WHERE client=#{id}")
   List<ClientAccount> getClientAccounts(@Param("id") Integer id);
 
+  // FIXME: 6/28/18 (2) Нельзя удалять с таблицы, каскадно тем более
   @Delete("UPDATE client SET actual=0;" +
     "UPDATE client_phone SET actual=0;" +
     "UPDATE client_address SET actual=0;" +

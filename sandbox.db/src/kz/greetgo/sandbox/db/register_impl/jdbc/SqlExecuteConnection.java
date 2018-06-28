@@ -51,6 +51,7 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
   @Override
   public final ConnectionReturnType doInConnection(Connection connection) throws Exception {
     prepareSql();
+    // FIXME: 6/28/18 Ps to try with resources
     PreparedStatement ps = connection.prepareStatement(sql.toString());
     putParams(ps);
     return run(ps);

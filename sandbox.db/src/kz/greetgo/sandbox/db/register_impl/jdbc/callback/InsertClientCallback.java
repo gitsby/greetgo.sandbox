@@ -46,34 +46,25 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
     params.add(clientToSave.name);
     params.add(clientToSave.patronymic);
     params.add(clientToSave.gender.name());
+    // FIXME: 6/28/18 Попробуй без каста, должно работать дял PGSQL
     params.add(new java.sql.Date(clientToSave.birthDate.getTime()));
     params.add(clientToSave.charmId);
   }
 
   @Override
-  public void set() {
-
-  }
+  public void set() {}
 
   @Override
-  public void where() {
-
-  }
+  public void where() {}
 
   @Override
-  public void groupBy() {
-
-  }
+  public void groupBy() {}
 
   @Override
-  public void orderBy() {
-
-  }
+  public void orderBy() {}
 
   @Override
-  public void offsetAndLimit() {
-
-  }
+  public void offsetAndLimit() {}
 
   @Override
   public void returning() {

@@ -24,7 +24,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * Набор автоматизированных тестов для тестирования методов класса {@link ClientRegisterImpl}
  */
 public class ClientRegisterImplTest extends ParentTestNg {
-
+  // FIXME: 6/28/18 Testy padayut pri povtronom zapuske
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
 
@@ -110,6 +110,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     ClientDetails details = detailsList.get(0);
+    // FIXME: 6/28/18 use ClientDot (ne ClientDetails), clientToSave
     isEqual(details, clientToSave);
   }
 
@@ -212,7 +213,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-
   @Test
   public void getRecordsWithEmptyFilter() throws Exception {
 
@@ -236,6 +236,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
+    // FIXME: 6/28/18 Нужно делать ассерт хотя бы айди
     assertThat(clientRecordList.size()).isEqualTo(emptyFilter.limit);
   }
 
@@ -361,7 +362,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-
   @Test
   public void getRecordsCountWithEmptyFilter() throws Exception {
 
@@ -431,6 +431,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(count).isNotNull();
+    // FIXME: 6/28/18 Почему всегда 1?
     assertThat(count).isEqualTo(1);
   }
 
@@ -609,6 +610,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
     return ++age;
   }
+
   private float getMinBalance(List<ClientAccount> clientAccounts) {
     float min_balance = Integer.MAX_VALUE;
     if (clientAccounts.size() == 0) return 0;

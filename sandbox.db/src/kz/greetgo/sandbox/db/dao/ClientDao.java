@@ -21,10 +21,10 @@ public interface ClientDao {
     "DO UPDATE SET " +
     "street=#{street}, house=#{house}, flat=#{flat}")
   void insertAddress(@Param("clientId") Integer clientId,
-                        @Param("type") String type,
-                        @Param("street") String street,
-                        @Param("house") String house,
-                        @Param("flat") String flat);
+                     @Param("type") String type,
+                     @Param("street") String street,
+                     @Param("house") String house,
+                     @Param("flat") String flat);
 
   @Insert("INSERT INTO client_phone(client, type, number) " +
     "VALUES (#{clientId}, #{type}, #{number}) " +
@@ -32,8 +32,6 @@ public interface ClientDao {
     "DO UPDATE SET number=#{number}")
   void insertPhone(@Param("clientId") Integer clientId, @Param("type") String type, @Param("number") String number);
 
-  @Update("UPDATE client " +
-    "SET actual=0 " +
-    "WHERE id=#{clientId}")
+  @Update("UPDATE client SET actual=0 WHERE id=#{clientId}")
   void setNotActual(@Param("clientId") Integer clientId);
 }
