@@ -34,7 +34,8 @@
           patronymic varchar(30) not null,
           gender varchar(10) not null,
           birth_date date,
-          charm int not null
+          charm int not null,
+          actual int not null
         )
       ]]>
     </sql>

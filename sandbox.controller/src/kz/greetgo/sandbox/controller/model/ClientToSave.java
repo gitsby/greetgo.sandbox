@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class ClientToSave {
 
@@ -14,30 +14,12 @@ public class ClientToSave {
 
   public Integer charm;
 
-  public Address[] addedAddresses;
-  public Address[] editedAddresses;
-  public Address[] deletedAddresses;
+  public List<Address> addedAddresses;
+  public List<Address> editedAddresses;
+  public List<Address> deletedAddresses;
 
-  public Phone[] addedPhones;
-  public Phone[] deletedPhones;
-  public Phone[] editedPhones;
+  public List<Phone> addedPhones;
+  public List<Phone> deletedPhones;
+  public List<Phone> editedPhones;
 
-  @Override
-  public String toString() {
-    return "ClientToSave{" +
-      "id=" + id +
-      ", name='" + name + '\'' +
-      ", surname='" + surname + '\'' +
-      ", patronymic='" + patronymic + '\'' +
-      ", gender='" + gender + '\'' +
-      ", birthDate=" + birthDate +
-      ", charm=" + charm +
-      ", addedAddresses=" + Arrays.toString(addedAddresses) +
-      ", editedAddresses=" + Arrays.toString(editedAddresses) +
-      ", deletedAddresses=" + Arrays.toString(deletedAddresses) +
-      ", addedPhones=" + Arrays.toString(addedPhones) +
-      ", deletedPhones=" + Arrays.toString(deletedPhones) +
-      ", editedPhones=" + Arrays.toString(editedPhones) +
-      '}';
-  }
 }

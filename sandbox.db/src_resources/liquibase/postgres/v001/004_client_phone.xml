@@ -7,7 +7,7 @@
     <sql endDelimiter=";;">
       <![CDATA[
         create table Client_Phone(
-          clientid int not null,
+          client_id int not null,
           number varchar(20) not null,
           type varchar(20) not null
         )
@@ -17,7 +17,7 @@
 
   <changeSet author="pompei" id="create-foreign-PhoneClientFK">
     <addForeignKeyConstraint
-      baseColumnNames="clientid"
+      baseColumnNames="client_id"
       baseTableName="client_phone"
       constraintName="fk_phone_client"
       deferrable="true"
@@ -30,7 +30,7 @@
 
   <changeSet author="pompei" id="create-primary-PhonePrimaryKey">
     <addPrimaryKey
-      columnNames="clientid, number"
+      columnNames="client_id, number"
       constraintName="pk_client_phone"
       schemaName="public"
       tableName="client_phone"/>

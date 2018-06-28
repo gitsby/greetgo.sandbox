@@ -12,9 +12,6 @@ public class ClientDetails {
   public String gender;
   public Date birthDate;
 
-  // FIXME: 6/22/18 Зачем тебе age?
-  public int age = 0;
-
   public int charm;
 
   public List<Address> addresses;
@@ -30,7 +27,6 @@ public class ClientDetails {
       ", patronymic='" + patronymic + '\'' +
       ", gender='" + gender + '\'' +
       ", birthDate='" + birthDate + '\'' +
-      ", age=" + age +
       ", charm=" + charm +
       ", addresses=" + addresses +
       ", phones=" + phones +

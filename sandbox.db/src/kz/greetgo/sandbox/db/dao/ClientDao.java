@@ -11,22 +11,21 @@ import java.util.List;
 public interface ClientDao {
 
   // ---------------------------------------
-  @Insert("insert into client (   name,    surname,    patronymic,    gender, charm, birth_date) " +
-    "                  values ( #{name}, #{surname}, #{patronymic}, #{gender},#{charm},#{birthDate})")
-  void insertIntoClient(ClientToSave personDot);
-
-  // FIXME: 6/22/18 client_id, 
-  @Insert("insert into client_address (   clientid,    type,    street,    house, flat) " +
+  @Insert("insert into client_address (   client_id,    type,    street,    house, flat) " +
     "                  values ( #{clientId}, #{type}, #{street}, #{house},#{flat})")
-  void insertIntoAddress(Address address);
+  void insertAddress(Address address);
 
 
-  @Insert("insert into client_phone (   clientid,    number,    type) " +
-    "                  values ( #{clientid}, #{number}, #{type})")
+  @Insert("insert into client_phone (   client_id,    number,    type) " +
+    "                  values ( #{client_id}, #{number}, #{type})")
   void insertPhone(Phone phone);
 
 
   // ---------------------------------------
+  @Select("insert into client (   name,    surname,    patronymic,    gender, charm, birth_date, actual) " +
+    "                  values ( #{name}, #{surname}, #{patronymic}, #{gender},#{charm},#{birthDate}, 1) returning id")
+  int insertClient(ClientToSave personDot);
+
 
   @Select("select id, name from characters")
   List<CharmRecord> getCharms();
@@ -36,10 +35,10 @@ public interface ClientDao {
   ClientDetails getClientById(int id);
 
   @Select("select " +
-    "clientid, number, type from client_phone where clientid=#{id}")
+    "client_id, number, type from client_phone where client_id=#{id}")
   List<Phone> getPhonesWithClientId(int id);
 
-  @Select("select clientid, type, street, house, flat from client_address where clientid=#{id}")
+  @Select("select client_id, type, street, house, flat from client_address where client_id=#{id}")
   List<Address> getAddressesWithClientId(int id);
 
   @Select("select id from client order by id desc limit 1")
@@ -47,28 +46,28 @@ public interface ClientDao {
 
   // ---------------------------------------
 
+  @Update("update client set actual=0 where id=#{id}")
+  void deleteClient(int id);
+
   @Update("update client set name=#{name}, surname=#{surname}, patronymic=#{patronymic}," +
     " gender=#{gender}, birth_date=#{birthDate}, charm=#{charm} where id=#{id}")
   void updateClient(ClientToSave client);
 
   @Update("update client_phone set phone=#{editedTo} " +
-    "where clientid=#{clientId} and phone=#{phone}")
+    "where client_id=#{clientId} and phone=#{phone}")
   void updatePhone(Phone phone);
 
   @Update("update client_address set street=#{street}, house=#{house}, flat=#{flat} " +
-    "where clientid=#{clientId} and type=#{type}")
+    "where client_id=#{clientId} and type=#{type}")
   void updateAddress(Address address);
 
 
   // ---------------------------------------
-  // FIXME: 6/22/18 Нельзя удалять. set actual=0
-  @Delete("delete from client where id=#{id}")
-  void deleteClient(int id);
 
-  @Delete("delete from client_address where clientid=#{clientId} and type=#{type}")
+  @Delete("delete from client_address where client_id=#{clientId} and type=#{type}")
   void deleteAddress(Address address);
 
-  @Delete("delete from client_phone where clientid=#{clientId} and number=#{number}")
+  @Delete("delete from client_phone where client_id=#{clientId} and number=#{number}")
   void deletePhone(Phone phone);
 
 }

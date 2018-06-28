@@ -2,20 +2,19 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Address;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.client_records_query.ClientRecordsCounter;
+import kz.greetgo.sandbox.db.client_records_query.ClientRecordsQuery;
+import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsReportView;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 
 @Bean
@@ -24,129 +23,9 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
-  private String clientRecordsQuery = "select\n" +
-    "  client.id,\n" +
-    "  client.name,\n" +
-    "  client.surname,\n" +
-    "  client.patronymic,\n" +
-    "  client.gender,\n" +
-    "  extract(year from age(birth_date)) as age,\n" +
-    "  c2.name as charm,\n" +
-    "  accountMoneys.min as minBalance,\n" +
-    "  accountMoneys.max as maxBalance,\n" +
-    "  accountMoneys.sum as accBalance\n" +
-    "from client\n" +
-    "  join characters c2 on client.charm = c2.id\n" +
-    "  left join (select\n" +
-    "          clientid,\n" +
-    "          SUM(money),\n" +
-    "          max(money),\n" +
-    "          min(money)\n" +
-    "        from client\n" +
-    "          join client_account a on client.id = a.clientid\n" +
-    "        group by clientid) as accountMoneys on client.id= accountMoneys.clientid";
-
   @Override
   public List<ClientRecord> getClients(ClientRecordFilter clientRecordFilter) {
-    StringBuilder query = new StringBuilder(clientRecordsQuery);
-
-    query.append(validateSearchName(clientRecordFilter));
-
-    switch (clientRecordFilter.columnName) {
-      case "surname":
-        query.append(" ORDER BY surname asc ,\n" +
-          "  name asc ,\n" +
-          "  patronymic asc ");
-        break;
-      case "age":
-        query.append(" ORDER BY age ASC ");
-        break;
-      case "total":
-        query.append(" ORDER BY sum ASC ");
-        break;
-      case "max":
-        query.append(" ORDER BY max ASC ");
-        break;
-      case "min":
-        query.append(" ORDER BY min ASC ");
-        break;
-      case "-surname":
-        query.append(" ORDER BY surname desc ,\n" +
-          "  name desc ,\n" +
-          "  patronymic desc ");
-        break;
-      case "-age":
-        query.append(" ORDER BY age DESC ");
-        break;
-      case "-total":
-        query.append(" ORDER BY sum DESC ");
-        break;
-      case "-max":
-        query.append(" ORDER BY max DESC ");
-        break;
-      case "-min":
-        query.append(" ORDER BY min DESC ");
-        break;
-    }
-
-    query.append(" LIMIT ? OFFSET ? ");
-
-    clientRecordFilter.sliceNum = clientRecordFilter.sliceNum > 0 ? clientRecordFilter.sliceNum : 0;
-    clientRecordFilter.paginationPage = clientRecordFilter.paginationPage > 0 ? clientRecordFilter.paginationPage : 0;
-
-    List params = new ArrayList();
-    if (clientRecordFilter.searchName != null) {
-      params.add(clientRecordFilter.searchName);
-    }
-    params.add((clientRecordFilter.sliceNum * clientRecordFilter.paginationPage + clientRecordFilter.sliceNum));
-    params.add((clientRecordFilter.sliceNum * clientRecordFilter.paginationPage));
-
-    return executeClientRecordsQuery(query.toString(), params);
-  }
-
-  private String validateSearchName(ClientRecordFilter clientRecordFilter) {
-    if (clientRecordFilter.searchName != null) {
-      if (clientRecordFilter.searchName.length() != 0) {
-        return " WHERE concat(Lower(client.name), Lower(client.surname), Lower(client.patronymic)) like '%'||?||'%' ";
-      } else {
-        clientRecordFilter.searchName = null;
-      }
-    }
-    return "";
-  }
-
-  private List<ClientRecord> executeClientRecordsQuery(String query, List params) {
-    List<ClientRecord> clientRecords = new ArrayList<>();
-    jdbc.get().execute(ConnectionCallback -> {
-      PreparedStatement statement = ConnectionCallback.prepareStatement(query);
-
-      for (int i = 0; i < params.size(); i++) {
-        statement.setObject(i + 1, params.get(i));
-      }
-
-      try (ResultSet resultSet = statement.executeQuery()) {
-
-        while (resultSet.next()) {
-          ClientRecord clientRecord = new ClientRecord();
-          clientRecord.surname = resultSet.getString("surname");
-          clientRecord.name = resultSet.getString("name");
-          clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("patronymic") : "";
-          clientRecord.charm = resultSet.getString("charm");
-
-          clientRecord.age = resultSet.getInt("age");
-
-          clientRecord.maxBalance = resultSet.getDouble("maxBalance");
-          clientRecord.minBalance = resultSet.getDouble("minBalance");
-          clientRecord.accBalance = resultSet.getDouble("accBalance");
-
-          clientRecords.add(clientRecord);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      return statement;
-    });
-    return clientRecords;
+    return jdbc.get().execute(new ClientRecordsQuery(clientRecordFilter));
   }
 
   @Override
@@ -167,62 +46,89 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public ClientRecord save(ClientToSave editedClient) {
-
     if (!characterIdExists(editedClient.charm)) {
       return null;
     }
 
     if (editedClient.id == null) {
-      clientDao.get().insertIntoClient(editedClient);
-      editedClient.id = clientDao.get().getLastInsertedClientId();
+      editedClient.id = clientDao.get().insertClient(editedClient);
     } else {
       clientDao.get().updateClient(editedClient);
     }
-    if (editedClient.addedAddresses != null) {
-      for (Address address : editedClient.addedAddresses) {
-        address.clientId = editedClient.id;
-        clientDao.get().insertIntoAddress(address);
+    saveAddresses(editedClient.addedAddresses, "add", editedClient.id);
+    saveAddresses(editedClient.editedAddresses, "edit", editedClient.id);
+    saveAddresses(editedClient.deletedAddresses, "delete", editedClient.id);
+
+    savePhones(editedClient.addedPhones, "add", editedClient.id);
+    savePhones(editedClient.editedPhones, "edit", editedClient.id);
+    savePhones(editedClient.deletedPhones, "delete", editedClient.id);
+
+    ClientRecordFilter filter = new ClientRecordFilter();
+    filter.paginationPage = 0;
+    filter.sliceNum = 1;
+    filter.columnName = "empty";
+
+    ClientRecordsQuery query = new ClientRecordsQuery(filter);
+    query.sql.WHERE("client.id=?");
+    query.params.add(0, editedClient.id);
+
+    return jdbc.get().execute(query).get(0);
+  }
+
+  private void savePhones(List<Phone> phones, String type, int clientId) {
+    if (phones != null) {
+      for (Phone phone : phones) {
+        phone.client_id = clientId;
+        switch (type) {
+          case "add":
+            clientDao.get().insertPhone(phone);
+            break;
+          case "edit":
+            clientDao.get().updatePhone(phone);
+            break;
+          case "delete":
+            clientDao.get().deletePhone(phone);
+            break;
+        }
+      }
+    }
+  }
+
+  @Override
+  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) {
+    ClientRecordsReportView reportView;
+    switch (type) {
+      case "pdf":
+        reportView = new ClientRecordsViewPdf(outputStream);
+        break;
+      case "xlsx":
+        reportView = new ClientRecordsViewXlsx(outputStream);
+        break;
+      default:
+        reportView = null;
+    }
+    jdbc.get().execute(new ClientRecordsRender(filter, reportView));
+    reportView.finish(userName, new Date());
+  }
+
+  private void saveAddresses(List<Address> addresses, String type, int clientId) {
+    if (addresses != null) {
+      for (Address address : addresses) {
+        address.clientId = clientId;
+        switch (type) {
+          case "add":
+            clientDao.get().insertAddress(address);
+            break;
+          case "edit":
+            clientDao.get().updateAddress(address);
+            break;
+          case "delete":
+            clientDao.get().deleteAddress(address);
+            break;
+        }
       }
     }
 
-    if (editedClient.addedPhones != null) {
-      for (Phone phone : editedClient.addedPhones) {
-        phone.clientid = editedClient.id;
-        clientDao.get().insertPhone(phone);
-      }
-    }
-
-    if (editedClient.editedPhones != null) {
-      for (Phone phone : editedClient.editedPhones) {
-        phone.clientid = editedClient.id;
-        clientDao.get().updatePhone(phone);
-      }
-    }
-
-    if (editedClient.editedAddresses != null) {
-      for (Address address : editedClient.editedAddresses) {
-        address.clientId = editedClient.id;
-        clientDao.get().updateAddress(address);
-      }
-    }
-
-    if (editedClient.deletedPhones != null) {
-      for (Phone phone : editedClient.deletedPhones) {
-        phone.clientid = editedClient.id;
-        clientDao.get().deletePhone(phone);
-      }
-    }
-    if (editedClient.deletedAddresses != null) {
-      for (Address address : editedClient.deletedAddresses) {
-        clientDao.get().deleteAddress(address);
-      }
-    }
-
-    List<Integer> param = new ArrayList<>();
-    param.add(editedClient.id);
-    StringBuilder builder = new StringBuilder(clientRecordsQuery);
-    builder.append(" where client.id=?");
-    return executeClientRecordsQuery(builder.toString(), param).get(0);
   }
 
   private boolean characterIdExists(int id) {
@@ -241,16 +147,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public int getClientCount(ClientRecordFilter clientRecordFilter) {
-    StringBuilder builder = new StringBuilder(clientRecordsQuery);
-    builder.append(validateSearchName(clientRecordFilter));
-
-    List params = new ArrayList();
-
-    if (clientRecordFilter.searchName != null) {
-      params.add(clientRecordFilter.searchName);
-    }
-
-    return executeClientRecordsQuery(builder.toString(), params).size();
+    return jdbc.get().execute(new ClientRecordsCounter(clientRecordFilter));
   }
 
 }
