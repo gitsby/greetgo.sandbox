@@ -17,10 +17,9 @@ import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.io.IOException;
 
-// FIXME: 6/22/18 ReportController
 @Bean
-@Mapping("/record")
-public class RecordController implements Controller {
+@Mapping("/report")
+public class ReportController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
