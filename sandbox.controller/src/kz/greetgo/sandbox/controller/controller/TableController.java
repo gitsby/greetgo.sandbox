@@ -28,18 +28,12 @@ public class TableController implements Controller{
         return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
     }
 
-    @NoSecurity
-    @ToJson
-    @Mapping("/get-table-size")
-    public int getTableSize(){
-        return tableRegister.get().tableSize();
-    }
 
 
     @NoSecurity
     @ToJson
     @Mapping("/get-exact-user")
-    public User getExactUser(@Par("userID") String userID){
+    public User getExactUser(@Par("userID") int userID){
         return tableRegister.get().getExactUser(userID);
     }
 
@@ -48,16 +42,10 @@ public class TableController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/create-user")
-    public String createUser(@Par("user") @Json User user) {
+    public int createUser(@Par("user") @Json User user) {
         return tableRegister.get().createUser(user);
     }
 
-    @NoSecurity
-    @ToJson
-    @Mapping("/get-last-id")
-    public String getLastId(){
-        return tableRegister.get().getLastId();
-    }
 
 
     @NoSecurity
@@ -73,16 +61,10 @@ public class TableController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/delete-user")
-    public String deleteUser(@Par("userID") String userID){
+    public String deleteUser(@Par("userID") int userID){
         return tableRegister.get().deleteUser(userID);
     }
 
 
-    @NoSecurity
-    @ToJson
-    @Mapping("/check-if-there-user")
-    public Boolean checkIfThereUser(@Par("userID") String userID) {
-        return tableRegister.get().checkIfThereUser(userID);
-    }
 
 }

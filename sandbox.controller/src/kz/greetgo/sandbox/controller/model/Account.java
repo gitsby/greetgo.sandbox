@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.controller.model;
 
 public class Account {
   public int id;
-  public String userID;
+  public int userID;
   public double moneyNumber;
   public long registeredAt;
 

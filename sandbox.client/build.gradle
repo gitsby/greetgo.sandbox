@@ -1,15 +1,11 @@
 plugins {
-  id "com.moowork.node" version "1.1.1"
-  id "com.moowork.gulp" version "1.1.1"
+  id "com.moowork.node" version "1.2.0"
 }
 
-task cleanLibs(type: Delete) {
-  delete 'node_modules'
-}
+//task cleanLibs(type: Delete) {
+//  delete 'node_modules'
+//}
+//
+//clean.dependsOn cleanLibs
 
-clean.dependsOn cleanLibs
-
-build.dependsOn npm_install
-build.dependsOn gulp_build
-
-gulp_build.shouldRunAfter npm_install
+build.dependsOn npm_run_build

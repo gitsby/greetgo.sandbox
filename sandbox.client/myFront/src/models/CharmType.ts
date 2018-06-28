@@ -1,7 +1,0 @@
-export  enum CharmType{
-    BOI="BOI",
-    GUTBOI="GUTBOI",
-    BERIGUTBOI="BERIGUTBOI",
-    BATBOI="BATBOI",
-    BERIBATBOI="BERIBATBOI",
-}

@@ -24,7 +24,7 @@ public class AuthRegisterImpl implements AuthRegister {
 
   public BeanGetter<AuthDao> authDao;
 
-  public BeanGetter<PoliceCheckService> policeCheckService;
+//  public BeanGetter<PoliceCheckService> policeCheckService;
 
   @Override
   public void saveParam(String personId, UserParamName name, String value) {
@@ -95,9 +95,9 @@ public class AuthRegisterImpl implements AuthRegister {
       in.surname = userInfo.surname;
       in.name = userInfo.name;
       in.patronymic = userInfo.patronymic;
-      CheckPoliceResponse out = policeCheckService.get().checkNaturalPerson(in);
-      if (out.status == PoliceStatus.RED) throw new RedPoliceResponse();
-      userInfo.yellow = out.status == PoliceStatus.YELLOW;
+//      CheckPoliceResponse out = policeCheckService.get().checkNaturalPerson(in);
+//      if (out.status == PoliceStatus.RED) throw new RedPoliceResponse();
+      userInfo.yellow = true;//out.status == PoliceStatus.YELLOW;
     }
     return userInfo;
   }

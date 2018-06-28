@@ -44,7 +44,7 @@ war {
 
   classpath beanContainerJar
 
-  from project(':sandbox.client').buildDir.toPath().resolve('product').toFile()
+  from project(':sandbox.client').buildDir.toPath().resolve('dist').toFile()
 }
 
 static def addExcludes(rootSpec) {
