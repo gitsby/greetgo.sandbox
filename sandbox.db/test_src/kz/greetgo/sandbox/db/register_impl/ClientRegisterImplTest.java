@@ -1,7 +1,13 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -12,11 +18,18 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ParentTestNg {
+
+  // FIXME: 6/28/18 Не все тесты проходят
+  // FIXME: 6/28/18 Нужны нормальные тесты на каунт
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientRegister> clientRegister;
@@ -26,15 +39,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void checkCharactersNotNull() {
+    // FIXME: 6/28/18 V DB nichego net, test bezpoleznii
     List<CharmRecord> charmRecords = clientRegister.get().charm();
 
     for (CharmRecord charmRecord : charmRecords) {
+      // FIXME: 6/28/18 assertThat(charmRecord.name).isEqualsTo(kakoi-to name);
       assertThat(charmRecord.name == null || charmRecord.name.length() == 0).isFalse();
     }
   }
 
   @Test
   public void deleteClient() {
+    // FIXME: 6/28/18 Zapusti RecreateDb, potom etot test
     int id = testDaoBeanGetter.get().getFirstClient();
     clientRegister.get().deleteClient(id);
     assertThat(testDaoBeanGetter.get().clientExists(id)).isNull();
@@ -98,7 +114,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(addressDot.house.equals(address.house)).isTrue();
   }
 
-
   private int insertNewClient() {
     testDaoBeanGetter.get().insertNewCharacter(RND.str(5));
     ClientDot clientDot = new ClientDot();
@@ -134,6 +149,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDetails details = clientRegister.get().details(newClientId);
 
     ClientDot clientDot = testDaoBeanGetter.get().getClientDotById(newClientId);
+    // FIXME: 6/28/18 v details bolwe fildov, i assertov doljno bit na vse
     assertThat(clientDot.name.equals(details.name));
     assertThat(clientDot.surname.equals(details.surname));
     assertThat(clientDot.patronymic.equals(details.patronymic));
@@ -177,6 +193,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     clientRegister.get().save(clientToSave);
+    // FIXME: 6/28/18 assertThat(...).isNull();
+    // FIXME: 6/28/18 znacheniya -1 ne doljno bit'. Ne stroi kostili na kostilyah.
     assertThat(testDaoBeanGetter.get().getClientDotWithCharmId(-1) == null).isTrue();
     //
     //
@@ -213,11 +231,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
     addressDot.type = "REG";
 
     compareWithClientDot(clientToSave.id, clientRecord);
+    // FIXME: 6/28/18 Doljen bit' assertWithClientDot
+    // FIXME: 6/28/18 assertWithPhone?
     compareWithAddressDot(testDaoBeanGetter.get().getAddressDot(clientRecord.id), editedAddress);
   }
 
   @Test
   public void testGetNotExistingClientDetails() {
+    // FIXME: 6/28/18 assertThat(...).isNull();
     assertThat(testDaoBeanGetter.get().getClientDotById(-100) == null &&
       clientRegister.get().details(-100) == null).isTrue();
   }
@@ -240,9 +261,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     List<ClientDot> dots = testDaoBeanGetter.get().getClientDotsWithFIO("");
 
+    // FIXME: 6/28/18 hasSameSizeAs, hasSize
     assertThat(records.size() == dots.size()).isTrue();
 
     for (int i = 0; i < records.size(); i++) {
+      // FIXME: 6/28/18 Kak etot test voobwe rabotaet?!
+      // FIXME: 6/28/18 assert(id) dojen byt' kak minimum
       assertThat(records.get(i).name.equals(dots.get(i).name));
       assertThat(records.get(i).surname.equals(dots.get(i).name));
       assertThat(records.get(i).patronymic.equals(dots.get(i).name));
@@ -428,7 +452,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
-
   @Test
   public void testSortedByTotalDesc() {
     testDaoBeanGetter.get().deleteAll();
@@ -527,6 +550,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
     clientRecordFilter.paginationPage = 0;
+    // FIXME: 6/28/18 kak slice num mojet' byt' -1?
     clientRecordFilter.sliceNum = -1;
     clientRecordFilter.searchName = null;
 
@@ -596,7 +620,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     int clientCount = testDaoBeanGetter.get().getClientCount(filter);
 
     int clientCountFromImpl = clientRegister.get().getClientCount(filter);
-
+// FIXME: 6/28/18 isEqualsTo
     assertThat(clientCount == clientCountFromImpl).isTrue();
   }
 

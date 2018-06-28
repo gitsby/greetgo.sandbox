@@ -5,7 +5,9 @@ import kz.greetgo.db.ConnectionCallback;
 
 public abstract class ClientRecordQueryMethods<T> implements ConnectionCallback<T> {
 
+  // FIXME: 6/28/18 Переименуй метод
   public void all() {
+    // FIXME: 6/28/18 Pochemu zdes' selecta net?
     from();
     join();
     leftJoin();

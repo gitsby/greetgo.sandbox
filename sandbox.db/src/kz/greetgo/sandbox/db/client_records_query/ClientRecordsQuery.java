@@ -12,6 +12,7 @@ import java.util.List;
 
 public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientRecord>> {
 
+  // FIXME: 6/28/18 Лимит должен быть в SQL
   private String limit = "";
   public ClientRecordFilter filter;
 
@@ -27,7 +28,7 @@ public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientReco
   public List<ClientRecord> doInConnection(Connection connection) throws Exception {
 
     List<ClientRecord> clientRecords = new ArrayList<>();
-
+// FIXME: 6/28/18 PreparedStatement должен закрываться
     PreparedStatement statement = connection.prepareStatement(sql.toString() + limit);
 
     for (int i = 0; i < params.size(); i++) {

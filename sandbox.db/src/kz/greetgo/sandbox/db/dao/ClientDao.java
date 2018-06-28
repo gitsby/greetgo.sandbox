@@ -1,6 +1,10 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -26,7 +30,7 @@ public interface ClientDao {
     "                  values ( #{name}, #{surname}, #{patronymic}, #{gender},#{charm},#{birthDate}, 1) returning id")
   int insertClient(ClientToSave personDot);
 
-
+  // FIXME: 6/28/18 Doljni bit' tolko actuals
   @Select("select id, name from characters")
   List<CharmRecord> getCharms();
 
@@ -63,7 +67,6 @@ public interface ClientDao {
 
 
   // ---------------------------------------
-
   @Delete("delete from client_address where client_id=#{clientId} and type=#{type}")
   void deleteAddress(Address address);
 

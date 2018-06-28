@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+// FIXME: 6/28/18 Избавься от желтых
 public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   public ClientRecordFilter filter;
 
@@ -17,6 +18,7 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
 
   public ClientRecordsCounter(ClientRecordFilter filter) {
     this.filter = filter;
+    // FIXME: 6/28/18 Лучше all должен вызываться в doInConnection
     all();
   }
 
@@ -29,7 +31,7 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
 
   @Override
   public Integer doInConnection(Connection connection) throws Exception {
-
+    // FIXME: 6/28/18 PreparedStatement не закрыт
     PreparedStatement statement = connection.prepareStatement(sql.toString());
 
     for (int i = 0; i < params.size(); i++) {
@@ -40,24 +42,21 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
       resultSet.next();
       return resultSet.getInt("count");
     } catch (Exception e) {
+      // FIXME: 6/28/18 Нельзя принтить в стэк трейс на реале. Используй лог. P.S. здесь кэтч не нужен вовсе
       e.printStackTrace();
     }
     return 0;
   }
 
   @Override
-  void join() {
-
-  }
+  void join() {}
 
   @Override
-  void leftJoin() {
-
-  }
+  void leftJoin() {}
 
   @Override
   void where() {
-
+    // FIXME: 6/28/18 Where obwii dlya cound and records, почему они повторяются?
     if (filter.searchName != null) {
       if (filter.searchName.length() != 0) {
         sql.WHERE(" concat(Lower(client.name), Lower(client.surname), Lower(client.patronymic)) like '%'||?||'%' ");
@@ -75,12 +74,8 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   }
 
   @Override
-  void orderBy() {
-
-  }
+  void orderBy() {}
 
   @Override
-  void limit() {
-
-  }
+  void limit() {}
 }
