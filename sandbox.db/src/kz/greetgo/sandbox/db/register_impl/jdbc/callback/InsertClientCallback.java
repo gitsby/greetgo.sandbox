@@ -36,6 +36,7 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
 
   @Override
   public void insert() {
+    //language=PostgreSQL
     sql.append("INSERT INTO client(surname, name, patronymic, gender, birth_date, charm_id) ");
   }
 

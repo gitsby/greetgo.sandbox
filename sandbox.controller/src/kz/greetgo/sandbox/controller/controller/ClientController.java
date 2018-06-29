@@ -4,14 +4,10 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.core.RequestMethod;
-import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplPdf;
-import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplXlsx;
 import kz.greetgo.sandbox.controller.util.Controller;
 
-import java.io.IOException;
 import java.util.List;
 
 

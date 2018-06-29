@@ -53,6 +53,7 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
     prepareSql();
     PreparedStatement ps = connection.prepareStatement(sql.toString());
     putParams(ps);
+    System.out.println(connection.getClientInfo());
     return run(ps);
   }
 }

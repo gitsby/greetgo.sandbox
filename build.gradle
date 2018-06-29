@@ -57,6 +57,9 @@ subprojects {
     compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.10'
     compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.4'
 
+    // https://mvnrepository.com/artifact/com.jcraft/jsch
+    compile group: 'com.jcraft', name: 'jsch', version: '0.1.52'
+
 
     //compile 'com.google.code.findbugs:annotations:2.0.1'
   }

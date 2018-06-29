@@ -6,6 +6,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.util.App;
+import kz.greetgo.sandbox.db.util.ConfigData;
 import kz.greetgo.sandbox.db.util.LiquibaseManager;
 import kz.greetgo.util.ServerUtil;
 import org.apache.log4j.Logger;
@@ -13,6 +14,7 @@ import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -115,11 +117,9 @@ public class DbWorker {
   private void writeDbConfigFile() throws Exception {
     File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);
     try (PrintStream out = new PrintStream(file, "UTF-8")) {
-
       out.println("url=" + changeUrlDbName(SysParams.pgAdminUrl(), System.getProperty("user.name") + "_sandbox"));
       out.println("username=" + System.getProperty("user.name") + "_sandbox");
-      out.println("password=111");
-
+      out.println("password=123");
     }
   }
 
@@ -130,5 +130,18 @@ public class DbWorker {
       SysParams.pgAdminUserid(),
       SysParams.pgAdminPassword()
     );
+  }
+
+
+  public static Connection createConnection(File configFile) throws IOException, ClassNotFoundException, SQLException {
+    ConfigData configData = new ConfigData();
+    configData.loadFromFile(configFile);
+
+    String url = configData.get("url");
+    String user = configData.get("user");
+    String password = configData.get("password");
+
+    Class.forName("org.postgresql.Driver");
+    return DriverManager.getConnection(url, user, password);
   }
 }

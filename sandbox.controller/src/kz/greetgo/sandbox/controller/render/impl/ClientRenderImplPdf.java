@@ -121,15 +121,17 @@ public class ClientRenderImplPdf implements ClientRender {
   }
 
   public static void main(String[] args) throws Exception {
-    ClientRenderImplPdf clientRenderImplPdf = new ClientRenderImplPdf(new FileOutputStream(new File("/Users/adilbekmailanov/Desktop/TEST.pdf")));
-    clientRenderImplPdf.start(RND.str(10), new Date());
+    Date createdDate = new Date();
+    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+    ClientRenderImplPdf clientRenderImplPdf = new ClientRenderImplPdf(new FileOutputStream(new File("/Users/adilbekmailanov/Desktop/test_render_"+format.format(createdDate)+".pdf")));
+    clientRenderImplPdf.start(RND.str(10), createdDate);
     for (int i=0;i<30; i++) clientRenderImplPdf.append(getRandomClientRow(i));
     clientRenderImplPdf.finish();
   }
 
   private static ClientRow getRandomClientRow(int i) {
     ClientRow row = new ClientRow();
-    row.id=i+1;
+    row.id=i;
     row.surname = RND.str(10);
     row.name = RND.str(10);
     row.patronymic = RND.str(10);
@@ -139,6 +141,4 @@ public class ClientRenderImplPdf implements ClientRender {
     row.min_balance = RND.plusInt(10000);
     return row;
   }
-
-
 }

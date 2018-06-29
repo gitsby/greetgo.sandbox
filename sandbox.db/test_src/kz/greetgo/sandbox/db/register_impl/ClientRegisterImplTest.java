@@ -6,7 +6,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.test.dao.ClientTestDaoHelper;
+import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.BeforeMethod;
@@ -15,9 +15,7 @@ import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -28,20 +26,20 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
-  public BeanGetter<ClientTestDaoHelper> clientTestDaoHelper;
+  public BeanGetter<ClientTestDao> clientTestDao;
 
   @BeforeMethod
   public void clearDB() {
-    clientTestDaoHelper.get().clearAllTables();
+    clientTestDao.get().clearAllTables();
   }
 
   @Test
   public void getDetail() throws Exception {
     Integer clientId = RND.plusInt(100);
-    ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
+    ClientDetails details = generateRandomClientDetails(clientId);
 
     {
-      clientTestDaoHelper.get().insertClient(details);
+      insertClient(details);
     }
 
     //
@@ -93,7 +91,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void insertNewClient() throws Exception {
-    ClientToSave clientToSave = clientTestDaoHelper.get().generateRandomClientToSave(null);
+    ClientToSave clientToSave = generateRandomClientToSave(null);
 
     //
     //
@@ -106,7 +104,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientDetails> detailsList;
 
     {
-      detailsList = clientTestDaoHelper.get().getClientDetailsList();
+      detailsList = getClientDetailsList();
       assertThat(detailsList).isNotNull();
       assertThat(detailsList).hasSize(1);
     }
@@ -118,11 +116,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void editClient() throws Exception {
     Integer clientId = RND.plusInt(100);
-    ClientToSave clientToSave = clientTestDaoHelper.get().generateRandomClientToSave(clientId);
+    ClientToSave clientToSave = generateRandomClientToSave(clientId);
 
     {
-      ClientDetails leftClient = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-      clientTestDaoHelper.get().insertClient(leftClient);
+      ClientDetails leftClient = generateRandomClientDetails(clientId);
+      insertClient(leftClient);
     }
 
 
@@ -137,7 +135,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientDetails> detailsList;
 
     {
-      detailsList = clientTestDaoHelper.get().getClientDetailsList();
+      detailsList = getClientDetailsList();
       assertThat(detailsList).isNotNull();
       assertThat(detailsList).hasSize(1);
     }
@@ -194,9 +192,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Integer rClientId = RND.plusInt(100);
 
     {
-      ClientDot leftDot = clientTestDaoHelper.get().generateRandomClientDot();
+      ClientDot leftDot = generateRandomClientDot();
       leftDot.id = rClientId;
-      clientTestDaoHelper.get().insertClient(leftDot);
+      insertClient(leftDot);
     }
 
     //
@@ -208,7 +206,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     {
-      Integer actual = clientTestDaoHelper.get().getActual(rClientId);
+      Integer actual = clientTestDao.get().getActual(rClientId);
       assertThat(actual).isNotNull();
       assertThat(actual).isEqualTo(0);
     }
@@ -225,8 +223,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     {
       for (int i = 0; i < 40; i++) {
         Integer clientId = RND.plusInt(10000);
-        ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-        clientTestDaoHelper.get().insertClient(details);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        insertClient(details);
       }
     }
 
@@ -247,10 +245,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @DataProvider
   public Object[][] filter_DP() {
-    return new Object[][] {
-      new Object[] {FioEnum.SURNAME},
-      new Object[] {FioEnum.NAME},
-      new Object[] {FioEnum.PATRONYMIC}
+    return new Object[][]{
+      new Object[]{FioEnum.SURNAME},
+      new Object[]{FioEnum.NAME},
+      new Object[]{FioEnum.PATRONYMIC}
     };
   }
 
@@ -265,8 +263,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     {
       for (int i = 0; i < 20; i++) {
         Integer clientId = RND.plusInt(10000);
-        ClientDetails leftDetails = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-        clientTestDaoHelper.get().insertClient(leftDetails);
+        ClientDetails leftDetails = generateRandomClientDetails(clientId);
+        insertClient(leftDetails);
       }
     }
 
@@ -274,7 +272,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       Integer clientId = RND.plusInt(10000);
-      details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
+      details = generateRandomClientDetails(clientId);
 
       switch (fioEnum) {
         case SURNAME:
@@ -287,7 +285,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
           details.patronymic = rText;
       }
 
-      clientTestDaoHelper.get().insertClient(details);
+      insertClient(details);
     }
     //
     //
@@ -308,17 +306,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @DataProvider
   public Object[][] getRecords_WithSort_DP() {
-    return new Object[][] {
-      new Object[] {SortByEnum.FULL_NAME, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.AGE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MIDDLE_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MAX_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MIN_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.FULL_NAME, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.AGE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MIDDLE_BALANCE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MAX_BALANCE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MIN_BALANCE, SortDirection.DESCENDING}
+    return new Object[][]{
+      new Object[]{SortByEnum.FULL_NAME, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.AGE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MIDDLE_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MAX_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MIN_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.FULL_NAME, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.AGE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MIDDLE_BALANCE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MAX_BALANCE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MIN_BALANCE, SortDirection.DESCENDING}
     };
   }
 
@@ -335,16 +333,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         Integer clientId = RND.plusInt(Integer.MAX_VALUE);
 
-        ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-        clientTestDaoHelper.get().insertClient(details);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        insertClient(details);
 
-        clientTestDaoHelper.get().generateRandomAccountsFor(details.id, RND.plusInt(50));
+        generateRandomAccountsFor(details.id, RND.plusInt(50));
 
-        clientRecords.add(clientTestDaoHelper.get().getRecordsFromDetails(details));
+        clientRecords.add(fromDetails(details));
       }
     }
 
-    clientTestDaoHelper.get().sortList(clientRecords, sortByEnum, sortDirection);
+    sortList(clientRecords, sortByEnum, sortDirection);
 
 
     //
@@ -374,8 +372,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     {
       for (int i = 0; i < randomCount; i++) {
         Integer clientId = RND.plusInt(10000);
-        ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-        clientTestDaoHelper.get().insertClient(details);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        insertClient(details);
       }
     }
 
@@ -395,7 +393,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void getRecordsCountWithFilter(FioEnum fioEnum) throws Exception {
 
     int randomCount = RND.plusInt(40);
-    String rFio= RND.str(10);
+    String rFio = RND.str(10);
 
     ClientFilter filter = new ClientFilter();
     filter.fio = rFio;
@@ -403,14 +401,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
     {
       for (int i = 0; i < randomCount; i++) {
         Integer clientId = RND.plusInt(Integer.MAX_VALUE);
-        ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
-        clientTestDaoHelper.get().insertClient(details);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        insertClient(details);
       }
     }
 
     {
       Integer clientId = RND.plusInt(Integer.MAX_VALUE);
-      ClientDetails details = clientTestDaoHelper.get().generateRandomClientDetails(clientId);
+      ClientDetails details = generateRandomClientDetails(clientId);
       switch (fioEnum) {
         case SURNAME:
           details.surname = rFio;
@@ -421,7 +419,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         case PATRONYMIC:
           details.patronymic = rFio;
       }
-      clientTestDaoHelper.get().insertClient(details);
+      insertClient(details);
     }
 
     //
@@ -444,7 +442,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     {
       for (int i = 0; i < randomSize; i++) {
         CharmRecord charmRecord = new CharmRecord(RND.plusInt(Integer.MAX_VALUE), RND.str(10), RND.str(10), RND.rnd.nextFloat());
-        clientTestDaoHelper.get().insertCharm(charmRecord);
+        insertCharm(charmRecord);
         charmRecords.add(charmRecord);
       }
     }
@@ -485,7 +483,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Override
-    public void finish() {}
+    public void finish() {
+    }
   }
 
   @Test
@@ -498,8 +497,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientFilter filter = new ClientFilter();
 
     {
-      leftDetails = clientTestDaoHelper.get().generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE));
-      clientTestDaoHelper.get().insertClient(leftDetails);
+      leftDetails = generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE));
+      insertClient(leftDetails);
     }
 
     //
@@ -529,7 +528,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDetails leftDetails;
 
     {
-      leftDetails = clientTestDaoHelper.get().generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE));
+      leftDetails = generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE));
       switch (fioEnum) {
         case SURNAME:
           leftDetails.surname = RND.str(10) + rFio + RND.str(10);
@@ -540,12 +539,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
         case PATRONYMIC:
           leftDetails.patronymic = RND.str(10) + rFio + RND.str(10);
       }
-      clientTestDaoHelper.get().insertClient(leftDetails);
+      insertClient(leftDetails);
     }
 
     {
       for (int i = 0; i < 10; i++)
-        clientTestDaoHelper.get().insertClient(clientTestDaoHelper.get().generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE)));
+        insertClient(generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE)));
     }
 
     //
@@ -558,6 +557,211 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(render.name).isEqualTo(name);
     assertThat(render.clientRows).hasSize(1);
     assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
+  }
+
+  public List<ClientDetails> getClientDetailsList() {
+    List<ClientDetails> clientDetails = Lists.newArrayList();
+    for (Client client : clientTestDao.get().getClients())
+      clientDetails.add(fromClient(client));
+    return clientDetails;
+  }
+
+  public ClientDetails fromClient(Client client) {
+    ClientDetails details = new ClientDetails();
+    details.id = client.id;
+    details.surname = client.surname;
+    details.name = client.name;
+    details.patronymic = client.patronymic;
+    details.gender = client.gender;
+    details.birthDate = client.birthDate;
+    details.charmId = client.charmId;
+    details.addressFact = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.FACT);
+    details.addressReg = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.REG);
+    details.homePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.HOME);
+    details.workPhone = clientTestDao.get().getClientPhone(client.id, PhoneType.WORK);
+    details.mobilePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.MOBILE);
+    return details;
+  }
+
+  public ClientRecord fromDetails(ClientDetails details) {
+    ClientRecord clientRecord = new ClientRecord();
+    clientRecord.id = details.id;
+    clientRecord.surname = details.surname;
+    clientRecord.name = details.name;
+    clientRecord.patronymic = details.patronymic;
+    clientRecord.age = getAge(details.birthDate);
+    List<ClientAccount> clientAccounts = clientTestDao.get().getClientAccounts(details.id);
+    clientRecord.middle_balance = getMiddleBalance(clientAccounts);
+    clientRecord.max_balance = getMaxBalance(clientAccounts);
+    clientRecord.min_balance = getMinBalance(clientAccounts);
+    return clientRecord;
+  }
+
+  public static int getAge(Date dateOfBirth) {
+    Calendar today = Calendar.getInstance();
+    Calendar birthDate = Calendar.getInstance();
+    int age;
+    birthDate.setTime(dateOfBirth);
+    age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+    if ((birthDate.get(Calendar.DAY_OF_YEAR) - today.get(Calendar.DAY_OF_YEAR) > 3) ||
+      (birthDate.get(Calendar.MONTH) > today.get(Calendar.MONTH))) {
+      age--;
+    } else if ((birthDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)) &&
+      (birthDate.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH))) {
+      age--;
+    }
+    return ++age;
+  }
+
+  private float getMinBalance(List<ClientAccount> clientAccounts) {
+    float min_balance = Integer.MAX_VALUE;
+    if (clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
+      if (clientAccount.money < min_balance) min_balance = clientAccount.money;
+    return min_balance;
+  }
+
+  private float getMaxBalance(List<ClientAccount> clientAccounts) {
+    float max_balance = -1;
+    if (clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
+      if (clientAccount.money > max_balance) max_balance = clientAccount.money;
+    return max_balance;
+  }
+
+  private float getMiddleBalance(List<ClientAccount> clientAccounts) {
+    float middle_balance = 0;
+    if (clientAccounts.size() == 0) return 0;
+    for (ClientAccount clientAccount : clientAccounts)
+      middle_balance += clientAccount.money;
+    return middle_balance / clientAccounts.size();
+  }
+
+  public void insertClient(ClientDetails details) {
+    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 0));
+    insertCharm(charmRecord);
+    clientTestDao.get().insertClient(details.id, details.surname, details.name, details.patronymic, details.gender, details.birthDate, details.charmId);
+    insertClientAddress(details.addressFact);
+    insertClientAddress(details.addressReg);
+    insertClientPhone(details.homePhone);
+    insertClientPhone(details.workPhone);
+    insertClientPhone(details.mobilePhone);
+  }
+
+  public void insertClient(ClientDot clientDot) {
+    CharmRecord charmRecord = new CharmRecord(clientDot.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 0));
+    insertCharm(charmRecord);
+    clientTestDao.get().insertClient(clientDot.id, clientDot.surname, clientDot.name, clientDot.patronymic, clientDot.gender, clientDot.birthDate, clientDot.charmId);
+  }
+
+  public ClientToSave generateRandomClientToSave(Integer id) {
+    ClientDetails details = generateRandomClientDetails(id);
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.id = details.id;
+    clientToSave.surname = details.surname;
+    clientToSave.name = details.name;
+    clientToSave.patronymic = details.patronymic;
+    clientToSave.birthDate = details.birthDate;
+    clientToSave.gender = details.gender;
+    clientToSave.charmId = details.charmId;
+    clientToSave.addressFact = details.addressFact;
+    clientToSave.addressReg = details.addressReg;
+    clientToSave.homePhone = details.homePhone;
+    clientToSave.mobilePhone = details.mobilePhone;
+    clientToSave.workPhone = details.workPhone;
+    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 10));
+    insertCharm(charmRecord);
+    return clientToSave;
+  }
+
+  public ClientDot generateRandomClientDot() {
+    ClientDot clientDot = new ClientDot();
+    clientDot.id = RND.plusInt(Integer.MAX_VALUE);
+    clientDot.surname = RND.str(10);
+    clientDot.name = RND.str(10);
+    clientDot.patronymic = RND.str(10);
+    clientDot.birthDate = RND.dateYears(10, 20);
+    clientDot.charmId = RND.plusInt(Integer.MAX_VALUE);
+    clientDot.gender = GenderEnum.MALE;
+    return clientDot;
+  }
+
+  public ClientDetails generateRandomClientDetails(Integer id) {
+    ClientDetails details = new ClientDetails();
+    details.id = id;
+    details.surname = RND.intStr(10);
+    details.name = RND.intStr(10);
+    details.patronymic = RND.intStr(10);
+    details.birthDate = RND.dateYears(0, 1000);
+    details.gender = GenderEnum.MALE;
+    details.charmId = RND.plusInt(Integer.MAX_VALUE);
+    details.addressFact = new ClientAddress(id, AddressTypeEnum.FACT, RND.str(10), RND.str(10), RND.str(10));
+    details.addressReg = new ClientAddress(id, AddressTypeEnum.REG, RND.str(10), RND.str(10), RND.str(10));
+    details.homePhone = new ClientPhone(id, PhoneType.HOME, RND.intStr(11));
+    details.mobilePhone = new ClientPhone(id, PhoneType.MOBILE, RND.intStr(11));
+    details.workPhone = new ClientPhone(id, PhoneType.WORK, RND.intStr(11));
+    return details;
+  }
+
+  public void generateRandomAccountsFor(Integer id, int i) {
+    for (int c = 0; c < i; c++) {
+      ClientAccount clientAccount = new ClientAccount();
+      clientAccount.client = id;
+      clientAccount.number = RND.intStr(11);
+      clientAccount.money = (float) RND.plusDouble(5000, 0);
+      clientAccount.registeredAt = new Date();
+      insertClientAccount(clientAccount);
+    }
+  }
+
+  private void insertClientAddress(ClientAddress clientAddress) {
+    clientTestDao.get().insertClientAddress(clientAddress.client, clientAddress.type, clientAddress.street, clientAddress.house, clientAddress.flat);
+  }
+
+  private void insertClientPhone(ClientPhone clientPhone) {
+    clientTestDao.get().insertClientPhone(clientPhone.client, clientPhone.number, clientPhone.type);
+  }
+
+  private void insertClientAccount(ClientAccount account) {
+    clientTestDao.get().insertClientAccount(account.client, account.number, account.money, account.registeredAt);
+  }
+
+  public void insertCharm(CharmRecord charmRecord) {
+    clientTestDao.get().insertCharm(charmRecord.id, charmRecord.name, charmRecord.description, charmRecord.energy);
+  }
+
+  public static void sortList(List<ClientRecord> clientRecords, SortByEnum sortBy, SortDirection sortDirection) {
+    Comparator<ClientRecord> comparator = null;
+    switch (sortBy) {
+      case NONE:
+        comparator = null;
+        break;
+      case FULL_NAME:
+        comparator = Comparator.comparing(o -> o.surname);
+        comparator.thenComparing(o -> o.name);
+        comparator.thenComparing(o -> o.patronymic);
+        break;
+      case AGE:
+        comparator = Comparator.comparing(o -> o.age);
+        break;
+      case MIDDLE_BALANCE:
+        comparator = Comparator.comparing(o -> o.middle_balance);
+        break;
+      case MIN_BALANCE:
+        comparator = Comparator.comparing(o -> o.min_balance);
+        break;
+      case MAX_BALANCE:
+        comparator = Comparator.comparing(o -> o.max_balance);
+        break;
+    }
+    if (comparator != null) clientRecords.sort(comparator);
+
+    if (sortDirection != null)
+      switch (sortDirection) {
+        case DESCENDING:
+          Collections.reverse(clientRecords);
+          break;
+      }
   }
 
 }
