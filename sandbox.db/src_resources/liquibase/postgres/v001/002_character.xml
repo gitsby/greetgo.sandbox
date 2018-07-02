@@ -2,29 +2,30 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
-  <!--FIXME Поменяй автора-->
-  <changeSet author="pompei" id="create-table-Charm">
+
+  <changeSet author="ali" id="create-table-Charm">
     <sql endDelimiter=";;"><![CDATA[
       create table Characters (
         id int not null primary key,
         name varchar(30) not null,
         description varchar(100),
-        energy float
+        energy float,
+        actual int default 1
       )
     ]]></sql>
   </changeSet>
 
-  <changeSet author="pompei" id="auto-increment-Charm">
+  <changeSet author="ali" id="auto-increment-Charm">
     <addAutoIncrement
-                      columnDataType="int"
-                      columnName="id"
-                      incrementBy="1"
-                      schemaName="public"
-                      startWith="1"
-                      tableName="characters"/>
+      columnDataType="int"
+      columnName="id"
+      incrementBy="1"
+      schemaName="public"
+      startWith="1"
+      tableName="characters"/>
   </changeSet>
 
-  <changeSet author="pompei" id="create-table-Client">
+  <changeSet author="ali" id="create-table-Client">
     <sql endDelimiter=";;">
       <![CDATA[
         create table Client(
@@ -41,7 +42,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="pompei" id="auto-increment-Client">
+  <changeSet author="ali" id="auto-increment-Client">
     <addAutoIncrement
       columnDataType="int"
       columnName="id"
@@ -51,7 +52,7 @@
       tableName="client"/>
   </changeSet>
 
-  <changeSet author="pompei-docs" id="create-foreign-ClientCharmFK">
+  <changeSet author="ali-docs" id="create-foreign-ClientCharmFK">
     <addForeignKeyConstraint baseColumnNames="charm"
                              baseTableName="client"
                              constraintName="fk_client_charm"

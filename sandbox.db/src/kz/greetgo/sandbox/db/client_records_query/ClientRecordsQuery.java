@@ -12,37 +12,40 @@ import java.util.List;
 
 public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientRecord>> {
 
-  // FIXME: 6/28/18 Лимит должен быть в SQL
-  private String limit = "";
-  public ClientRecordFilter filter;
+  private ClientRecordFilter filter;
 
-  public List params = new ArrayList();
+  public ArrayList<Object> params = new ArrayList();
   public SQL sql = new SQL();
 
   public ClientRecordsQuery(ClientRecordFilter filter) {
+    super(filter);
     this.filter = filter;
-    all();
   }
 
   @Override
   public List<ClientRecord> doInConnection(Connection connection) throws Exception {
+    prepareSql();
 
     List<ClientRecord> clientRecords = new ArrayList<>();
-// FIXME: 6/28/18 PreparedStatement должен закрываться
-    PreparedStatement statement = connection.prepareStatement(sql.toString() + limit);
+    System.out.println("LAST: " + sql.toString());
+    PreparedStatement statement = connection.prepareStatement(sql.toString());
+
+    Thread.sleep(1000);
 
     for (int i = 0; i < params.size(); i++) {
+      System.out.println("Param: " + params.get(i));
       statement.setObject(i + 1, params.get(i));
     }
     try (ResultSet resultSet = statement.executeQuery()) {
       while (resultSet.next()) {
         ClientRecord clientRecord = new ClientRecord();
         clientRecord.id = resultSet.getInt("id");
+
+        System.out.println(clientRecord.id);
         clientRecord.surname = resultSet.getString("surname");
         clientRecord.name = resultSet.getString("name");
         clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("patronymic") : "";
         clientRecord.charm = resultSet.getString("charm");
-
         clientRecord.age = resultSet.getInt("age");
 
         clientRecord.maxBalance = resultSet.getDouble("maxBalance");
@@ -53,22 +56,30 @@ public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientReco
     } catch (Exception e) {
       e.printStackTrace();
     }
+    statement.close();
     return clientRecords;
   }
 
   @Override
-  public void all() {
-    sql.SELECT("client.id," +
-      " client.name," +
-      " client.surname, " +
-      " client.patronymic, " +
-      " client.gender, " +
-      " extract(year from age(birth_date)) as age," +
-      " c2.name as charm, " +
-      " accountMoneys.min as minBalance, " +
-      " accountMoneys.max as maxBalance, " +
-      " accountMoneys.sum as accBalance ");
-    super.all();
+  public void prepareSql() {
+    super.prepareSql();
+    where(sql, params);
+  }
+
+  @Override
+  void select() {
+    sql.SELECT(
+      "client.id,\n" +
+        "  client.name,\n" +
+        "  client.surname,\n" +
+        "  client.patronymic,\n" +
+        "  client.gender,\n" +
+        "  extract(year from age(birth_date)) as age,\n" +
+        "  c2.name                            as charm,\n" +
+        "  accountMoneys.min                  as minBalance,\n" +
+        "  accountMoneys.max                  as maxBalance,\n" +
+        "  accountMoneys.sum                  as accBalance,\n" +
+        "  client.actual");
   }
 
   @Override
@@ -89,20 +100,6 @@ public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientReco
   }
 
   @Override
-  void where() {
-    sql.WHERE("client.actual=1");
-    if (filter.searchName != null) {
-      if (filter.searchName.length() != 0) {
-        // asd
-        sql.WHERE("concat(Lower(client.name), Lower(client.surname), Lower(client.patronymic)) like '%'||?||'%' ");
-        params.add(filter.searchName);
-      } else {
-        filter.searchName = null;
-      }
-    }
-  }
-
-  @Override
   void from() {
     sql.FROM("client");
   }
@@ -113,36 +110,39 @@ public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientReco
       case "surname":
         sql.ORDER_BY(" surname asc ,\n" +
           "  name asc ,\n" +
-          "  patronymic asc ");
+          "  patronymic asc LIMIT ? OFFSET ?");
         break;
       case "age":
-        sql.ORDER_BY(" age ASC ");
+        sql.ORDER_BY(" age ASC LIMIT ? OFFSET ?");
         break;
       case "total":
-        sql.ORDER_BY(" sum ASC ");
+        sql.ORDER_BY(" sum ASC LIMIT ? OFFSET ?");
         break;
       case "max":
-        sql.ORDER_BY(" max ASC ");
+        sql.ORDER_BY(" max ASC LIMIT ? OFFSET ?");
         break;
       case "min":
-        sql.ORDER_BY(" min ASC ");
+        sql.ORDER_BY(" min ASC LIMIT ? OFFSET ?");
         break;
       case "-surname":
         sql.ORDER_BY(" surname desc ,\n" +
           "  name desc ,\n" +
-          "  patronymic desc ");
+          "  patronymic desc LIMIT ? OFFSET ?");
         break;
       case "-age":
-        sql.ORDER_BY(" age DESC ");
+        sql.ORDER_BY(" age DESC LIMIT ? OFFSET ?");
         break;
       case "-total":
-        sql.ORDER_BY(" sum DESC ");
+        sql.ORDER_BY(" sum DESC LIMIT ? OFFSET ?");
         break;
       case "-max":
-        sql.ORDER_BY(" max DESC ");
+        sql.ORDER_BY(" max DESC LIMIT ? OFFSET ?");
         break;
       case "-min":
-        sql.ORDER_BY(" min DESC ");
+        sql.ORDER_BY(" min DESC LIMIT ? OFFSET ?");
+        break;
+      default:
+        sql.ORDER_BY("client.actual LIMIT ? OFFSET ?");
         break;
     }
   }
@@ -151,6 +151,5 @@ public class ClientRecordsQuery extends ClientRecordQueryMethods<List<ClientReco
   void limit() {
     params.add(Math.abs(filter.sliceNum * filter.paginationPage + filter.sliceNum));
     params.add(Math.abs(filter.sliceNum * filter.paginationPage));
-    limit = " LIMIT ? OFFSET ?";
   }
 }

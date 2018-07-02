@@ -87,7 +87,7 @@ public class DbWorker {
         stt.execute("create database " + dbName);
       }
       try (Statement stt = con.createStatement()) {
-        logger.info("grant all on database " + dbName + " to " + username);
+        logger.info("grant prepareSql on database " + dbName + " to " + username);
         stt.execute("grant all on database " + dbName + " to " + username);
       }
     }

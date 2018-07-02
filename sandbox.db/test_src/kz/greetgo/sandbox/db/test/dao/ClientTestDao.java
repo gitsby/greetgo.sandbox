@@ -30,9 +30,6 @@ public interface ClientTestDao {
   @Select("insert into characters (name) values(#{charm}) RETURNING id;")
   int insertNewCharacter(String charm);
 
-  @Select("select id from client limit 1")
-  Integer getFirstClient();
-
   @Select("select count(*) from client " +
     "WHERE concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||#{searchName}||'%'" +
     " and actual=1")
@@ -45,25 +42,26 @@ public interface ClientTestDao {
     "  client.patronymic,\n" +
     "  client.gender,\n" +
     "  extract(year from age(birth_date)) as age,\n" +
-    "  c2.name as charm,\n" +
-    "  accountMoneys.min as minBalance,\n" +
-    "  accountMoneys.max as maxBalance,\n" +
-    "  accountMoneys.sum as accBalance\n" +
+    "  c2.name                            as charm,\n" +
+    "  accountMoneys.min                  as minBalance,\n" +
+    "  accountMoneys.max                  as maxBalance,\n" +
+    "  accountMoneys.sum                  as accBalance,\n" +
+    "  client.actual\n" +
     "from client\n" +
     "  join characters c2 on client.charm = c2.id\n" +
     "  left join (select\n" +
-    "          client_id,\n" +
-    "          SUM(money),\n" +
-    "          max(money),\n" +
-    "          min(money)\n" +
-    "        from client\n" +
-    "          join client_account a on client.id = a.client_id\n" +
-    "        group by client_id) as accountMoneys on client.id= accountMoneys.client_id" +
-    " where client.id=#{id} and actual=1")
+    "               client_id,\n" +
+    "               SUM(money),\n" +
+    "               max(money),\n" +
+    "               min(money)\n" +
+    "             from client\n" +
+    "               join client_account a on client.id = a.client_id\n" +
+    "             group by client_id) as accountMoneys on client.id = accountMoneys.client_id\n" +
+    "where client.actual = 1 and client.id=#{id}")
   ClientRecord getClientRecordById(int id);
 
   @Select("select * from client " +
-    "where concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||#{fio}||'%' and " +
+    "where " +
     "actual=1")
   List<ClientDot> getClientDotsWithFIO(String fio);
 
@@ -73,8 +71,14 @@ public interface ClientTestDao {
   @Select("select * from client_address where client_id=#{client_id}")
   AddressDot getAddressDot(int client_id);
 
+  @Select("select * from client_address where client_id=#{client_id}")
+  List<AddressDot> getAddressDots(int clientId);
+
   @Select("select client_id, number, type from client_phone where client_id=#{id}")
   PhoneDot getPhoneDot(int id);
+
+  @Select("select client_id, number, type from client_phone where client_id=#{id}")
+  List<PhoneDot> getPhoneDots(int id);
 
   @Select("select * from client where charm=#{charmId} and actual=1")
   ClientDot getClientDotWithCharmId(int charmId);
@@ -86,4 +90,7 @@ public interface ClientTestDao {
 
   @Update("update client set actual = 0")
   void deleteAll();
+
+  @Update("update characters set actual=0")
+  void deleteAllCharms();
 }

@@ -1,10 +1,6 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.Address;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -30,8 +26,7 @@ public interface ClientDao {
     "                  values ( #{name}, #{surname}, #{patronymic}, #{gender},#{charm},#{birthDate}, 1) returning id")
   int insertClient(ClientToSave personDot);
 
-  // FIXME: 6/28/18 Doljni bit' tolko actuals
-  @Select("select id, name from characters")
+  @Select("select id, name from characters where actual=1")
   List<CharmRecord> getCharms();
 
   @Select("select client.id, client.name, client.surname, client.patronymic, client.gender, client.birth_date as birthDate, client.charm\n" +
@@ -45,8 +40,6 @@ public interface ClientDao {
   @Select("select client_id, type, street, house, flat from client_address where client_id=#{id}")
   List<Address> getAddressesWithClientId(int id);
 
-  @Select("select id from client order by id desc limit 1")
-  int getLastInsertedClientId();
 
   // ---------------------------------------
 
@@ -57,8 +50,8 @@ public interface ClientDao {
     " gender=#{gender}, birth_date=#{birthDate}, charm=#{charm} where id=#{id}")
   void updateClient(ClientToSave client);
 
-  @Update("update client_phone set phone=#{editedTo} " +
-    "where client_id=#{clientId} and phone=#{phone}")
+  @Update("update client_phone set number=#{editedTo} " +
+    "where client_id=#{client_id} and number=#{number}")
   void updatePhone(Phone phone);
 
   @Update("update client_address set street=#{street}, house=#{house}, flat=#{flat} " +

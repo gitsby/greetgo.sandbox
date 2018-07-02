@@ -71,7 +71,6 @@ public class ClientRegisterImpl implements ClientRegister {
 
     ClientRecordsQuery query = new ClientRecordsQuery(filter);
     query.sql.WHERE("client.id=?");
-    // FIXME: 6/28/18 Не должно быть желтым
     query.params.add(0, editedClient.id);
 
     return jdbc.get().execute(query).get(0);
@@ -97,7 +96,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) {
+  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws Exception {
     ClientRecordsReportView reportView;
     switch (type) {
       case "pdf":
@@ -107,8 +106,7 @@ public class ClientRegisterImpl implements ClientRegister {
         reportView = new ClientRecordsViewXlsx(outputStream);
         break;
       default:
-        // FIXME: 6/28/18 В таких случаях лучше выкидывать ошибку, чем получать непонятный NullPointerException
-        reportView = null;
+        throw new Exception("Not existing type");
     }
     jdbc.get().execute(new ClientRecordsRender(filter, reportView));
     reportView.finish(userName, new Date());

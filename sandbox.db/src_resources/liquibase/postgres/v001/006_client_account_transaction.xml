@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet author="pompei" id="create-table-TransactionType">
+  <changeSet author="ali" id="create-table-TransactionType">
     <sql endDelimiter=";;"><![CDATA[
       create table transaction_type (
         id int not null primary key,
@@ -13,7 +13,7 @@
     ]]></sql>
   </changeSet>
 
-  <changeSet author="pompei" id="create-table-ClientAccountTransaction">
+  <changeSet author="ali" id="create-table-ClientAccountTransaction">
     <sql endDelimiter=";;">
       <![CDATA[
         create table client_account_transaction(
@@ -27,7 +27,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="pompei" id="create-foreign-TransactionAccountFK">
+  <changeSet author="ali" id="create-foreign-TransactionAccountFK">
     <addForeignKeyConstraint
       baseColumnNames="account"
       baseTableName="client_account_transaction"
@@ -40,7 +40,7 @@
       referencedTableName="client_account"/>
   </changeSet>
 
-  <changeSet author="pompei" id="create-foreign-TransactionTypeFK">
+  <changeSet author="ali" id="create-foreign-TransactionTypeFK">
     <addForeignKeyConstraint
       baseColumnNames="type"
       baseTableName="client_account_transaction"

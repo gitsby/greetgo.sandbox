@@ -13,22 +13,29 @@ import java.util.List;
 
 public class ClientRecordsRender extends ClientRecordQueryMethods<Void> {
 
-  ClientRecordsReportView view;
+  private ClientRecordsReportView view;
 
-  ClientRecordFilter filter;
-  SQL sql = new SQL();
+  private ClientRecordFilter filter;
 
-  public List params = new ArrayList();
+  private List params = new ArrayList();
+  private SQL sql = new SQL();
 
   public ClientRecordsRender(ClientRecordFilter filter, ClientRecordsReportView view) {
+    super(filter);
     this.filter = filter;
     this.view = view;
     view.start();
-    all();
+    prepareSql();
   }
 
   @Override
-  public void all() {
+  public void prepareSql() {
+    super.prepareSql();
+    where(sql, params);
+  }
+
+  @Override
+  void select() {
     sql.SELECT("client.id," +
       " client.name," +
       " client.surname, " +
@@ -38,8 +45,9 @@ public class ClientRecordsRender extends ClientRecordQueryMethods<Void> {
       " c2.name as charm, " +
       " accountMoneys.min as minBalance, " +
       " accountMoneys.max as maxBalance, " +
-      " accountMoneys.sum as accBalance ");
-    super.all();
+      " accountMoneys.sum as accBalance," +
+      " client.actual ");
+    sql.SELECT("client.actual");
   }
 
   @Override
@@ -57,21 +65,6 @@ public class ClientRecordsRender extends ClientRecordQueryMethods<Void> {
       "        from client\n" +
       "          join client_account a on client.id = a.client_id\n" +
       "        group by client_id) as accountMoneys on client.id= accountMoneys.client_id");
-  }
-
-  @Override
-  void where() {
-    if (filter.searchName != null) {
-      if (filter.searchName.length() != 0) {
-        // as123123
-        sql.WHERE("concat(lower(client.name), lower(client.surname), lower(client.patronymic)) like '%'||?||'%' ");
-        params.add(filter.searchName);
-      } else {
-        // error
-        filter.searchName = null;
-      }
-    }
-    sql.WHERE("client.actual=1");
   }
 
   @Override
