@@ -28,7 +28,7 @@
         birth_date DATE,
         charm_id INTEGER,
         actual SMALLINT NOT NULL DEFAULT 1,
-        CONSTRAINT pk_tbl_Client_id PRIMARY KEY (id),
+        PRIMARY KEY (id),
         FOREIGN KEY (charm_id) REFERENCES charm(id)
       );
     ]]></sql>
