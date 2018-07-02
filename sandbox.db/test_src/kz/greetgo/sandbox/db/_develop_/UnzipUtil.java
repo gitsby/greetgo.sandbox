@@ -31,7 +31,7 @@ public class UnzipUtil {
     int exitStatus = process.waitFor();
     if (exitStatus != 0) throw new RuntimeException("Error unzip file " + file + " with exit status " + exitStatus);
     process.destroy();
-    info("End unzip file: "+(System.nanoTime()-startTime)+" min");
+    info("End unzip file: "+(System.nanoTime()-startTime)+" ns");
 
     info("Replace file to tmp.");
     File inDirFile = getFile(unzipFolder);

@@ -2,16 +2,14 @@ package kz.greetgo.sandbox.db.register_impl.jdbc.callback;
 
 import kz.greetgo.sandbox.controller.model.ClientFilter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.db.register_impl.jdbc.SqlExecuteConnection;
 import org.fest.util.Lists;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
-public class ClientRecordListCallback extends SqlExecuteConnection<List<ClientRecord>, ClientRecord> {
-
-  private ClientFilter filter;
+public class ClientRecordListCallback extends ClientRecordList<List<ClientRecord>, ClientRecord> {
 
   public ClientRecordListCallback(ClientFilter filter) {
     this.filter = filter;
@@ -33,39 +31,6 @@ public class ClientRecordListCallback extends SqlExecuteConnection<List<ClientRe
   @Override
   public void join() {
     sql.append("LEFT JOIN client_account ON client_account.client=client.id AND client_account.actual=1 ");
-  }
-
-  @Override
-  public void update() {
-
-  }
-
-  @Override
-  public void insert() {
-
-  }
-
-  @Override
-  public void values() {
-
-  }
-
-  @Override
-  public void set() {
-
-  }
-
-  @Override
-  public void where() {
-    sql.append("WHERE client.actual=1 ");
-    if (filter.fio != null) {
-      if (!filter.fio.isEmpty()) {
-        sql.append("AND (client.name LIKE ? OR client.surname LIKE ? OR client.patronymic LIKE ?) ");
-        params.add("%" + filter.fio + "%");
-        params.add("%" + filter.fio + "%");
-        params.add("%" + filter.fio + "%");
-      }
-    }
   }
 
   @Override
@@ -111,12 +76,7 @@ public class ClientRecordListCallback extends SqlExecuteConnection<List<ClientRe
   }
 
   @Override
-  public void returning() {
-
-  }
-
-  @Override
-  public ClientRecord fromRs(ResultSet rs) throws Exception {
+  public ClientRecord fromRs(ResultSet rs) throws SQLException {
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = rs.getInt("id");
     clientRecord.surname = rs.getString("surname");
@@ -130,7 +90,7 @@ public class ClientRecordListCallback extends SqlExecuteConnection<List<ClientRe
   }
 
   @Override
-  public List<ClientRecord> run(PreparedStatement ps) throws Exception {
+  public List<ClientRecord> run(PreparedStatement ps) throws SQLException {
     List<ClientRecord> clientRecords = Lists.newArrayList();
     try (ResultSet rs = ps.executeQuery()) {
       while (rs.next()) clientRecords.add(fromRs(rs));

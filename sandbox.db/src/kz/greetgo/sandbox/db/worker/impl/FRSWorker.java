@@ -19,22 +19,27 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public void createTables() throws SQLException {
-
-  }
-
-  @Override
-  public void startLoading() throws SQLException {
-
-  }
-
-  @Override
   public void prepareStatements() throws SQLException {
 
   }
 
   @Override
-  public void checkBatch() throws SQLException {
+  public void createTmpTables() throws SQLException {
+
+  }
+
+  @Override
+  public void createCsvFiles() {
+
+  }
+
+  @Override
+  public void loadCsvFile() {
+
+  }
+
+  @Override
+  public void loadCsvFilesToTmp() {
 
   }
 

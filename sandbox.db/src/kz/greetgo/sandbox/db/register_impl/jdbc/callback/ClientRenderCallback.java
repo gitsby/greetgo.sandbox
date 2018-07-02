@@ -7,6 +7,7 @@ import kz.greetgo.sandbox.db.register_impl.jdbc.SqlExecuteConnection;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class ClientRenderCallback extends SqlExecuteConnection<Void,ClientRow> {
@@ -40,26 +41,6 @@ public class ClientRenderCallback extends SqlExecuteConnection<Void,ClientRow> {
   }
 
   @Override
-  public void update() {
-
-  }
-
-  @Override
-  public void insert() {
-
-  }
-
-  @Override
-  public void values() {
-
-  }
-
-  @Override
-  public void set() {
-
-  }
-
-  @Override
   public void where() {
     sql.append("WHERE client.actual=1 ");
     if (filter.fio != null) {
@@ -78,18 +59,7 @@ public class ClientRenderCallback extends SqlExecuteConnection<Void,ClientRow> {
   }
 
   @Override
-  public void orderBy() {}
-
-  @Override
-  public void offsetAndLimit() {}
-
-  @Override
-  public void returning() {
-
-  }
-
-  @Override
-  public ClientRow fromRs(ResultSet rs) throws Exception {
+  public ClientRow fromRs(ResultSet rs) throws SQLException {
     ClientRow row = new ClientRow();
     row.id = rs.getInt("id");
     row.surname = rs.getString("surname");
@@ -103,7 +73,7 @@ public class ClientRenderCallback extends SqlExecuteConnection<Void,ClientRow> {
   }
 
   @Override
-  public Void run(PreparedStatement ps) throws Exception {
+  public Void run(PreparedStatement ps) throws SQLException {
     try(ResultSet rs = ps.executeQuery()) {
       render.start(name, new Date());
       while (rs.next()) render.append(fromRs(rs));

@@ -4,6 +4,7 @@ import {ClientToSave} from "../../model/ClientToSave";
 import {CharmRecord} from "../../model/CharmRecord";
 import {Gender} from "../../model/Gender";
 import {ClientDetails} from "../../model/ClientDetails";
+import {ClientRecord} from "../../model/ClientRecord";
 
 @Component({
   selector: 'client-info-form-component',
@@ -12,7 +13,7 @@ import {ClientDetails} from "../../model/ClientDetails";
 })
 export class ClientEditFormComponent implements OnInit {
   @Input() clientId: number;
-  @Output() onClose = new EventEmitter<ClientToSave>();
+  @Output() onClose = new EventEmitter<ClientRecord>();
 
   @ViewChild('birthDayInput') birthDayInput: ElementRef;
 
@@ -36,7 +37,9 @@ export class ClientEditFormComponent implements OnInit {
       this.buttonTitle = "Изменить";
       let clientId = this.clientId as number;
 
-      this.httpService.get("/client/details", {"clientId": clientId}).toPromise().then(result => {
+      this.httpService.get("/client/details",
+        {"clientId": clientId}
+        ).toPromise().then(result => {
         this.clientToSave = ClientDetails.copy(result.json()).toClientToSave();
         this.formatAllPhoneNumbers();
       })
@@ -119,8 +122,7 @@ export class ClientEditFormComponent implements OnInit {
     this.httpService.post("/client/save", {
       "clientToSave": JSON.stringify(this.clientToSave)
     }).toPromise().then(res => {
-      this.clientToSave.id = res.json();
-      this.onClose.emit(this.clientToSave);
+      this.onClose.emit(ClientRecord.copy(res.json()));
     })
   }
 

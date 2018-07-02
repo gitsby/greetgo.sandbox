@@ -5,6 +5,7 @@ import kz.greetgo.sandbox.db.register_impl.jdbc.SqlExecuteConnection;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer> {
 
@@ -15,33 +16,20 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
   }
 
   @Override
-  public void select() {
-
-  }
-
-  @Override
-  public void from() {
-
-  }
-
-  @Override
-  public void join() {
-
-  }
-
-  @Override
   public void update() {
-
+    if (isExist(clientToSave)) return;
+    sql.append("UPDATE client ");
   }
 
   @Override
   public void insert() {
-    //language=PostgreSQL
+    if (!isExist(clientToSave)) return;
     sql.append("INSERT INTO client(surname, name, patronymic, gender, birth_date, charm_id) ");
   }
 
   @Override
   public void values() {
+    if (!isExist(clientToSave)) return;
     sql.append("VALUES (?, ?, ?, ?, ?, ?) ");
     params.add(clientToSave.surname);
     params.add(clientToSave.name);
@@ -53,27 +41,21 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
 
   @Override
   public void set() {
-
+    if (isExist(clientToSave)) return;
+    sql.append("SET surname=?, name=?, patronymic=?, gender=?, birth_date=?, charm_id=? ");
+    params.add(clientToSave.surname);
+    params.add(clientToSave.name);
+    params.add(clientToSave.patronymic);
+    params.add(clientToSave.gender.name());
+    params.add(new java.sql.Date(clientToSave.birthDate.getTime()));
+    params.add(clientToSave.charmId);
   }
 
   @Override
   public void where() {
-
-  }
-
-  @Override
-  public void groupBy() {
-
-  }
-
-  @Override
-  public void orderBy() {
-
-  }
-
-  @Override
-  public void offsetAndLimit() {
-
+    if (isExist(clientToSave)) return;
+    sql.append("WHERE id=? ");
+    params.add(clientToSave.id);
   }
 
   @Override
@@ -81,13 +63,17 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
     sql.append("RETURNING id");
   }
 
+  private boolean isExist(ClientToSave clientToSave) {
+    return clientToSave.id == null;
+  }
+
   @Override
-  public Integer fromRs(ResultSet rs) throws Exception {
+  public Integer fromRs(ResultSet rs) throws SQLException {
     return rs.getInt("id");
   }
 
   @Override
-  public Integer run(PreparedStatement ps) throws Exception {
+  public Integer run(PreparedStatement ps) throws SQLException {
     try(ResultSet rs = ps.executeQuery()) {
       if (rs.next()) return fromRs(rs);
     }

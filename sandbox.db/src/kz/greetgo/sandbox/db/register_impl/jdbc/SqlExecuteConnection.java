@@ -14,20 +14,20 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
   protected StringBuilder sql = new StringBuilder();
   protected List<Object> params = Lists.newArrayList();
 
-  public abstract void select();
-  public abstract void from();
-  public abstract void join();
-  public abstract void update();
-  public abstract void set();
-  public abstract void insert();
-  public abstract void values();
-  public abstract void where();
-  public abstract void groupBy();
-  public abstract void orderBy();
-  public abstract void offsetAndLimit();
-  public abstract void returning();
-  public abstract RsReturnType fromRs(ResultSet rs) throws Exception;
-  public abstract ConnectionReturnType run(PreparedStatement ps) throws Exception;
+  public void select() {}
+  public void from() {}
+  public void join() {}
+  public void update() {}
+  public void set() {}
+  public void insert() {}
+  public void values() {}
+  public void where() {}
+  public void groupBy() {}
+  public void orderBy() {}
+  public void offsetAndLimit() {}
+  public void returning() {}
+  public abstract RsReturnType fromRs(ResultSet rs) throws SQLException;
+  public abstract ConnectionReturnType run(PreparedStatement ps) throws SQLException;
 
   private final void prepareSql() {
     select();
@@ -49,11 +49,16 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
   }
 
   @Override
-  public final ConnectionReturnType doInConnection(Connection connection) throws Exception {
+  public final ConnectionReturnType doInConnection(Connection connection) {
     prepareSql();
-    PreparedStatement ps = connection.prepareStatement(sql.toString());
-    putParams(ps);
-    System.out.println(connection.getClientInfo());
-    return run(ps);
+    PreparedStatement ps;
+    try {
+      ps = connection.prepareStatement(sql.toString());
+      putParams(ps);
+      return run(ps);
+    } catch (SQLException e) {
+      System.out.println(e.getNextException());
+    }
+    return null;
   }
 }

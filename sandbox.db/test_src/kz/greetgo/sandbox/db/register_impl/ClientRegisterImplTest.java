@@ -5,7 +5,9 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.controller.render.model.ClientRow;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -35,7 +37,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void getDetail() throws Exception {
-    Integer clientId = RND.plusInt(100);
+    Integer clientId = RND.plusInt(Integer.MAX_VALUE);
     ClientDetails details = generateRandomClientDetails(clientId);
 
     {
@@ -109,13 +111,56 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(detailsList).hasSize(1);
     }
 
-    ClientDetails details = detailsList.get(0);
-    isEqual(details, clientToSave);
+    ClientDot clientDot = getClientDot(detailsList.get(0).id);
+    ClientAddressDot addressFactDot = getClientAddressDot(detailsList.get(0).id, AddressTypeEnum.FACT);
+    ClientAddressDot addressRegDot = getClientAddressDot(detailsList.get(0).id, AddressTypeEnum.REG);
+    ClientPhoneDot homePhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.HOME);
+    ClientPhoneDot workPhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.WORK);
+    ClientPhoneDot mobilePhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.MOBILE);
+
+    assertThat(clientToSave.surname).isEqualTo(clientDot.surname);
+    assertThat(clientToSave.name).isEqualTo(clientDot.name);
+    assertThat(clientToSave.patronymic).isEqualTo(clientDot.patronymic);
+    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+    assertThat(format.format(clientToSave.birthDate)).isEqualTo(format.format(clientDot.birthDate));
+    assertThat(clientToSave.gender).isEqualTo(clientDot.gender);
+    assertThat(clientToSave.charmId).isEqualTo(clientDot.charmId);
+    isEqual(clientToSave.addressFact, addressFactDot);
+    isEqual(clientToSave.addressReg, addressRegDot);
+    isEqual(clientToSave.homePhone, homePhoneDot);
+    isEqual(clientToSave.workPhone, workPhoneDot);
+    isEqual(clientToSave.mobilePhone, mobilePhoneDot);
+  }
+
+  private void isEqual(ClientPhone phone, ClientPhoneDot phoneDot) {
+    assertThat(phone.client).isEqualTo(phoneDot.client);
+    assertThat(phone.type).isEqualTo(phoneDot.type);
+    assertThat(phone.number).isEqualTo(phoneDot.number);
+  }
+
+  private void isEqual(ClientAddress address, ClientAddressDot addressDot) {
+    assertThat(address.client).isEqualTo(addressDot.client);
+    assertThat(address.type).isEqualTo(addressDot.type);
+    assertThat(address.street).isEqualTo(addressDot.street);
+    assertThat(address.house).isEqualTo(addressDot.house);
+    assertThat(address.flat).isEqualTo(addressDot.flat);
+  }
+
+  private ClientPhoneDot getClientPhoneDot(Integer id, PhoneType type) {
+    return clientTestDao.get().getClientPhoneDot(id, type);
+  }
+
+  private ClientAddressDot getClientAddressDot(Integer id, AddressTypeEnum type) {
+    return clientTestDao.get().getClientAddressDot(id, type);
+  }
+
+  private ClientDot getClientDot(Integer id) {
+    return clientTestDao.get().getClientDot(id);
   }
 
   @Test
   public void editClient() throws Exception {
-    Integer clientId = RND.plusInt(100);
+    Integer clientId = RND.plusInt(Integer.MAX_VALUE);
     ClientToSave clientToSave = generateRandomClientToSave(clientId);
 
     {
@@ -189,7 +234,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void deleteClient() throws Exception {
 
-    Integer rClientId = RND.plusInt(100);
+    Integer rClientId = RND.plusInt(Integer.MAX_VALUE);
 
     {
       ClientDot leftDot = generateRandomClientDot();
@@ -212,7 +257,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-
   @Test
   public void getRecordsWithEmptyFilter() throws Exception {
 
@@ -220,12 +264,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     emptyFilter.offset = 0;
     emptyFilter.limit = 10;
 
+    List<ClientDetails> leftDetails = new ArrayList<>();
+
     {
       for (int i = 0; i < 40; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
+        leftDetails.add(details);
         insertClient(details);
       }
+
+      Comparator<ClientDetails> comparator = Comparator.comparing(o -> o.id);
+      Collections.sort(leftDetails, comparator);
     }
 
     //
@@ -237,6 +287,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(clientRecordList.size()).isEqualTo(emptyFilter.limit);
+    for (int i = 0; i < clientRecordList.size(); i++)
+      assertThat(clientRecordList.get(i).id).isEqualTo(leftDetails.get(i).id);
   }
 
   enum FioEnum {
@@ -262,7 +314,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       for (int i = 0; i < 20; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails leftDetails = generateRandomClientDetails(clientId);
         insertClient(leftDetails);
       }
@@ -271,7 +323,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDetails details;
 
     {
-      Integer clientId = RND.plusInt(10000);
+      Integer clientId = RND.plusInt(Integer.MAX_VALUE);
       details = generateRandomClientDetails(clientId);
 
       switch (fioEnum) {
@@ -357,10 +409,26 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(result).hasSize(clientRecords.size());
 
     for (int i = 0; i < result.size(); i++) {
-      assertThat(result.get(i).id).isEqualTo(clientRecords.get(i).id);
+      switch (sortByEnum) {
+        case FULL_NAME:
+          assertThat(result.get(i).surname).isEqualTo(clientRecords.get(i).surname);
+          assertThat(result.get(i).name).isEqualTo(clientRecords.get(i).name);
+          assertThat(result.get(i).patronymic).isEqualTo(clientRecords.get(i).patronymic);
+          break;
+        case MAX_BALANCE:
+          assertThat(result.get(i).max_balance).isEqualTo(clientRecords.get(i).max_balance);
+          break;
+        case MIN_BALANCE:
+          assertThat(result.get(i).min_balance).isEqualTo(clientRecords.get(i).min_balance);
+          break;
+        case MIDDLE_BALANCE:
+          assertThat(result.get(i).middle_balance).isEqualTo(clientRecords.get(i).middle_balance);
+          break;
+        case AGE:
+          assertThat(result.get(i).age).isEqualTo(clientRecords.get(i).age);
+      }
     }
   }
-
 
   @Test
   public void getRecordsCountWithEmptyFilter() throws Exception {
@@ -371,7 +439,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       for (int i = 0; i < randomCount; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
         insertClient(details);
       }
@@ -392,14 +460,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test(dataProvider = "filter_DP")
   public void getRecordsCountWithFilter(FioEnum fioEnum) throws Exception {
 
-    int randomCount = RND.plusInt(40);
+    int randomCount = RND.plusInt(10);
     String rFio = RND.str(10);
 
     ClientFilter filter = new ClientFilter();
     filter.fio = rFio;
 
     {
-      for (int i = 0; i < randomCount; i++) {
+      for (int i = 0; i < RND.plusInt(40); i++) {
         Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
         insertClient(details);
@@ -407,19 +475,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     {
-      Integer clientId = RND.plusInt(Integer.MAX_VALUE);
-      ClientDetails details = generateRandomClientDetails(clientId);
-      switch (fioEnum) {
-        case SURNAME:
-          details.surname = rFio;
-          break;
-        case NAME:
-          details.name = rFio;
-          break;
-        case PATRONYMIC:
-          details.patronymic = rFio;
+      for (int i = 0; i < randomCount; i++) {
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        switch (fioEnum) {
+          case SURNAME:
+            details.surname = rFio;
+            break;
+          case NAME:
+            details.name = rFio;
+            break;
+          case PATRONYMIC:
+            details.patronymic = rFio;
+        }
+        insertClient(details);
       }
-      insertClient(details);
     }
 
     //
@@ -431,7 +501,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(count).isNotNull();
-    assertThat(count).isEqualTo(1);
+    assertThat(count).isEqualTo(randomCount);
   }
 
   @Test
@@ -597,6 +667,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return clientRecord;
   }
 
+  public static void main(String[] args) {
+
+  }
+
   public static int getAge(Date dateOfBirth) {
     Calendar today = Calendar.getInstance();
     Calendar birthDate = Calendar.getInstance();
@@ -607,7 +681,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       (birthDate.get(Calendar.MONTH) > today.get(Calendar.MONTH))) {
       age--;
     } else if ((birthDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)) &&
-      (birthDate.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH))) {
+      (birthDate.get(Calendar.DAY_OF_MONTH) >= today.get(Calendar.DAY_OF_MONTH))) {
       age--;
     }
     return ++age;

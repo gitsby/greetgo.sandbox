@@ -60,6 +60,8 @@ subprojects {
     // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.52'
 
+    compile group: 'org.codehaus.plexus', name: 'plexus-archiver', version: '2.2'
+
 
     //compile 'com.google.code.findbugs:annotations:2.0.1'
   }

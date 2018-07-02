@@ -4,7 +4,6 @@ import {ClientRecord} from "../../model/ClientRecord";
 import {ClientFilter} from "../../model/ClientFilter";
 import {SortDirection} from "../../model/SortDirection";
 import {SortByEnum} from "../../model/SortByEnum";
-import {ClientToSave} from "../../model/ClientToSave";
 import {FileTypeEnum} from "../../model/FileTypeEnum";
 
 @Component({
@@ -160,42 +159,22 @@ export class ClientsListFormComponent implements AfterViewInit {
     this.clientInfoFormComponentEnable = true;
   }
 
-  isLastPage(): boolean {
-    return this.currentPage == this.pagesCount();
-  }
-
-  close(clientToSave: ClientToSave | null) {
+  close(clientRecord: ClientRecord | null) {
     this.clientInfoFormComponentEnable = false;
-    if (clientToSave == null) return;
-    if (this.editClientId == null) this.insertRecord(clientToSave);
-    else this.updateClient(clientToSave);
     this.editClientId = null;
+    this.insertRecord(clientRecord);
   }
 
-  private insertRecord(clientToSave: ClientToSave) {
-    if (this.isLastPage() && this.clientRecords.length < this.numberOfItemInPage) {
-      let clientRecord = new ClientRecord();
-      clientRecord.id = clientToSave.id;
-      clientRecord.surname = clientToSave.surname;
-      clientRecord.name = clientToSave.name;
-      clientRecord.patronymic = clientToSave.patronymic;
-      clientRecord.age = 0;
-      clientRecord.middle_balance = 0;
-      clientRecord.max_balance = 0;
-      clientRecord.min_balance = 0;
-      this.clientRecords.push(clientRecord);
-    }
-    this.clientRecordsCount++;
-  }
-
-  private updateClient(clientToSave: ClientToSave) {
-    for (let record of this.clientRecords)
-      if (record.id == clientToSave.id) {
-        record.surname = clientToSave.surname;
-        record.name = clientToSave.name;
-        record.patronymic = clientToSave.patronymic;
-        break;
+  private insertRecord(clientRecord: ClientRecord) {
+    for (let i = 0; i < this.clientRecords.length; i++) {
+      if (this.clientRecords[i].id == clientRecord.id) {
+        this.clientRecords[i] = clientRecord;
+        this.clientRecordsCount++;
+        return;
       }
+    }
+    this.clientRecords.push(clientRecord);
+    this.clientRecordsCount++;
   }
 
   getRenderClicked(i: number) {

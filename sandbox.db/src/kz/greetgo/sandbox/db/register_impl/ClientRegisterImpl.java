@@ -34,14 +34,14 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public Integer save(ClientToSave clientToSave) {
+  public ClientRecord save(ClientToSave clientToSave) {
     return insertOrUpdateClient(clientToSave);
   }
 
-  private Integer insertOrUpdateClient(ClientToSave clientToSave) {
-    int res = jdbc.get().execute(clientToSave.id == null ? new InsertClientCallback(clientToSave) : new UpdateClientCallback(clientToSave));
+  private ClientRecord insertOrUpdateClient(ClientToSave clientToSave) {
+    int res = jdbc.get().execute(new InsertClientCallback(clientToSave));
     insertPhonesAndAddresses(res, clientToSave);
-    return res;
+    return clientDao.get().getClientRecord(res);
   }
 
   private void insertPhonesAndAddresses(Integer client, ClientToSave clientToSave) {
@@ -70,7 +70,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private ClientAddress getClientAddress(Integer clientId, AddressTypeEnum type) {
-    return jdbc.get().execute(new ClientAddressCallback(clientId, type));
+    return clientDao.get().getClientAddress(clientId, type.name());
   }
 
   @Override
@@ -92,7 +92,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<CharmRecord> getCharms() {
-    return jdbc.get().execute(new CharListCallback());
+    return clientDao.get().getCharms();
   }
 
   @Override

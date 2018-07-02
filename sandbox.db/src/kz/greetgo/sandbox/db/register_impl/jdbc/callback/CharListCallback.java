@@ -6,6 +6,7 @@ import org.fest.util.Lists;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class CharListCallback extends SqlExecuteConnection<List<CharmRecord>, CharmRecord> {
@@ -21,47 +22,7 @@ public class CharListCallback extends SqlExecuteConnection<List<CharmRecord>, Ch
   }
 
   @Override
-  public void join() {}
-
-  @Override
-  public void update() {
-
-  }
-
-  @Override
-  public void insert() {
-
-  }
-
-  @Override
-  public void values() {
-
-  }
-
-  @Override
-  public void set() {
-
-  }
-
-  @Override
-  public void where() {}
-
-  @Override
-  public void groupBy() {}
-
-  @Override
-  public void orderBy() {}
-
-  @Override
-  public void offsetAndLimit() {}
-
-  @Override
-  public void returning() {
-
-  }
-
-  @Override
-  public CharmRecord fromRs(ResultSet rs) throws Exception {
+  public CharmRecord fromRs(ResultSet rs) throws SQLException {
     CharmRecord charmRecord = new CharmRecord();
     charmRecord.id = rs.getInt("id");
     charmRecord.name = rs.getString("name");
@@ -71,7 +32,7 @@ public class CharListCallback extends SqlExecuteConnection<List<CharmRecord>, Ch
   }
 
   @Override
-  public List<CharmRecord> run(PreparedStatement ps) throws Exception {
+  public List<CharmRecord> run(PreparedStatement ps) throws SQLException {
     List<CharmRecord> charmRecords = Lists.newArrayList();
     try(ResultSet rs = ps.executeQuery()) {
       while (rs.next()) charmRecords.add(fromRs(rs));

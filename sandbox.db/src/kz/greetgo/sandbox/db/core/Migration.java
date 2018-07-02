@@ -32,8 +32,12 @@ public class Migration extends Informative implements Closeable {
 
   @Override
   public void close() {
-    closeConnection();
-    closeStream();
+    try {
+      closeConnection();
+      closeStream();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   private void closeStream() {
@@ -46,12 +50,8 @@ public class Migration extends Informative implements Closeable {
   }
 
 
-  private void closeConnection() {
-    try {
-      for (int i = 0; i < connections.size(); i++) connections.get(i).close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+  private void closeConnection() throws SQLException {
+    for (int i = 0; i < connections.size(); i++) connections.get(i).close();
   }
 
   private String tmpClientTable;
@@ -85,7 +85,7 @@ public class Migration extends Informative implements Closeable {
 
     int res = 0;
 
-    for (int i = 0; i < connections.size(); i++)connections.get(i).setAutoCommit(false);
+    for (int i = 0; i < connections.size(); i++) connections.get(i).setAutoCommit(false);
     switch (getFileFormat(file.getPath())) {
       case "xml":
         Worker.getCiaWorker(connections, inputStream, migrationConfig).execute();
@@ -93,9 +93,7 @@ public class Migration extends Informative implements Closeable {
       case "json_row":
         Worker.getFrsWorker(connections, inputStream, migrationConfig).execute();
     }
-    for (int i = 0; i < connections.size(); i++)connections.get(i).setAutoCommit(true);
-
-
+    for (int i = 0; i < connections.size(); i++) connections.get(i).setAutoCommit(true);
     return res;
   }
 
