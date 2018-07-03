@@ -9,5 +9,9 @@ public interface WorkerInterface {
   void createCsvFiles();
   void loadCsvFile();
   void loadCsvFilesToTmp();
+  void fuseTmpTables();
+  void validateTmpTables();
+  void migrateToTables();
+  void deleteTmpTables();
   void finish() throws SQLException, IOException;
 }

@@ -1,10 +1,7 @@
 package kz.greetgo.sandbox.db.dao;
 
 import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -51,4 +48,7 @@ public interface ClientDao {
     "MAX(coalesce(client_account.money, 0.0)) AS max_balance,"+
     "MIN(coalesce(client_account.money, 0.0)) AS min_balance FROM client LEFT JOIN client_account ON client.id=client_account.client WHERE client.id=#{clientId} AND client.actual=1 AND client_account.actual=1 GROUP BY client.id;")
   ClientRecord getClientRecord(@Param("clientId") Integer res);
+
+  @Select("SELECT * FROM client_phone WHERE client=#{clientId} AND type=#{type} AND actual=1;")
+  ClientPhone getClientPhone(@Param("clientId") Integer clientId, @Param("type") PhoneType type);
 }

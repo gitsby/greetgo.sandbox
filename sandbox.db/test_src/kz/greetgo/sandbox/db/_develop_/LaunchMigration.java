@@ -39,7 +39,7 @@ public class LaunchMigration {
       }
     };
 
-    String fileName = "from_frs_2018-02-21-155121-3-10000007.json_row.txt.tar.bz2";
+    String fileName = "from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2";
 
     File migrationFile;
 

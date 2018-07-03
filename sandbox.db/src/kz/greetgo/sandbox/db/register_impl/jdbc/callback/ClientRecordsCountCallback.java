@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ClientRecordsCountCallback extends ClientRecordList<Integer, Integer> {
+public class ClientRecordsCountCallback extends ClientFilterCallback<Integer, Integer> {
 
 
   public ClientRecordsCountCallback(ClientFilter filter) {
@@ -24,15 +24,35 @@ public class ClientRecordsCountCallback extends ClientRecordList<Integer, Intege
   }
 
   @Override
+  public void join() {}
+  @Override
+  public void update() {}
+  @Override
+  public void set() {}
+  @Override
+  public void insert() {}
+  @Override
+  public void values() {}
+  @Override
+  public void groupBy() {}
+  @Override
+  public void orderBy() {}
+  @Override
+  public void offsetAndLimit() {}
+  @Override
+  public void returning() {}
+
+  @Override
   public Integer fromRs(ResultSet rs) throws SQLException {
     return rs.getInt("result");
   }
 
   @Override
   public Integer run(PreparedStatement ps) throws SQLException {
+    Integer res = null;
     try(ResultSet rs = ps.executeQuery()) {
-      if (rs.next()) return fromRs(rs);
+      if (rs.next()) res = fromRs(rs);
     }
-    return null;
+    return res;
   }
 }

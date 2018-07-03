@@ -36,9 +36,9 @@ public class CIAWorker extends Worker {
   private File clientAddressCsvFile;
   private File clientPhoneCsvFile;
 
-  private BufferedWriter clientBw;
-  private BufferedWriter clientAddressBw;
-  private BufferedWriter clientPhoneBw;
+  private Writer clientBw;
+  private Writer clientAddressBw;
+  private Writer clientPhoneBw;
 
   private final String TMP_DIR = "build/tmp/";
 
@@ -59,17 +59,20 @@ public class CIAWorker extends Worker {
 
   @Override
   public void prepareStatements() throws SQLException {
-    clientPs = nextConncetion().prepareStatement("");
-    clientAddressPs = nextConncetion().prepareStatement("");
-    clientPhonePs = nextConncetion().prepareStatement("");
+    clientPs = nextConnection().prepareStatement("");
+    clientAddressPs = nextConnection().prepareStatement("");
+    clientPhonePs = nextConnection().prepareStatement("");
   }
 
   @Override
   public void createTmpTables() throws SQLException {
     createTmpNames();
-    exec("CREATE TABLE TMP_TABLE (id VARCHAR(255) NOT NULL, surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birthDate varchar(255), charm VARCHAR(255))", clientTmp);
-    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
-    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
+    //language=PostgreSQL
+    exec("CREATE TABLE TMP_TABLE (id VARCHAR(255) NOT NULL, error varchar(255), surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birth_date varchar(255), charm VARCHAR(255))", clientTmp);
+    //language=PostgreSQL
+    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
+    //language=PostgreSQL
+    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
   }
 
   private void createTmpNames() {
@@ -86,23 +89,29 @@ public class CIAWorker extends Worker {
     clientAddressCsvFile = createFile(TMP_DIR+"client_address.csv");
     clientPhoneCsvFile = createFile(TMP_DIR+"client_phone.csv");
     try {
-      clientBw = new BufferedWriter(new PrintWriter(clientCsvFile));
+      clientBw = getWriter(clientCsvFile);
       clientAddressBw = new BufferedWriter(new PrintWriter(clientAddressCsvFile));
-      clientPhoneBw = new BufferedWriter(new PrintWriter(clientAddressCsvFile));
+      clientPhoneBw = new BufferedWriter(new PrintWriter(clientPhoneCsvFile));
     } catch (IOException e) {
       e.printStackTrace();
+      System.out.println(e);
     }
+  }
+
+  private Writer getWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
+    FileOutputStream fos = new FileOutputStream(file);
+    OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+    BufferedWriter bw = new BufferedWriter(osw, 100_000);
+    return new PrintWriter(bw, true);
   }
 
   private File createFile(String path) {
     File file = new File(path);
-    if (!file.exists()) {
-      try {
-        new File(file.getParent()).mkdirs();
-        file.createNewFile();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    if (!file.exists()) { new File(file.getParent()).mkdirs(); }
+    try {
+      file.createNewFile();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     return file;
   }
@@ -126,15 +135,30 @@ public class CIAWorker extends Worker {
   }
 
   private void writeTmpClient(TMPClient client) throws IOException {
-    clientBw.write(String.format("%s|%s|%s|%s|%s|%s|%s\n", client.id, checkStr(client.surname), checkStr(client.name), checkStr(client.patronymic), checkStr(client.gender), checkStr(client.birthDate), checkStr(client.charm)));
+    clientBw.write(String.format("%s|\\N|%s|%s|%s|%s|%s|%s\n", client.id, checkStr(client.surname, System.nanoTime()),
+      checkStr(client.name, System.nanoTime()), checkStr(client.patronymic, System.nanoTime()),
+      checkStr(client.gender, System.nanoTime()), checkStr(client.birthDate, System.nanoTime()),
+      checkStr(client.charm, System.nanoTime())));
   }
 
   private void writeTmpClientAddress(String clientId, ClientAddress address) throws IOException {
-    clientAddressBw.write(String.format("%s|%s|%s|%s|%s\n", clientId, checkStr(address.type.name()), checkStr(address.street), checkStr(address.house), checkStr(address.flat)));
+    clientAddressBw.write(String.format("%s|\\N|%s|%s|%s|%s\n", clientId, checkStr(address.type.name(), null),
+      checkStr(address.street, System.nanoTime()), checkStr(address.house,System.nanoTime()),
+      checkStr(address.flat,System.nanoTime())));
   }
 
   private void writeTmpClientPhone(String clientId, ClientPhone phone) throws IOException {
-    clientPhoneBw.write(String.format("%s|%s|%s\n", clientId, checkStr(phone.type.name()), checkStr(phone.number)));
+    clientPhoneBw.write(String.format("%s|\\N|%s|%s\n", clientId, checkStr(phone.type.name(),null), checkStr(phone.number, null)));
+  }
+
+  private String checkStr(String str, Long counter) {
+    if (str == null) return "\\N";
+    str = str.trim();
+    if (!str.isEmpty()) {
+      if (counter == null) return str;
+      else return counter + "#" + str;
+    }
+    return "\\N";
   }
 
   @Override
@@ -144,8 +168,7 @@ public class CIAWorker extends Worker {
       clientBw.flush();
       clientAddressBw.flush();
       clientPhoneBw.flush();
-
-      copyManager = new CopyManager((BaseConnection) nextConncetion());
+      copyManager = new CopyManager((BaseConnection) nextConnection());
     } catch (Exception e) {
       System.out.println(e);
     }
@@ -156,6 +179,7 @@ public class CIAWorker extends Worker {
   }
 
   private void copy(CopyManager copyManager, File file, String tmp) {
+    //language=PostgreSQL
     String copyQuery = "COPY TMP_TABLE FROM STDIN WITH DELIMITER '|'";
     try (FileReader reader = new FileReader(file)) {
       copyManager.copyIn(r(copyQuery, tmp), reader);
@@ -164,11 +188,51 @@ public class CIAWorker extends Worker {
     }
   }
 
-  private String checkStr(String str) {
-    if (str == null) return "\\N";
-    str = str.trim();
-    if (!str.isEmpty()) return str;
-    return "\\N";
+  @Override
+  public void fuseTmpTables() {
+    info("FUSE START");
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientTmp);
+    //language=PostgreSQL
+    exec("SELECT DISTINCT id, "
+      +"error,"
+      +"split_part(max(surname), '#', 2)    AS surname,"
+      +"split_part(max(\"name\"), '#', 2)       AS \"name\","
+      +"split_part(max(patronymic), '#', 2) AS patronymic,"
+      +"split_part(max(gender), '#', 2)     AS gender,"
+      +"split_part(max(birth_date), '#', 2) AS birth_date,"
+      +"split_part(max(charm), '#', 2)      AS charm "
+      +"INTO TMP_TABLE "
+      +"FROM TMP_TABLE_conductor "
+      +"GROUP BY id, error;", clientTmp);
+    info("FUSE END");
+  }
+
+  @Override
+  public void validateTmpTables() {
+    info("VALIDATION START");
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='surname is not defined'" +
+      "WHERE error IS NULL AND surname IS NULL;", clientTmp);
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='name is not defined'" +
+      "WHERE error IS NULL AND \"name\" IS NULL;", clientTmp);
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET birth_date=str(birth_date, 'yyyy-MM-dd')", clientTmp);
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='birth_date is not defined'" +
+      "WHERE error IS NULL AND birth_date IS NULL;", clientTmp);
+    info("VALIDATION END");
+  }
+
+  @Override
+  public void migrateToTables() {
+
+  }
+
+  @Override
+  public void deleteTmpTables() {
+
   }
 
   @Override
@@ -182,9 +246,9 @@ public class CIAWorker extends Worker {
     clientPhoneBw.close();
 
 
-    //clientCsvFile.delete();
-    //clientAddressCsvFile.delete();
-    //clientPhoneCsvFile.delete();
+    clientCsvFile.delete();
+    clientAddressCsvFile.delete();
+    clientPhoneCsvFile.delete();
     info("FINISH ALL");
   }
 

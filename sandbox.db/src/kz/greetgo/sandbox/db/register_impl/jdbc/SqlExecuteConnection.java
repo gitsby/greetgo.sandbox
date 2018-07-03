@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import kz.greetgo.db.ConnectionCallback;
+import org.apache.log4j.Logger;
 import org.fest.util.Lists;
 
 import java.sql.Connection;
@@ -9,27 +10,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-// FIXME: 7/3/18 почему тела методов пустые? класс то абстрактный!
-// FIXME: 7/3/18 prepare statement, result set не закрываются
-// FIXME: 7/3/18 я же говорил, что в импл нельзя использовать sout!!!!
-
 public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> implements ConnectionCallback<ConnectionReturnType> {
+
+  private Logger logger = Logger.getLogger("callbacks_log");
 
   protected StringBuilder sql = new StringBuilder();
   protected List<Object> params = Lists.newArrayList();
 
-  public void select() {}
-  public void from() {}
-  public void join() {}
-  public void update() {}
-  public void set() {}
-  public void insert() {}
-  public void values() {}
-  public void where() {}
-  public void groupBy() {}
-  public void orderBy() {}
-  public void offsetAndLimit() {}
-  public void returning() {}
+  public abstract void select();
+  public abstract void from();
+  public abstract void join();
+  public abstract void update();
+  public abstract void set();
+  public abstract void insert();
+  public abstract void values();
+  public abstract void where();
+  public abstract void groupBy();
+  public abstract void orderBy();
+  public abstract void offsetAndLimit();
+  public abstract void returning();
   public abstract RsReturnType fromRs(ResultSet rs) throws SQLException;
   public abstract ConnectionReturnType run(PreparedStatement ps) throws SQLException;
 
@@ -55,14 +54,13 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
   @Override
   public final ConnectionReturnType doInConnection(Connection connection) {
     prepareSql();
-    PreparedStatement ps;
-    try {
-      ps = connection.prepareStatement(sql.toString());
+    ConnectionReturnType res = null;
+    try(PreparedStatement ps = connection.prepareStatement(sql.toString())) {
       putParams(ps);
-      return run(ps);
+      res = run(ps);
     } catch (SQLException e) {
-      System.out.println(e.getNextException());
+      logger.error(e);
     }
-    return null;
+    return res;
   }
 }

@@ -80,7 +80,7 @@ public class Migration extends Informative implements Closeable {
 
   private int download() throws Exception {
 
-    createConnection(3);
+    createConnection(1);
     createInputStream();
 
     int res = 0;

@@ -6,7 +6,10 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import kz.greetgo.sandbox.db.register_impl.jdbc.callback.*;
+import kz.greetgo.sandbox.db.register_impl.jdbc.callback.ClientRecordListCallback;
+import kz.greetgo.sandbox.db.register_impl.jdbc.callback.ClientRecordsCountCallback;
+import kz.greetgo.sandbox.db.register_impl.jdbc.callback.ClientRenderCallback;
+import kz.greetgo.sandbox.db.register_impl.jdbc.callback.InsertClientCallback;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.ArrayList;
@@ -66,8 +69,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private ClientPhone getClientPhone(Integer clientId, PhoneType type) {
-    // FIXME: 7/3/18 через айбатис
-    return jdbc.get().execute(new ClientPhoneCallback(clientId, type));
+    return clientDao.get().getClientPhone(clientId, type);
   }
 
   private ClientAddress getClientAddress(Integer clientId, AddressTypeEnum type) {

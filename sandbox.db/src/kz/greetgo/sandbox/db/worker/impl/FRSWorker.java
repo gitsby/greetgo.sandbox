@@ -44,6 +44,26 @@ public class FRSWorker extends Worker {
   }
 
   @Override
+  public void fuseTmpTables() {
+
+  }
+
+  @Override
+  public void validateTmpTables() {
+
+  }
+
+  @Override
+  public void migrateToTables() {
+
+  }
+
+  @Override
+  public void deleteTmpTables() {
+
+  }
+
+  @Override
   public void finish() throws SQLException {
 
   }

@@ -31,6 +31,9 @@ public abstract class Worker implements WorkerInterface {
     createCsvFiles();
     loadCsvFile();
     loadCsvFilesToTmp();
+    fuseTmpTables();
+    validateTmpTables();
+    migrateToTables();
     finish();
   }
 
@@ -45,7 +48,7 @@ public abstract class Worker implements WorkerInterface {
 
   public void exec(String sql, String tmp) {
     String executingSql = r(sql, tmp);
-    try (Statement statement = nextConncetion().createStatement()) {
+    try (Statement statement = nextConnection().createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
       System.out.println(e);
@@ -54,7 +57,7 @@ public abstract class Worker implements WorkerInterface {
 
   private static int last = 0;
 
-  public Connection nextConncetion() {
+  public Connection nextConnection() {
     return connections.get(last % connections.size());
   }
 

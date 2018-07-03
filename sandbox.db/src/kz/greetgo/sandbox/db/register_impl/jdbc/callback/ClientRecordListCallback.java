@@ -9,18 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ClientRecordListCallback extends ClientRecordList<List<ClientRecord>, ClientRecord> {
+public class ClientRecordListCallback extends ClientRecordSelectCallback<List<ClientRecord>, ClientRecord> {
 
   public ClientRecordListCallback(ClientFilter filter) {
     this.filter = filter;
-  }
-
-  @Override
-  public void select() {
-    sql.append("SELECT client.id, client.surname, client.name, client.patronymic, date_part('year',age(client.birth_date)) AS age, " +
-      "AVG(coalesce(client_account.money, 0.0)) AS middle_balance, " +
-      "MAX(coalesce(client_account.money, 0.0)) AS max_balance, " +
-      "MIN(coalesce(client_account.money, 0.0)) AS min_balance ");
   }
 
   @Override
@@ -31,6 +23,26 @@ public class ClientRecordListCallback extends ClientRecordList<List<ClientRecord
   @Override
   public void join() {
     sql.append("LEFT JOIN client_account ON client_account.client=client.id AND client_account.actual=1 ");
+  }
+
+  @Override
+  public void update() {
+
+  }
+
+  @Override
+  public void set() {
+
+  }
+
+  @Override
+  public void insert() {
+
+  }
+
+  @Override
+  public void values() {
+
   }
 
   @Override
@@ -73,6 +85,11 @@ public class ClientRecordListCallback extends ClientRecordList<List<ClientRecord
       params.add(filter.limit);
       params.add(filter.offset);
     }
+  }
+
+  @Override
+  public void returning() {
+
   }
 
   @Override
