@@ -11,7 +11,8 @@
           type varchar(10) not null,
           street varchar(100) not null,
           house varchar(100) not null,
-          flat varchar(100) not null
+          flat varchar(100) not null,
+          actual int default 1
         )
       ]]>
     </sql>
