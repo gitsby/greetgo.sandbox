@@ -236,11 +236,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByFIONameAsc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
@@ -255,13 +251,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     isSorted(clientRecordFIOComparator, records);
   }
 
-  @Test
-  public void testSortedByFIONameDesc() {
+  private void clearAndInputClients() {
     testDaoBeanGetter.get().deleteAll();
 
     for (int i = 0; i < 10; i++) {
       insertNewClient();
     }
+  }
+
+  @Test
+  public void testSortedByFIONameDesc() {
+    clearAndInputClients();
+
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-surname";
@@ -310,11 +311,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMinDesc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-min";
@@ -336,11 +333,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMaxAsc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "max";
@@ -362,11 +355,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMaxDesc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-max";
@@ -388,11 +377,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByTotalAsc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "total";
@@ -414,11 +399,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByTotalDesc() {
-    testDaoBeanGetter.get().deleteAll();
-
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-total";
@@ -440,10 +421,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByAgeAsc() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "age";
@@ -465,10 +443,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByAgeDesc() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "-age";
@@ -500,10 +475,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void tooBigSliceNum() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 10; i++) {
-      insertNewClient();
-    }
+    clearAndInputClients();
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "empty";
@@ -515,52 +487,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void invalidPaginationPage() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 100; i++) {
-      insertNewClient();
-    }
-
-    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
-    clientRecordFilter.columnName = "empty";
-    clientRecordFilter.paginationPage = -1;
-    clientRecordFilter.sliceNum = 10;
-
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
-  }
-
-  @Test
-  public void getNonExistingPaginationPage() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 100; i++) {
-      insertNewClient();
-    }
-
-    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
-    clientRecordFilter.columnName = "empty";
-    clientRecordFilter.paginationPage = -1;
-    clientRecordFilter.sliceNum = 10;
-    clientRecordFilter.searchName = null;
-
-    //
-    //
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(0);
-    //
-    //
-  }
-
-  @Test
   public void clientCountIsValid() {
-    testDaoBeanGetter.get().deleteAll();
-    for (int i = 0; i < 100; i++) {
-      insertNewClient();
-    }
+
+    clearAndInputClients();
+
     ClientRecordFilter filter = new ClientRecordFilter();
     filter.searchName = "";
 
     int clientCount = testDaoBeanGetter.get().getClientCount(filter);
 
-    assertThat(clientCount).isEqualTo(100);
+    assertThat(clientCount).isEqualTo(10);
   }
 
 }
