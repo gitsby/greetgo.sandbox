@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+// FIXME: 7/3/18 Код дублируется. Учитывай предыдущие ошибки!!!
 public class ClientRenderCallback extends SqlExecuteConnection<Void,ClientRow> {
 
   private final String name;

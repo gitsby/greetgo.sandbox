@@ -14,7 +14,6 @@ public class ClientPhoneCallback extends SqlExecuteConnection<ClientPhone, Clien
   private final PhoneType type;
 
   public ClientPhoneCallback(Integer clientId, PhoneType type) {
-
     this.clientId = clientId;
     this.type = type;
   }

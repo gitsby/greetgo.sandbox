@@ -9,6 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+// FIXME: 7/3/18 почему тела методов пустые? класс то абстрактный!
+// FIXME: 7/3/18 prepare statement, result set не закрываются
+// FIXME: 7/3/18 я же говорил, что в импл нельзя использовать sout!!!!
+
 public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> implements ConnectionCallback<ConnectionReturnType> {
 
   protected StringBuilder sql = new StringBuilder();

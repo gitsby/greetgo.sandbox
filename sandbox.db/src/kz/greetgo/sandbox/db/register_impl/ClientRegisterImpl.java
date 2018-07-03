@@ -66,6 +66,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private ClientPhone getClientPhone(Integer clientId, PhoneType type) {
+    // FIXME: 7/3/18 через айбатис
     return jdbc.get().execute(new ClientPhoneCallback(clientId, type));
   }
 
