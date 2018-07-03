@@ -42,7 +42,7 @@ public class TableController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/create-user")
-    public int createUser(@Par("user") @Json User user) {
+    public Integer createUser(@Par("user") @Json User user) {
         return tableRegister.get().createUser(user);
     }
 

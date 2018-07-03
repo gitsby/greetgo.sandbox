@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+
+
+
+<changeSet id="create-filtered-table" author="arpanetus">
+    <sql endDelimiter=";;"><![CDATA[
+            create or replace function filtered_names(filter_type varchar, filter_text varchar)
+        returns table(id int, surname varchar(255), name varchar(255), patronymic varchar(255), birth_date int, charm integer)
+        as $$ begin return query select
+        cl.id, cl.surname, cl.name, cl.patronymic, cl.birth_date, cl.charm  from client as cl
+        where case
+              when filter_type='NAME' then  cl.name like filter_text
+              when filter_type='SURNAME' then  cl.surname like filter_text
+              when filter_type='PATRONYMIC' then  cl.patronymic like filter_text
+              else cl.name like filter_text
+              end;
+        end; $$
+        language plpgsql;
+        ]]>
+
+    </sql>
+</changeSet>
+<changeSet id="create-table-to-view" author="arpanetus">
+    <sql endDelimiter=";;"><![CDATA[
+        create or replace function table_to_view(filter_type varchar, filter_text varchar)
+        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
+        as $$ begin return query select
+         cl.id as id, concat_ws(' ', cl.name, cl.surname, cl.patronymic) as fullName,
+         cast(extract(epoch from cl.birth_date) as integer) as age,ch.name as charm,
+         max(ca.money) as maxBalance, min(ca.money) as minBalance, sum(ca.money) as totalBalance
+            from filtered_names(filter_type, filter_text) as cl, client_account as ca, charm as ch
+            where cl.id = ca.client AND cl.charm = ch.id
+            group by cl.id, ch.name;
+        end; $$
+        language plpgsql;
+
+
+
+    ]]>
+    </sql>
+</changeSet>
+    <changeSet id="create-table-sorted-table" author="arpanetus">
+        <sql endDelimiter=";;"><![CDATA[
+            create or replace function sort_table(sort_direction varchar,sort_type varchar, filter_type varchar, filter_text varchar)
+        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
+        as $$ begin return query select
+        case
+            when sort_direction='DESC' then
+                (select * from table_to_view(filter_type, filter_text) as ttv
+                    order by case
+                        when sort_type='FULLNAME' then fullName
+                        when sort_type='AGE' then age
+                        when sort_type='TOTALBALANCE' then totalBalance
+                        when sort_type='MINBALANCE' then minBalance
+                        when sort_type='MAXBALANCE' then maxBalance
+                        else fullName
+                     end
+                     DESC)
+            else (select * from table_to_view(filter_type, filter_text) as ttv
+                    order by case
+                        when sort_type='FULLNAME' then fullName
+                        when sort_type='AGE' then age
+                        when sort_type='TOTALBALANCE' then totalBalance
+                        when sort_type='MINBALANCE' then minBalance
+                        when sort_type='MAXBALANCE' then maxBalance
+                        else fullName
+                     end
+                     ASC)
+             end;
+        end; $$
+        language plpgsql;
+
+
+    ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="create-sliced-table" author="arpanetus">
+        <sql endDelimiter=";;"><![CDATA[
+        create or replace function final_table(skip_number int,limit_number int, sort_direction varchar,sort_type varchar, filter_type varchar, filter_text varchar)
+        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
+        as $$ begin return query select *
+        from sort_table(sort_direction, sort_type, filter_type, filter_text)
+        limit limit_number offset skip_number;
+        end; $$
+        language plpgsql;
+
+    ]]>
+        </sql>
+    </changeSet>
+
+
+<!--create or replace function myelif(a varchar)
+        returns integer
+        as $$ begin return case
+            when a='a' then 0
+            else 1
+            end
+        end; $$
+        language plpgsql;
+
+-->
+        </databaseChangeLog>
+
+
+
+
+
+
+
+
+
+
+

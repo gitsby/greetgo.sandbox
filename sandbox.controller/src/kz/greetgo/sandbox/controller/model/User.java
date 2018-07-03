@@ -8,25 +8,28 @@ public class User {
     public String name;
     public String patronymic;
     public long birthDate;
-    public CharmType charm;
+    public String charm;
     public Phone[] phones;
     public Address factualAddress;
     public Address registeredAddress;
+    public boolean validity;
+
     public GenderType genderType;
 
     @Override
     public String toString() {
         return "User{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", surname='" + surname + '\'' +
                 ", name='" + name + '\'' +
                 ", patronymic='" + patronymic + '\'' +
                 ", birthDate=" + birthDate +
-                ", charm=" + charm +
+                ", charm='" + charm + '\'' +
                 ", phones=" + Arrays.toString(phones) +
                 ", factualAddress=" + factualAddress +
                 ", registeredAddress=" + registeredAddress +
-                ", genderType=" + genderType+
+                ", validity=" + validity +
+                ", genderType=" + genderType +
                 '}';
     }
 }

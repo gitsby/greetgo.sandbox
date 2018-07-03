@@ -7,5 +7,6 @@
   <include file="liquibase/postgres/v001/000_common.xml"/>
   <include file="liquibase/postgres/v001/001_person.xml"/>
   <include file="liquibase/postgres/v001/002_users_db_schema.xml"/>
+  <include file="liquibase/postgres/v001/003_db_functions.xml"/>
 
 </databaseChangeLog>

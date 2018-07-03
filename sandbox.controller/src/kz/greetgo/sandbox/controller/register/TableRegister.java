@@ -11,7 +11,7 @@ public interface TableRegister {
 
     User getExactUser(int userID);
 
-    int createUser(User user);
+    Integer createUser(User user);
 
     String changeUser(User user);
 

@@ -8,25 +8,27 @@
         <sql endDelimiter=";;"><![CDATA[
         create table charm (
             id serial primary key,
-            name varchar(255) not null,
-            description varchar(255) not null,
+            name varchar(255),
+            description varchar(255),
             energy float
         );
 
         create table client (
             id serial primary key,
-            surname varchar(255) not null,
-            name varchar(255) not null,
+            surname varchar(255),
+            name varchar(255),
             patronymic varchar(255),
-            gender char(6) not null,
-            birth_date  Date not null,
-            charm integer not null references charm(id) on delete cascade
+            gender varchar(255),
+            birthDate Date,
+            validity Boolean not null,
+            charm int not null references charm(id) on delete cascade
         );
 
-        create table phone (
+        create table client_phone (
             number varchar(11),
-            type varchar(6),
-            client int not null references client(id) on delete cascade
+            type varchar(255),
+            validity Boolean not null,
+            client integer not null references client(id) on delete cascade
         );
 
 
@@ -36,7 +38,7 @@
             street varchar(255),
             house varchar(255),
             flat varchar(255),
-            client  int not null references client(id) on delete cascade
+            client  integer not null references client(id) on delete cascade
         );
 
         create table client_account (
@@ -44,6 +46,7 @@
             number varchar(255),
             money float,
             registered_at timestamp,
+            validity Boolean not null,
             client int not null references client(id) on delete cascade
         );
 
@@ -57,7 +60,7 @@
             id serial primary key,
             account int not null references client_account(id),
             money float,
-            finished_at timestamp not null,
+            finished_at timestamp,
             type int references transaction_type(id)
         );
 
@@ -66,40 +69,7 @@
 
 
     ]]></sql>
-    <!--select client.id as id, concat_ws(' ', client.name::text, client.surname::text, client.patronymic::text) as fullName,
-           cast(extract(epoch from client.birthDate) as integer) as age,
-           max(client_account.money) as max, min(client_account.money) as min, sum(client_account.money) as total, charm.name as charm
-        FROM client, client_account, charm
-        WHERE client.id = client_account.client AND client.charm = charm.id
-        GROUP BY client.id, charm.name;-->
     </changeSet>
-    <changeSet id="create-get-table-function" author="arpanetus">
-        <sql endDelimiter=";;"><![CDATA[
-        create function table_to_view(limitNum int, skip int, sortType varchar(255), sortDirection varchar(255), filter varchar(255), filterType varchar(255))
-        returns table(id int, fullName text, age integer, charm varchar(255), totalBalance int,minBalance int, maxBalance int)
-        as select id, fullName, age, charm, totalBalance, minBalance, maxBalance from (
-           select client.id as id, concat_ws(' ', client.name::text, client.surname::text, client.patronymic::text) as fullName,
-           cast(extract(epoch from client.birthDate) as integer) as age,
-           max(client_account.money) as max, min(client_account.money) as min, sum(client_account.money) as total, charm.name as charm
-            from client, client_account, charm
-            where client.id = client_account.client AND client.charm = charm.id)
-           order by
-           case sortType
-                when 'fullName' then fullName
-                when 'age' then age
-                when 'totalBalance' then totalBalance
-                when 'minBalance' then minBalance
-                when 'maxBalance' then maxBalance
-                else fullName
-                end
-           case sortDirection
-                when 'desc' then DESC
-                else ASC
-           end
-           limit limitNum offset skip
-        ]]>
 
-        </sql>
-    </changeSet>
 </databaseChangeLog>
 
