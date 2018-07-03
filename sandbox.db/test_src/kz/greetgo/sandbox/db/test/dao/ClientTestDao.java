@@ -80,6 +80,9 @@ public interface ClientTestDao {
   @Select("select client_id, number, type from client_phone where client_id=#{id}")
   List<PhoneDot> getPhoneDots(int id);
 
+  @Select("select * from client where id=?")
+  ClientDot getClientDotWithId(int id);
+
   @Select("select * from client where charm=#{charmId} and actual=1")
   ClientDot getClientDotWithCharmId(int charmId);
 

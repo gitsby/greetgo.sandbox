@@ -1,5 +1,8 @@
 package kz.greetgo.sandbox.db.migration.reader;
 
+import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.processors.ClientProcessor;
+
 import java.sql.SQLException;
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package kz.greetgo.sandbox.db.migration;
 
 import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.sandbox.db.migration.reader.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.PhoneFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,6 +49,7 @@ public class InMigration {
   }
 
   public void sendAddresses(List<AddressFromMigration> addresses) throws SQLException {
+    System.out.println("SENDING ADDRESS");
     inMigrationWorker.sendAddresses(addresses);
   }
 

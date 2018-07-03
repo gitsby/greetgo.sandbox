@@ -36,7 +36,7 @@
           gender varchar(10) not null,
           birth_date date,
           charm int not null,
-          actual int not null
+          actual int default 1
         )
       ]]>
     </sql>

@@ -1,8 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
-import kz.greetgo.sandbox.db.migration.*;
-import kz.greetgo.sandbox.db.migration.reader.XMLManager;
+import kz.greetgo.sandbox.db.migration.InMigration;
+import kz.greetgo.sandbox.db.migration.reader.xml.XMLManager;
 
 
 public class MigrationRegisterImpl implements MigrationRegister {
@@ -15,10 +15,13 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     inMigration.execute();
     xmlManager.load(client -> inMigration.sendClient(client),
+      addressFromMigration -> {
+        inMigration.sendAddresses(addressFromMigration);
+      },
       phonesFromMigration -> {
-      inMigration.sendPhones(phonesFromMigration);
-    });
-    //while (xmlManager.)
+        inMigration.sendPhones(phonesFromMigration);
+      }
+    );
     System.out.println("FINISHED ALL TASKS------------------------");
   }
 
