@@ -1,12 +1,9 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.model.GenderEnum;
-import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -54,27 +51,34 @@ public interface ClientTestDao {
                            @Param("money") float money,
                            @Param("registered_at") Date registeredAt);
 
-  @Select("SELECT id, client, money, number, registered_at AS registeredAt FROM client_account WHERE client=#{id}")
+  @Select("SELECT id, client, money, number, registered_at AS registeredAt FROM client_account WHERE client=#{id} AND actual=1;")
   List<ClientAccount> getClientAccounts(@Param("id") Integer id);
 
-  // FIXME: 6/28/18 (2) Нельзя удалять с таблицы, каскадно тем более
   @Delete("UPDATE client SET actual=0;" +
     "UPDATE client_phone SET actual=0;" +
     "UPDATE client_address SET actual=0;" +
     "UPDATE client_account SET actual=0;" +
-    "TRUNCATE charm CASCADE;")
+    "UPDATE charm SET actual=0;")
   void clearAllTables();
 
-  @Select("SELECT id, surname, name, patronymic, gender, birth_date as birthDate, charm_id as charmId FROM client")
+  @Select("SELECT id, surname, name, patronymic, gender, birth_date as birthDate, charm_id as charmId FROM client WHERE actual=1;")
   List<Client> getClients();
 
-  @Select("SELECT * FROM client_address WHERE client=#{clientId} AND type=#{type}")
+  @Select("SELECT * FROM client_address WHERE client=#{clientId} AND type=#{type} AND actual=1;")
   ClientAddress getClientAddress(@Param("clientId") Integer clientId, @Param("type") AddressTypeEnum fact);
 
   @Select("SELECT * FROM client_phone WHERE client=#{clientId} AND type=#{type} AND actual=1")
   ClientPhone getClientPhone(@Param("clientId") Integer clientId, @Param("type") PhoneType home);
 
-
   @Select("SELECT actual FROM client WHERE id=#{clientId}")
   Integer getActual(Integer rClientId);
+
+  @Select("SELECT client, type, number FROM client_phone WHERE client=#{clientId} AND type=#{type};")
+  ClientPhoneDot getClientPhoneDot(@Param("clientId") Integer id, @Param("type") PhoneType type);
+
+  @Select("SELECT client, type, street, house, flat FROM client_address WHERE client=#{clientId} AND type=#{type};")
+  ClientAddressDot getClientAddressDot(@Param("clientId") Integer id, @Param("type") AddressTypeEnum type);
+
+  @Select("SELECT id, surname, name, patronymic, gender, birth_date as birthDate, charm_id as charmId FROM client WHERE id=#{clientId}")
+  ClientDot getClientDot(@Param("clientId") Integer id);
 }

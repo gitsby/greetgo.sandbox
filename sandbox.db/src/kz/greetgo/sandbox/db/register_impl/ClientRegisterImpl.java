@@ -33,17 +33,15 @@ public class ClientRegisterImpl implements ClientRegister {
     return details;
   }
 
-  // FIXME: 6/28/18 Должен возвращать рекорд
   @Override
-  public Integer save(ClientToSave clientToSave) {
+  public ClientRecord save(ClientToSave clientToSave) {
     return insertOrUpdateClient(clientToSave);
   }
 
-  private Integer insertOrUpdateClient(ClientToSave clientToSave) {
-    // FIXME: 6/28/18 инсерт/апдейт клиента не должен быть разделен на разные куски кода в логический разных классах
-    int res = jdbc.get().execute(clientToSave.id == null ? new InsertClientCallback(clientToSave) : new UpdateClientCallback(clientToSave));
+  private ClientRecord insertOrUpdateClient(ClientToSave clientToSave) {
+    int res = jdbc.get().execute(new InsertClientCallback(clientToSave));
     insertPhonesAndAddresses(res, clientToSave);
-    return res;
+    return clientDao.get().getClientRecord(res);
   }
 
   private void insertPhonesAndAddresses(Integer client, ClientToSave clientToSave) {
@@ -72,8 +70,7 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private ClientAddress getClientAddress(Integer clientId, AddressTypeEnum type) {
-    // FIXME: 6/28/18 Можно же через iBatis сделать и уменшить объем кода
-    return jdbc.get().execute(new ClientAddressCallback(clientId, type));
+    return clientDao.get().getClientAddress(clientId, type.name());
   }
 
   @Override
@@ -95,8 +92,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<CharmRecord> getCharms() {
-    // FIXME: 6/28/18 Takje mojno cherez iBatis
-    return jdbc.get().execute(new CharListCallback());
+    return clientDao.get().getCharms();
   }
 
   @Override

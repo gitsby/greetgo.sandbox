@@ -102,7 +102,6 @@ public class DbWorker {
 
   private void prepareDbConfig() throws Exception {
     File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);
-
     if (!file.exists()) {
       file.getParentFile().mkdirs();
       writeDbConfigFile();
@@ -115,11 +114,9 @@ public class DbWorker {
   private void writeDbConfigFile() throws Exception {
     File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);
     try (PrintStream out = new PrintStream(file, "UTF-8")) {
-
       out.println("url=" + changeUrlDbName(SysParams.pgAdminUrl(), System.getProperty("user.name") + "_sandbox"));
       out.println("username=" + System.getProperty("user.name") + "_sandbox");
-      out.println("password=111");
-
+      out.println("password=123");
     }
   }
 

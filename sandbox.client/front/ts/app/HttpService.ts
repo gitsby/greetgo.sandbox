@@ -49,7 +49,6 @@ export class HttpService {
     let post: string = '';
 
     if (keyValue) {
-
       let data = new URLSearchParams();
       let appended = false;
       for (let key in keyValue) {

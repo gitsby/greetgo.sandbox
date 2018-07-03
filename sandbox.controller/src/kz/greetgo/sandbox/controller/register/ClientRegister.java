@@ -26,7 +26,7 @@ public interface ClientRegister {
    *
    * @return id нового или измененного клиента
    */
-  Integer save(ClientToSave clientToSave);
+  ClientRecord save(ClientToSave clientToSave);
 
   /**
    * Удалает клиент из списка

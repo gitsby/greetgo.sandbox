@@ -5,7 +5,9 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.controller.render.model.ClientRow;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -24,7 +26,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * Набор автоматизированных тестов для тестирования методов класса {@link ClientRegisterImpl}
  */
 public class ClientRegisterImplTest extends ParentTestNg {
-  // FIXME: 6/28/18 Testy padayut pri povtronom zapuske
+
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
 
@@ -35,7 +37,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void getDetail() throws Exception {
-    Integer clientId = RND.plusInt(100);
+    Integer clientId = RND.plusInt(Integer.MAX_VALUE);
     ClientDetails details = generateRandomClientDetails(clientId);
 
     {
@@ -109,14 +111,56 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(detailsList).hasSize(1);
     }
 
-    ClientDetails details = detailsList.get(0);
-    // FIXME: 6/28/18 use ClientDot (ne ClientDetails), clientToSave
-    isEqual(details, clientToSave);
+    ClientDot clientDot = getClientDot(detailsList.get(0).id);
+    ClientAddressDot addressFactDot = getClientAddressDot(detailsList.get(0).id, AddressTypeEnum.FACT);
+    ClientAddressDot addressRegDot = getClientAddressDot(detailsList.get(0).id, AddressTypeEnum.REG);
+    ClientPhoneDot homePhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.HOME);
+    ClientPhoneDot workPhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.WORK);
+    ClientPhoneDot mobilePhoneDot = getClientPhoneDot(detailsList.get(0).id, PhoneType.MOBILE);
+
+    assertThat(clientToSave.surname).isEqualTo(clientDot.surname);
+    assertThat(clientToSave.name).isEqualTo(clientDot.name);
+    assertThat(clientToSave.patronymic).isEqualTo(clientDot.patronymic);
+    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+    assertThat(format.format(clientToSave.birthDate)).isEqualTo(format.format(clientDot.birthDate));
+    assertThat(clientToSave.gender).isEqualTo(clientDot.gender);
+    assertThat(clientToSave.charmId).isEqualTo(clientDot.charmId);
+    isEqual(clientToSave.addressFact, addressFactDot);
+    isEqual(clientToSave.addressReg, addressRegDot);
+    isEqual(clientToSave.homePhone, homePhoneDot);
+    isEqual(clientToSave.workPhone, workPhoneDot);
+    isEqual(clientToSave.mobilePhone, mobilePhoneDot);
+  }
+
+  private void isEqual(ClientPhone phone, ClientPhoneDot phoneDot) {
+    assertThat(phone.client).isEqualTo(phoneDot.client);
+    assertThat(phone.type).isEqualTo(phoneDot.type);
+    assertThat(phone.number).isEqualTo(phoneDot.number);
+  }
+
+  private void isEqual(ClientAddress address, ClientAddressDot addressDot) {
+    assertThat(address.client).isEqualTo(addressDot.client);
+    assertThat(address.type).isEqualTo(addressDot.type);
+    assertThat(address.street).isEqualTo(addressDot.street);
+    assertThat(address.house).isEqualTo(addressDot.house);
+    assertThat(address.flat).isEqualTo(addressDot.flat);
+  }
+
+  private ClientPhoneDot getClientPhoneDot(Integer id, PhoneType type) {
+    return clientTestDao.get().getClientPhoneDot(id, type);
+  }
+
+  private ClientAddressDot getClientAddressDot(Integer id, AddressTypeEnum type) {
+    return clientTestDao.get().getClientAddressDot(id, type);
+  }
+
+  private ClientDot getClientDot(Integer id) {
+    return clientTestDao.get().getClientDot(id);
   }
 
   @Test
   public void editClient() throws Exception {
-    Integer clientId = RND.plusInt(100);
+    Integer clientId = RND.plusInt(Integer.MAX_VALUE);
     ClientToSave clientToSave = generateRandomClientToSave(clientId);
 
     {
@@ -190,7 +234,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void deleteClient() throws Exception {
 
-    Integer rClientId = RND.plusInt(100);
+    Integer rClientId = RND.plusInt(Integer.MAX_VALUE);
 
     {
       ClientDot leftDot = generateRandomClientDot();
@@ -220,12 +264,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     emptyFilter.offset = 0;
     emptyFilter.limit = 10;
 
+    List<ClientDetails> leftDetails = new ArrayList<>();
+
     {
       for (int i = 0; i < 40; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
+        leftDetails.add(details);
         insertClient(details);
       }
+
+      Comparator<ClientDetails> comparator = Comparator.comparing(o -> o.id);
+      Collections.sort(leftDetails, comparator);
     }
 
     //
@@ -236,8 +286,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    // FIXME: 6/28/18 Нужно делать ассерт хотя бы айди
     assertThat(clientRecordList.size()).isEqualTo(emptyFilter.limit);
+    for (int i = 0; i < clientRecordList.size(); i++)
+      assertThat(clientRecordList.get(i).id).isEqualTo(leftDetails.get(i).id);
   }
 
   enum FioEnum {
@@ -246,10 +297,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @DataProvider
   public Object[][] filter_DP() {
-    return new Object[][] {
-      new Object[] {FioEnum.SURNAME},
-      new Object[] {FioEnum.NAME},
-      new Object[] {FioEnum.PATRONYMIC}
+    return new Object[][]{
+      new Object[]{FioEnum.SURNAME},
+      new Object[]{FioEnum.NAME},
+      new Object[]{FioEnum.PATRONYMIC}
     };
   }
 
@@ -263,7 +314,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       for (int i = 0; i < 20; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails leftDetails = generateRandomClientDetails(clientId);
         insertClient(leftDetails);
       }
@@ -272,7 +323,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDetails details;
 
     {
-      Integer clientId = RND.plusInt(10000);
+      Integer clientId = RND.plusInt(Integer.MAX_VALUE);
       details = generateRandomClientDetails(clientId);
 
       switch (fioEnum) {
@@ -307,17 +358,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @DataProvider
   public Object[][] getRecords_WithSort_DP() {
-    return new Object[][] {
-     // new Object[] {SortByEnum.FULL_NAME, SortDirection.ASCENDING},
-     // new Object[] {SortByEnum.AGE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MIDDLE_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MAX_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.MIN_BALANCE, SortDirection.ASCENDING},
-      new Object[] {SortByEnum.FULL_NAME, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.AGE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MIDDLE_BALANCE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MAX_BALANCE, SortDirection.DESCENDING},
-      new Object[] {SortByEnum.MIN_BALANCE, SortDirection.DESCENDING}
+    return new Object[][]{
+      new Object[]{SortByEnum.FULL_NAME, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.AGE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MIDDLE_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MAX_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.MIN_BALANCE, SortDirection.ASCENDING},
+      new Object[]{SortByEnum.FULL_NAME, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.AGE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MIDDLE_BALANCE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MAX_BALANCE, SortDirection.DESCENDING},
+      new Object[]{SortByEnum.MIN_BALANCE, SortDirection.DESCENDING}
     };
   }
 
@@ -339,7 +390,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         generateRandomAccountsFor(details.id, RND.plusInt(50));
 
-        clientRecords.add(getRecordsFromDetails(details));
+        clientRecords.add(fromDetails(details));
       }
     }
 
@@ -358,7 +409,24 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(result).hasSize(clientRecords.size());
 
     for (int i = 0; i < result.size(); i++) {
-      assertThat(result.get(i).id).isEqualTo(clientRecords.get(i).id);
+      switch (sortByEnum) {
+        case FULL_NAME:
+          assertThat(result.get(i).surname).isEqualTo(clientRecords.get(i).surname);
+          assertThat(result.get(i).name).isEqualTo(clientRecords.get(i).name);
+          assertThat(result.get(i).patronymic).isEqualTo(clientRecords.get(i).patronymic);
+          break;
+        case MAX_BALANCE:
+          assertThat(result.get(i).max_balance).isEqualTo(clientRecords.get(i).max_balance);
+          break;
+        case MIN_BALANCE:
+          assertThat(result.get(i).min_balance).isEqualTo(clientRecords.get(i).min_balance);
+          break;
+        case MIDDLE_BALANCE:
+          assertThat(result.get(i).middle_balance).isEqualTo(clientRecords.get(i).middle_balance);
+          break;
+        case AGE:
+          assertThat(result.get(i).age).isEqualTo(clientRecords.get(i).age);
+      }
     }
   }
 
@@ -371,7 +439,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     {
       for (int i = 0; i < randomCount; i++) {
-        Integer clientId = RND.plusInt(10000);
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
         insertClient(details);
       }
@@ -392,14 +460,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test(dataProvider = "filter_DP")
   public void getRecordsCountWithFilter(FioEnum fioEnum) throws Exception {
 
-    int randomCount = RND.plusInt(40);
-    String rFio= RND.str(10);
+    int randomCount = RND.plusInt(10);
+    String rFio = RND.str(10);
 
     ClientFilter filter = new ClientFilter();
     filter.fio = rFio;
 
     {
-      for (int i = 0; i < randomCount; i++) {
+      for (int i = 0; i < RND.plusInt(40); i++) {
         Integer clientId = RND.plusInt(Integer.MAX_VALUE);
         ClientDetails details = generateRandomClientDetails(clientId);
         insertClient(details);
@@ -407,19 +475,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     {
-      Integer clientId = RND.plusInt(Integer.MAX_VALUE);
-      ClientDetails details = generateRandomClientDetails(clientId);
-      switch (fioEnum) {
-        case SURNAME:
-          details.surname = rFio;
-          break;
-        case NAME:
-          details.name = rFio;
-          break;
-        case PATRONYMIC:
-          details.patronymic = rFio;
+      for (int i = 0; i < randomCount; i++) {
+        Integer clientId = RND.plusInt(Integer.MAX_VALUE);
+        ClientDetails details = generateRandomClientDetails(clientId);
+        switch (fioEnum) {
+          case SURNAME:
+            details.surname = rFio;
+            break;
+          case NAME:
+            details.name = rFio;
+            break;
+          case PATRONYMIC:
+            details.patronymic = rFio;
+        }
+        insertClient(details);
       }
-      insertClient(details);
     }
 
     //
@@ -431,8 +501,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(count).isNotNull();
-    // FIXME: 6/28/18 Почему всегда 1?
-    assertThat(count).isEqualTo(1);
+    assertThat(count).isEqualTo(randomCount);
   }
 
   @Test
@@ -484,7 +553,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Override
-    public void finish() {}
+    public void finish() {
+    }
   }
 
   @Test
@@ -559,29 +629,31 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
   }
 
-  private List<ClientDetails> getClientDetailsList() {
-    List<Client> clients = clientTestDao.get().getClients();
+  public List<ClientDetails> getClientDetailsList() {
     List<ClientDetails> clientDetails = Lists.newArrayList();
-    for (Client client : clients) {
-      ClientDetails details = new ClientDetails();
-      details.id = client.id;
-      details.surname = client.surname;
-      details.name = client.name;
-      details.patronymic = client.patronymic;
-      details.gender = client.gender;
-      details.birthDate = client.birthDate;
-      details.charmId = client.charmId;
-      details.addressFact = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.FACT);
-      details.addressReg = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.REG);
-      details.homePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.HOME);
-      details.workPhone = clientTestDao.get().getClientPhone(client.id, PhoneType.WORK);
-      details.mobilePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.MOBILE);
-      clientDetails.add(details);
-    }
+    for (Client client : clientTestDao.get().getClients())
+      clientDetails.add(fromClient(client));
     return clientDetails;
   }
 
-  private ClientRecord getRecordsFromDetails(ClientDetails details) {
+  public ClientDetails fromClient(Client client) {
+    ClientDetails details = new ClientDetails();
+    details.id = client.id;
+    details.surname = client.surname;
+    details.name = client.name;
+    details.patronymic = client.patronymic;
+    details.gender = client.gender;
+    details.birthDate = client.birthDate;
+    details.charmId = client.charmId;
+    details.addressFact = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.FACT);
+    details.addressReg = clientTestDao.get().getClientAddress(client.id, AddressTypeEnum.REG);
+    details.homePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.HOME);
+    details.workPhone = clientTestDao.get().getClientPhone(client.id, PhoneType.WORK);
+    details.mobilePhone = clientTestDao.get().getClientPhone(client.id, PhoneType.MOBILE);
+    return details;
+  }
+
+  public ClientRecord fromDetails(ClientDetails details) {
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = details.id;
     clientRecord.surname = details.surname;
@@ -595,17 +667,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return clientRecord;
   }
 
+  public static void main(String[] args) {
+
+  }
+
   public static int getAge(Date dateOfBirth) {
     Calendar today = Calendar.getInstance();
     Calendar birthDate = Calendar.getInstance();
     int age;
     birthDate.setTime(dateOfBirth);
     age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
-    if ( (birthDate.get(Calendar.DAY_OF_YEAR) - today.get(Calendar.DAY_OF_YEAR) > 3) ||
-      (birthDate.get(Calendar.MONTH) > today.get(Calendar.MONTH ))){
+    if ((birthDate.get(Calendar.DAY_OF_YEAR) - today.get(Calendar.DAY_OF_YEAR) > 3) ||
+      (birthDate.get(Calendar.MONTH) > today.get(Calendar.MONTH))) {
       age--;
-    }else if ((birthDate.get(Calendar.MONTH) == today.get(Calendar.MONTH )) &&
-      (birthDate.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH ))){
+    } else if ((birthDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)) &&
+      (birthDate.get(Calendar.DAY_OF_MONTH) >= today.get(Calendar.DAY_OF_MONTH))) {
       age--;
     }
     return ++age;
@@ -635,8 +711,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return middle_balance / clientAccounts.size();
   }
 
-  private void insertClient(ClientDetails details) {
-    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float)RND.plusDouble(Double.MAX_VALUE, 0));
+  public void insertClient(ClientDetails details) {
+    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 0));
     insertCharm(charmRecord);
     clientTestDao.get().insertClient(details.id, details.surname, details.name, details.patronymic, details.gender, details.birthDate, details.charmId);
     insertClientAddress(details.addressFact);
@@ -646,13 +722,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
     insertClientPhone(details.mobilePhone);
   }
 
-  private void insertClient(ClientDot clientDot) {
-    CharmRecord charmRecord = new CharmRecord(clientDot.charmId, RND.str(10), RND.str(10), (float)RND.plusDouble(Double.MAX_VALUE, 0));
+  public void insertClient(ClientDot clientDot) {
+    CharmRecord charmRecord = new CharmRecord(clientDot.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 0));
     insertCharm(charmRecord);
     clientTestDao.get().insertClient(clientDot.id, clientDot.surname, clientDot.name, clientDot.patronymic, clientDot.gender, clientDot.birthDate, clientDot.charmId);
   }
 
-  private ClientToSave generateRandomClientToSave(Integer id) {
+  public ClientToSave generateRandomClientToSave(Integer id) {
     ClientDetails details = generateRandomClientDetails(id);
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.id = details.id;
@@ -667,12 +743,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.homePhone = details.homePhone;
     clientToSave.mobilePhone = details.mobilePhone;
     clientToSave.workPhone = details.workPhone;
-    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float)RND.plusDouble(Double.MAX_VALUE, 10));
+    CharmRecord charmRecord = new CharmRecord(details.charmId, RND.str(10), RND.str(10), (float) RND.plusDouble(Double.MAX_VALUE, 10));
     insertCharm(charmRecord);
     return clientToSave;
   }
 
-  private ClientDot generateRandomClientDot() {
+  public ClientDot generateRandomClientDot() {
     ClientDot clientDot = new ClientDot();
     clientDot.id = RND.plusInt(Integer.MAX_VALUE);
     clientDot.surname = RND.str(10);
@@ -684,7 +760,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return clientDot;
   }
 
-  private ClientDetails generateRandomClientDetails(Integer id) {
+  public ClientDetails generateRandomClientDetails(Integer id) {
     ClientDetails details = new ClientDetails();
     details.id = id;
     details.surname = RND.intStr(10);
@@ -701,7 +777,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return details;
   }
 
-  private void generateRandomAccountsFor(Integer id, int i) {
+  public void generateRandomAccountsFor(Integer id, int i) {
     for (int c = 0; c < i; c++) {
       ClientAccount clientAccount = new ClientAccount();
       clientAccount.client = id;
@@ -724,11 +800,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientTestDao.get().insertClientAccount(account.client, account.number, account.money, account.registeredAt);
   }
 
-  private void insertCharm(CharmRecord charmRecord) {
+  public void insertCharm(CharmRecord charmRecord) {
     clientTestDao.get().insertCharm(charmRecord.id, charmRecord.name, charmRecord.description, charmRecord.energy);
   }
 
-  private static void sortList(List<ClientRecord> clientRecords, SortByEnum sortBy, SortDirection sortDirection) {
+  public static void sortList(List<ClientRecord> clientRecords, SortByEnum sortBy, SortDirection sortDirection) {
     Comparator<ClientRecord> comparator = null;
     switch (sortBy) {
       case NONE:
@@ -761,4 +837,5 @@ public class ClientRegisterImplTest extends ParentTestNg {
           break;
       }
   }
+
 }
