@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+// FIXME: 7/3/18 Сделан неправильно. Подумай еще раз. Учти все ошибки, которые были до этого!
 public class ClientRecordsRender extends ClientRecordQueryMethods<Void> {
 
   private ClientRecordsReportView view;

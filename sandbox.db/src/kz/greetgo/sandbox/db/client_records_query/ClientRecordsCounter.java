@@ -22,6 +22,7 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
 
   @Override
   public void prepareSql() {
+    // FIXME: 7/3/18 ЗАЧЕМ ТЫ ПЕРЕОПРЕДЕЛЯЕШЬ prepareSql?!!!
     select();
     from();
     where(sql, params);

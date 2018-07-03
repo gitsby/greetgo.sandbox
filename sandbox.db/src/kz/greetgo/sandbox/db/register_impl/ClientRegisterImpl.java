@@ -49,7 +49,7 @@ public class ClientRegisterImpl implements ClientRegister {
     if (!characterIdExists(editedClient.charm)) {
       return null;
     }
-
+    // FIXME: 7/3/18 Должен быть один и тот же код для апдейта и крейта
     if (editedClient.id == null) {
       editedClient.id = clientDao.get().insertClient(editedClient);
     } else {
