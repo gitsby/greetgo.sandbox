@@ -90,7 +90,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   public void assertWithClientDot(int clientId, ClientRecord clientRecord) {
-
+    // FIXME: 7/3/18 Метод не ассертит с дотом
     ClientRecord clientRecordFromTest = testDaoBeanGetter.get().getClientRecordById(clientId);
     assertThat(clientRecord.name.equals(clientRecordFromTest.name)).isTrue();
     assertThat(clientRecord.surname.equals(clientRecordFromTest.surname)).isTrue();
