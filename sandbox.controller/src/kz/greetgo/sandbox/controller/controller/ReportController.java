@@ -26,7 +26,7 @@ public class ReportController implements Controller {
     @Json @Par("filter") ClientRecordFilter filter,
     @Par("fileName") String fileName,
     @Par("fileType") String fileType,
-    BinResponse binResponse) {
+    BinResponse binResponse) throws Exception {
 
     System.out.println("In report");
     binResponse.setFilename(String.format("%s." + fileType, fileName));

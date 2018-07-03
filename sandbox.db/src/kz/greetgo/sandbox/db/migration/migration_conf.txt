@@ -1,0 +1,3 @@
+jdbc:postgresql://localhost:5432/kayne_sandbox
+user:kayne_sandbox
+password:111

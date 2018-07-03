@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet author="pompei" id="create-table-ClientAddr">
+  <changeSet author="ali" id="create-table-ClientAddr">
     <sql endDelimiter=";;">
       <![CDATA[
         create table Client_Address(
@@ -17,7 +17,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="pompei" id="create-foreign-AddressClientFK">
+  <changeSet author="ali" id="create-foreign-AddressClientFK">
     <addForeignKeyConstraint
       baseColumnNames="client_id"
       baseTableName="client_address"
@@ -30,7 +30,7 @@
       referencedTableName="client"/>
   </changeSet>
 
-  <changeSet author="pompei" id="create-primary-AddressPrimaryKey">
+  <changeSet author="ali" id="create-primary-AddressPrimaryKey">
     <addPrimaryKey
       columnNames="client_id, type"
       constraintName="pk_client_addr"

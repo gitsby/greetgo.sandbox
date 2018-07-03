@@ -9,63 +9,54 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-// FIXME: 6/28/18 Избавься от желтых
 public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
-  public ClientRecordFilter filter;
+  private ClientRecordFilter filter;
 
-  List params = new ArrayList();
-  SQL sql = new SQL();
+  private List params = new ArrayList();
+  private SQL sql = new SQL();
 
   public ClientRecordsCounter(ClientRecordFilter filter) {
+    super(filter);
     this.filter = filter;
-    // FIXME: 6/28/18 Лучше all должен вызываться в doInConnection
-    all();
   }
 
   @Override
-  public void all() {
-    sql.SELECT("count(*)");
+  public void prepareSql() {
+    select();
     from();
-    where();
+    where(sql, params);
+  }
+
+  @Override
+  void select() {
+    sql.SELECT("count(*)");
   }
 
   @Override
   public Integer doInConnection(Connection connection) throws Exception {
-    // FIXME: 6/28/18 PreparedStatement не закрыт
+
+    prepareSql();
     PreparedStatement statement = connection.prepareStatement(sql.toString());
 
     for (int i = 0; i < params.size(); i++) {
       statement.setObject(i + 1, params.get(i));
     }
 
+    int count;
     try (ResultSet resultSet = statement.executeQuery()) {
       resultSet.next();
-      return resultSet.getInt("count");
-    } catch (Exception e) {
-      // FIXME: 6/28/18 Нельзя принтить в стэк трейс на реале. Используй лог. P.S. здесь кэтч не нужен вовсе
-      e.printStackTrace();
+      count = resultSet.getInt("count");
     }
-    return 0;
+    statement.close();
+    return count;
   }
 
   @Override
-  void join() {}
+  void join() {
+  }
 
   @Override
-  void leftJoin() {}
-
-  @Override
-  void where() {
-    // FIXME: 6/28/18 Where obwii dlya cound and records, почему они повторяются?
-    if (filter.searchName != null) {
-      if (filter.searchName.length() != 0) {
-        sql.WHERE(" concat(Lower(client.name), Lower(client.surname), Lower(client.patronymic)) like '%'||?||'%' ");
-        params.add(filter.searchName);
-      } else {
-        filter.searchName = null;
-      }
-    }
-    sql.WHERE("client.actual=1");
+  void leftJoin() {
   }
 
   @Override
@@ -74,8 +65,10 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   }
 
   @Override
-  void orderBy() {}
+  void orderBy() {
+  }
 
   @Override
-  void limit() {}
+  void limit() {
+  }
 }
