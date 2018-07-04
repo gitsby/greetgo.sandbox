@@ -4,7 +4,6 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneDot;
@@ -536,7 +535,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   class TestRender implements ClientRender {
 
     private String name;
-    private List<ClientRow> clientRows;
+    private List<ClientRecord> clientRows;
 
     public TestRender() {
       clientRows = Lists.newArrayList();
@@ -548,7 +547,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Override
-    public void append(ClientRow asdRow) {
+    public void append(ClientRecord asdRow) {
       this.clientRows.add(asdRow);
     }
 

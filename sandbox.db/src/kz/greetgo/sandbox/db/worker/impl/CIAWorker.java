@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.worker.impl;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.Worker;
+import org.apache.log4j.Logger;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.xml.sax.Attributes;
@@ -21,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 
 public class CIAWorker extends Worker {
+
+  private Logger logger = Logger.getLogger("worker_log");
 
   private XMLReader xmlReader;
 
@@ -51,28 +54,28 @@ public class CIAWorker extends Worker {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
     } catch (SAXException e) {
-      System.out.println(e);
-      System.out.println(49);
+      logger.error(e.getMessage());
     }
     xmlReader.setContentHandler(new XMLHandler());
   }
 
   @Override
   public void prepareStatements() throws SQLException {
+    info("START");
     clientPs = nextConnection().prepareStatement("");
     clientAddressPs = nextConnection().prepareStatement("");
     clientPhonePs = nextConnection().prepareStatement("");
   }
 
   @Override
-  public void createTmpTables() throws SQLException {
+  public void createTmpTables() {
     createTmpNames();
     //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (id VARCHAR(255) NOT NULL, error varchar(255), surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birth_date varchar(255), charm VARCHAR(255))", clientTmp);
     //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
+    exec("CREATE TABLE TMP_TABLE (client VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
     //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE (client_id VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
+    exec("CREATE TABLE TMP_TABLE (client VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
   }
 
   private void createTmpNames() {
@@ -93,8 +96,7 @@ public class CIAWorker extends Worker {
       clientAddressBw = new BufferedWriter(new PrintWriter(clientAddressCsvFile));
       clientPhoneBw = new BufferedWriter(new PrintWriter(clientPhoneCsvFile));
     } catch (IOException e) {
-      e.printStackTrace();
-      System.out.println(e);
+      logger.error(e.getMessage());
     }
   }
 
@@ -111,7 +113,7 @@ public class CIAWorker extends Worker {
     try {
       file.createNewFile();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
     return file;
   }
@@ -170,7 +172,7 @@ public class CIAWorker extends Worker {
       clientPhoneBw.flush();
       copyManager = new CopyManager((BaseConnection) nextConnection());
     } catch (Exception e) {
-      System.out.println(e);
+      logger.error(e.getMessage());
     }
 
     copy(copyManager, clientCsvFile, clientTmp);
@@ -184,20 +186,20 @@ public class CIAWorker extends Worker {
     try (FileReader reader = new FileReader(file)) {
       copyManager.copyIn(r(copyQuery, tmp), reader);
     } catch (Exception e) {
-      System.out.println(e);
+      logger.error(e.getMessage());
     }
   }
 
   @Override
   public void fuseTmpTables() {
-    info("FUSE START");
+    logger.info("FUSE START");
     //language=PostgreSQL
     exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientTmp);
     //language=PostgreSQL
     exec("SELECT DISTINCT id, "
       +"error,"
       +"split_part(max(surname), '#', 2)    AS surname,"
-      +"split_part(max(\"name\"), '#', 2)       AS \"name\","
+      +"split_part(max(\"name\"), '#', 2)   AS \"name\","
       +"split_part(max(patronymic), '#', 2) AS patronymic,"
       +"split_part(max(gender), '#', 2)     AS gender,"
       +"split_part(max(birth_date), '#', 2) AS birth_date,"
@@ -205,12 +207,50 @@ public class CIAWorker extends Worker {
       +"INTO TMP_TABLE "
       +"FROM TMP_TABLE_conductor "
       +"GROUP BY id, error;", clientTmp);
-    info("FUSE END");
+
+
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientAddressTmp);
+    //language=PostgreSQL
+    exec("SELECT DISTINCT client," +
+      "\"type\"," +
+      "error, " +
+      "split_part(max(street), '#', 2) AS street," +
+      "split_part(max(house), '#', 2) AS house," +
+      "split_part(max(flat), '#', 2) AS flat " +
+      "INTO TMP_TABLE " +
+      "FROM TMP_TABLE_conductor " +
+      "GROUP BY client, \"type\", error;", clientAddressTmp);
+
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientPhoneTmp);
+    //language=PostgreSQL
+    exec("SELECT DISTINCT client," +
+      "\"type\"," +
+      "error," +
+      "split_part(max(number), '#', 2) AS number " +
+      "INTO TMP_TABLE " +
+      "FROM TMP_TABLE_conductor " +
+      "GROUP BY client, \"type\", error;", clientPhoneTmp);
+
+    logger.info("FUSE END");
+  }
+
+  private void createIsDateFunction() {
+    //language=PostgreSQL
+    exec("CREATE OR REPLACE FUNCTION is_date(s varchar) RETURNS BOOLEAN AS $$ " +
+      "BEGIN " +
+      " PERFORM s::date;" +
+      "   RETURN TRUE;" +
+      " EXCEPTION WHEN OTHERS THEN" +
+      "   RETURN FALSE;" +
+      "END;" +
+      "$$ LANGUAGE plpgsql;", null);
   }
 
   @Override
   public void validateTmpTables() {
-    info("VALIDATION START");
+    logger.info("VALIDATION START");
     //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='surname is not defined'" +
       "WHERE error IS NULL AND surname IS NULL;", clientTmp);
@@ -218,25 +258,75 @@ public class CIAWorker extends Worker {
     exec("UPDATE TMP_TABLE SET error='name is not defined'" +
       "WHERE error IS NULL AND \"name\" IS NULL;", clientTmp);
     //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET birth_date=str(birth_date, 'yyyy-MM-dd')", clientTmp);
-    //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='birth_date is not defined'" +
       "WHERE error IS NULL AND birth_date IS NULL;", clientTmp);
-    info("VALIDATION END");
+
+    createIsDateFunction();
+
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='birth_date format is wrong'" +
+      "WHERE error isnull and not is_date(birth_date)", clientTmp);
+
+
+    logger.info("VALIDATION END");
   }
 
   @Override
   public void migrateToTables() {
+    //language=PostgreSQL
+    exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm_id, cia_id) " +
+        "SELECT t2.surname, t2.name, t2.patronymic, t2.gender, to_date(t2.birth_date, 'yyyy-MM-dd'), 1, t2.id " +
+        "FROM TMP_TABLE t2 " +
+        "WHERE t2.error IS NULL ON CONFLICT(cia_id) DO UPDATE SET " +
+        "surname=EXCLUDED.surname," +
+        "name=EXCLUDED.name," +
+        "patronymic=EXCLUDED.patronymic," +
+        "gender=EXCLUDED.gender," +
+        "birth_date=EXCLUDED.birth_date," +
+        "charm_id=1;",
+      clientTmp);
 
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET " +
+      "client=(SELECT id FROM client WHERE client.cia_id=TMP_TABLE.client);", clientAddressTmp);
+
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='client not exist'" +
+      "WHERE error IS NULL AND client IS NULL;", clientAddressTmp);
+
+    //language=PostgreSQL
+    exec("INSERT INTO client_address(client, type, street, house, flat) " +
+      "SELECT client::int, t2.type, t2.street, t2.house, t2.flat FROM TMP_TABLE t2 " +
+      "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
+      "street=EXCLUDED.street," +
+      "house=EXCLUDED.house," +
+      "flat=EXCLUDED.flat;", clientAddressTmp);
+
+
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET " +
+      "client=(SELECT id FROM client WHERE client.cia_id=TMP_TABLE.client);", clientPhoneTmp);
+
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='client not exist'" +
+      "WHERE error IS NULL AND client IS NULL;", clientPhoneTmp);
+
+    //language=PostgreSQL
+    exec("INSERT INTO client_phone(client, type, number) " +
+      "SELECT client::int, t2.type, t2.number FROM TMP_TABLE t2 " +
+      "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
+      "number=EXCLUDED.number;", clientPhoneTmp);
   }
 
   @Override
   public void deleteTmpTables() {
-
+   //exec("DROP TABLE TMP_TABLE", clientTmp);
+    //exec("DROP TABLE TMP_TABLE_conductor", clientTmp);
   }
 
   @Override
   public void finish() throws SQLException, IOException {
+    info("FINISH");
     clientPs.close();
     clientAddressPs.close();
     clientPhonePs.close();
@@ -245,11 +335,10 @@ public class CIAWorker extends Worker {
     clientAddressBw.close();
     clientPhoneBw.close();
 
-
     clientCsvFile.delete();
     clientAddressCsvFile.delete();
     clientPhoneCsvFile.delete();
-    info("FINISH ALL");
+    logger.info("FINISH ALL");
   }
 
   class XMLHandler extends DefaultHandler {
@@ -261,7 +350,7 @@ public class CIAWorker extends Worker {
 
     @Override
     public void startDocument() {
-      info("Start document");
+      logger.info("Start document");
       tmpClient = new TMPClient();
       tmpClientAddresses = new TMPClientAddresses();
       tmpClientPhones = new TMPClientPhones();
@@ -321,7 +410,7 @@ public class CIAWorker extends Worker {
       try {
         parse(tmpClient, tmpClientAddresses, tmpClientPhones);
       } catch (Exception e) {
-        System.out.println(e);
+        logger.error(e.getMessage());
       }
 
       tmpClient = new TMPClient();
@@ -345,7 +434,7 @@ public class CIAWorker extends Worker {
 
     @Override
     public void endDocument() {
-      info("End document.");
+      logger.info("End document.");
     }
   }
 }

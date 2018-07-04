@@ -9,20 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ClientRecordListCallback extends ClientRecordSelectCallback<List<ClientRecord>, ClientRecord> {
+public class ClientRecordListCallback extends ClientRecordSelectCallback<List<ClientRecord>> {
 
   public ClientRecordListCallback(ClientFilter filter) {
     this.filter = filter;
-  }
-
-  @Override
-  public void from() {
-    sql.append("FROM client ");
-  }
-
-  @Override
-  public void join() {
-    sql.append("LEFT JOIN client_account ON client_account.client=client.id AND client_account.actual=1 ");
   }
 
   @Override
@@ -43,11 +33,6 @@ public class ClientRecordListCallback extends ClientRecordSelectCallback<List<Cl
   @Override
   public void values() {
 
-  }
-
-  @Override
-  public void groupBy() {
-    sql.append("GROUP BY client.id ");
   }
 
   @Override
@@ -90,20 +75,6 @@ public class ClientRecordListCallback extends ClientRecordSelectCallback<List<Cl
   @Override
   public void returning() {
 
-  }
-
-  @Override
-  public ClientRecord fromRs(ResultSet rs) throws SQLException {
-    ClientRecord clientRecord = new ClientRecord();
-    clientRecord.id = rs.getInt("id");
-    clientRecord.surname = rs.getString("surname");
-    clientRecord.name = rs.getString("name");
-    clientRecord.patronymic = rs.getString("patronymic");
-    clientRecord.age = rs.getInt("age");
-    clientRecord.middle_balance = rs.getFloat("middle_balance");
-    clientRecord.max_balance = rs.getFloat("max_balance");
-    clientRecord.min_balance = rs.getFloat("min_balance");
-    return clientRecord;
   }
 
   @Override

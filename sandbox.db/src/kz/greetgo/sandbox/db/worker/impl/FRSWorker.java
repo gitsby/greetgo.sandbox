@@ -24,7 +24,7 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public void createTmpTables() throws SQLException {
+  public void createTmpTables() {
 
   }
 

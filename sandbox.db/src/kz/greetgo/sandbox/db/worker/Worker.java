@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.worker;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,7 @@ public abstract class Worker implements WorkerInterface {
     this.migrationConfig = migrationConfig;
   }
 
-  public final void execute() throws SQLException, IOException {
+  public final void execute() throws SQLException, IOException, SAXException {
     createTmpTables();
     prepareStatements();
     createCsvFiles();
@@ -34,11 +35,12 @@ public abstract class Worker implements WorkerInterface {
     fuseTmpTables();
     validateTmpTables();
     migrateToTables();
+    deleteTmpTables();
     finish();
   }
 
 
-  public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
+  public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) throws SAXException {
     return new CIAWorker(connections, inputStream, migrationConfig);
   }
 

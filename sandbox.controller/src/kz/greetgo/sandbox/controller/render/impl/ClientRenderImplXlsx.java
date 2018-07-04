@@ -3,8 +3,8 @@ package kz.greetgo.sandbox.controller.render.impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.util.RND;
 
 import java.io.File;
@@ -50,15 +50,15 @@ public class ClientRenderImplXlsx implements ClientRender {
   }
 
   @Override
-  public void append(ClientRow clientRow) {
+  public void append(ClientRecord clientRecord) {
     sheet.row().start();
-    sheet.cellInt(1, clientRow.id);
-    sheet.cellStr(2, clientRow.surname);
-    sheet.cellStr(3, clientRow.name);
-    sheet.cellStr(4, clientRow.patronymic);
-    sheet.cellDouble(5, clientRow.middle_balance);
-    sheet.cellDouble(6, clientRow.max_balance);
-    sheet.cellDouble(7, clientRow.min_balance);
+    sheet.cellInt(1, clientRecord.id);
+    sheet.cellStr(2, clientRecord.surname);
+    sheet.cellStr(3, clientRecord.name);
+    sheet.cellStr(4, clientRecord.patronymic);
+    sheet.cellDouble(5, clientRecord.middle_balance);
+    sheet.cellDouble(6, clientRecord.max_balance);
+    sheet.cellDouble(7, clientRecord.min_balance);
     sheet.row().finish();
   }
 
@@ -81,7 +81,7 @@ public class ClientRenderImplXlsx implements ClientRender {
     asd.start(RND.str(10), new Date());
 
     for (int i=0;i<10; i++) {
-      ClientRow row = new ClientRow();
+      ClientRecord row = new ClientRecord();
       row.id=i+1;
       row.surname = RND.str(10);
       row.name = RND.str(10);

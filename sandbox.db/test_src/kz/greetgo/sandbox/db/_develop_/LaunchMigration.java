@@ -9,11 +9,14 @@ import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.core.SSH;
 import kz.greetgo.sandbox.db.util.ConfigFiles;
 import kz.greetgo.sandbox.db.util.ConnectionUtils;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintStream;
 
 public class LaunchMigration {
+
+  private static Logger logger = Logger.getLogger("migration_logger");
 
   public BeanGetter<SSHConfig> sshConfig;
   public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
@@ -39,19 +42,23 @@ public class LaunchMigration {
       }
     };
 
-    String fileName = "from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2";
-
+    String fileNames[] = {"from_cia_2018-02-21-154929-3-30000.xml.tar.bz2",
+      "from_cia_2018-02-21-154932-4-300000.xml.tar.bz2",
+      "from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2",
+      "from_cia_2018-02-21-154929-2-3000.xml.tar.bz2",
+      "from_cia_2018-02-21-154929-1-300.xml.tar.bz2"};
     File migrationFile;
+    for (String fileName : fileNames) {
+      try (SSH ssh = new SSH(sshConfig)) {
+        ssh.connect();
+        ssh.createChanel();
+        File sshFile = new File(ssh.getPath(fileName, "/Users/tester/migrationFolder"));
+        migrationFile = UnzipUtil.unzip(ssh.load(sshFile.getParent(), sshFile.getName()));
+      }
 
-    try (SSH ssh = new SSH(sshConfig)) {
-      ssh.connect();
-      ssh.createChanel();
-      File sshFile = new File(ssh.getPath(fileName, "/Users/tester/migrationFolder"));
-      migrationFile = UnzipUtil.unzip(ssh.load(sshFile.getParent(), sshFile.getName()));
-    }
-
-    try (Migration migration = new Migration(connectionConfig, migrationFile, migrationConfig)) {
-      migration.migrate();
+      try (Migration migration = new Migration(connectionConfig, migrationFile, migrationConfig)) {
+        migration.migrate();
+      }
     }
   }
 
