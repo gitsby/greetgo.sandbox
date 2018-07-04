@@ -32,6 +32,7 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
   public abstract RsReturnType fromRs(ResultSet rs) throws SQLException;
   public abstract ConnectionReturnType run(PreparedStatement ps) throws SQLException;
 
+  // FIXME: 7/4/18 Если метод приватный, то нет смысла делать его финальным
   private final void prepareSql() {
     select();
     from();
@@ -59,6 +60,7 @@ public abstract class SqlExecuteConnection<ConnectionReturnType, RsReturnType> i
       putParams(ps);
       res = run(ps);
     } catch (SQLException e) {
+      // FIXME: 7/4/18 catch ne nujen. throws Exception
       logger.error(e);
     }
     return res;

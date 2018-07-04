@@ -41,22 +41,21 @@ public class ClientRenderCallback extends ClientRecordSelectCallback<Void> {
 
   @Override
   public void orderBy() {
-
+// FIXME: 7/4/18 order by doljen byt'
   }
 
   @Override
   public void offsetAndLimit() {
-
+    // FIXME: 7/4/18 если тело пустое, то сделай как в returning ниже: {}
   }
+
 
   @Override
-  public void returning() {
-
-  }
+  public void returning() {}
 
   @Override
   public Void run(PreparedStatement ps) throws SQLException {
-    try(ResultSet rs = ps.executeQuery()) {
+    try (ResultSet rs = ps.executeQuery()) {
       render.start(name, new Date());
       while (rs.next()) render.append(fromRs(rs));
       render.finish();

@@ -1,7 +1,20 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientFilter;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
+import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.SortByEnum;
+import kz.greetgo.sandbox.controller.model.SortDirection;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
@@ -16,7 +29,12 @@ import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -25,6 +43,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * Набор автоматизированных тестов для тестирования методов класса {@link ClientRegisterImpl}
  */
 public class ClientRegisterImplTest extends ParentTestNg {
+  // FIXME: 7/4/18 Не все тесты работают
+  // FIXME: 7/4/18 Избавься от желтых в коде
+  // FIXME: 7/4/18 Нет тестов на пагинатор
+// FIXME: 7/4/18 Для ассертов использей ClientDot или аналог, а не Details (в гет рекорд)
 
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
