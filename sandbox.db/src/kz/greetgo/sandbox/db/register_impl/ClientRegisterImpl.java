@@ -20,7 +20,7 @@ import java.util.List;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
-
+  // FIXME: 7/4/18 Теста на отчет нет
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
