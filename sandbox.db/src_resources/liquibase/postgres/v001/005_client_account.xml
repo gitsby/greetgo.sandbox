@@ -11,7 +11,8 @@
           client_id int not null,
           money float,
           number varchar(15),
-          registered_at timestamp
+          registered_at timestamp,
+          actual int default 1
         )
       ]]>
     </sql>

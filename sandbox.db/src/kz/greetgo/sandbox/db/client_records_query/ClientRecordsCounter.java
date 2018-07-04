@@ -16,17 +16,10 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   private SQL sql = new SQL();
 
   public ClientRecordsCounter(ClientRecordFilter filter) {
-    super(filter);
+    super(filter, new SQL(), new ArrayList());
     this.filter = filter;
   }
 
-  @Override
-  public void prepareSql() {
-    // FIXME: 7/3/18 ЗАЧЕМ ТЫ ПЕРЕОПРЕДЕЛЯЕШЬ prepareSql?!!!
-    select();
-    from();
-    where(sql, params);
-  }
 
   @Override
   void select() {
@@ -43,11 +36,10 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
       statement.setObject(i + 1, params.get(i));
     }
 
-    int count;
-    try (ResultSet resultSet = statement.executeQuery()) {
-      resultSet.next();
-      count = resultSet.getInt("count");
-    }
+    ResultSet resultSet = statement.executeQuery();
+    resultSet.next();
+    int count = resultSet.getInt("count");
+
     statement.close();
     return count;
   }

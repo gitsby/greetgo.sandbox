@@ -1,15 +1,13 @@
 package kz.greetgo.sandbox.db.migration;
 
-import kz.greetgo.sandbox.db.migration.reader.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.PhoneFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Calendar.YEAR;
 
@@ -18,8 +16,6 @@ public class InMigrationWorker extends SqlWorker {
   public InMigrationWorker(Connection connection) {
     super(connection);
   }
-
-  int triesNum = 0;
 
   public void prepare() throws SQLException {
 //    exec("drop table temp_client");
@@ -54,6 +50,7 @@ public class InMigrationWorker extends SqlWorker {
 
   public void sendClient(List<ClientFromMigration> clients) throws SQLException {
     StringBuilder builder = new StringBuilder();
+    List params = new LinkedList();
     for (int i = 0; i < clients.size(); i++) {
       ClientFromMigration client = clients.get(i);
 
@@ -82,9 +79,16 @@ public class InMigrationWorker extends SqlWorker {
       } else if (!isValidFormat("yyyy-MM-dd", client.birth)) {
         error.append("Invalid birth date; ");
       }
-      builder.append(client.toInsertString(error));
+      params.add(client.id);
+      params.add(client.name);
+      params.add(client.surname);
+      params.add(client.patronymic);
+      params.add(client.gender);
+      params.add(client.charm);
+      params.add(error);
+      builder.append(client.getInsertString());
     }
-    exec(builder.toString());
+    exec(builder.toString(), params.toArray());
     connection.commit();
   }
 
@@ -121,12 +125,19 @@ public class InMigrationWorker extends SqlWorker {
   public void sendAddresses(List<AddressFromMigration> addressFromMigrations) throws SQLException {
     StringBuilder builder = new StringBuilder();
 
+    List params = new LinkedList();
     for (int i = 0; i < addressFromMigrations.size(); i++) {
 
       AddressFromMigration address = addressFromMigrations.get(i);
-      builder.append(address.toString());
-      if (i % 2 == 500) {
-        exec(builder.toString());
+      builder.append(address.getInsertString());
+      params.add(address.street);
+      params.add(address.house);
+      params.add(address.flat);
+      params.add(address.type);
+      if (i % 500 == 0) {
+        exec(builder.toString(), params.toArray());
+        builder = new StringBuilder();
+        params = new ArrayList();
         connection.commit();
       }
     }
@@ -135,15 +146,18 @@ public class InMigrationWorker extends SqlWorker {
 
   public void sendPhones(List<PhoneFromMigration> phones) throws SQLException {
     StringBuilder builder = new StringBuilder();
-
+    List params = new LinkedList();
     for (int i = 0; i < phones.size(); i++) {
       PhoneFromMigration phone = phones.get(i);
 
-      builder.append(phone.toInsertString());
-      //exec("insert into temp_phone (client_id, number, type) values(?, ?, ?)", phone.client_id, phone.number, phone.type);
+      builder.append(phone.getInsertString());
+      params.add(phone.client_id);
+      params.add(phone.number);
+      params.add(phone.type);
       if (i % 500 == 0) {
-        exec(builder.toString());
+        exec(builder.toString(), params.toArray());
         builder = new StringBuilder();
+        params = new LinkedList();
         connection.commit();
       }
     }

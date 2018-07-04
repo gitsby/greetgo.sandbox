@@ -7,6 +7,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsCounter;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsQuery;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
+import kz.greetgo.sandbox.db.client_records_query.ClientSaveQuery;
 import kz.greetgo.sandbox.db.client_records_report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
 import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
@@ -46,15 +47,8 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public ClientRecord save(ClientToSave editedClient) {
-    if (!characterIdExists(editedClient.charm)) {
-      return null;
-    }
-    // FIXME: 7/3/18 Должен быть один и тот же код для апдейта и крейта
-    if (editedClient.id == null) {
-      editedClient.id = clientDao.get().insertClient(editedClient);
-    } else {
-      clientDao.get().updateClient(editedClient);
-    }
+    editedClient.id = jdbc.get().execute(new ClientSaveQuery(editedClient));
+
     saveAddresses(editedClient.addedAddresses, "add", editedClient.id);
     saveAddresses(editedClient.editedAddresses, "edit", editedClient.id);
     saveAddresses(editedClient.deletedAddresses, "delete", editedClient.id);
@@ -97,7 +91,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws Exception {
-    ClientRecordsReportView reportView;
+    ClientRecordsReportView reportView = null;
     switch (type) {
       case "pdf":
         reportView = new ClientRecordsViewPdf(outputStream);
@@ -105,9 +99,8 @@ public class ClientRegisterImpl implements ClientRegister {
       case "xlsx":
         reportView = new ClientRecordsViewXlsx(outputStream);
         break;
-      default:
-        throw new Exception("Not existing type");
     }
+    assert reportView != null;
     jdbc.get().execute(new ClientRecordsRender(filter, reportView));
     reportView.finish(userName, new Date());
   }
@@ -130,15 +123,6 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
 
-  }
-
-  private boolean characterIdExists(int id) {
-    for (CharmRecord charm : charm()) {
-      if (id == charm.id) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

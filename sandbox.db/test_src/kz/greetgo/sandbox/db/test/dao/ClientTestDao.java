@@ -60,28 +60,20 @@ public interface ClientTestDao {
     "where client.actual = 1 and client.id=#{id}")
   ClientRecord getClientRecordById(int id);
 
-  @Select("select * from client " +
-    "where " +
-    "actual=1")
-  List<ClientDot> getClientDotsWithFIO(String fio);
-
   @Select("select * from client where id =#{id} and actual=1")
   ClientDot getClientDotById(int id);
 
-  @Select("select * from client_address where client_id=#{client_id}")
+  @Select("select * from client_address where client_id=#{client_id} and actual=1")
   AddressDot getAddressDot(int client_id);
 
-  @Select("select * from client_address where client_id=#{client_id}")
+  @Select("select * from client_address where client_id=#{client_id} and actual=1")
   List<AddressDot> getAddressDots(int clientId);
 
-  @Select("select client_id, number, type from client_phone where client_id=#{id}")
+  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
   PhoneDot getPhoneDot(int id);
 
-  @Select("select client_id, number, type from client_phone where client_id=#{id}")
+  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
   List<PhoneDot> getPhoneDots(int id);
-
-  @Select("select * from client where charm=#{charmId} and actual=1")
-  ClientDot getClientDotWithCharmId(int charmId);
 
   @Select("select name from client where id=#{id} and actual=1")
   String clientExists(int id);
