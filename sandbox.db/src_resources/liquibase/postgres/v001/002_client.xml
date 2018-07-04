@@ -28,6 +28,7 @@
         birth_date DATE,
         charm_id INTEGER,
         actual SMALLINT NOT NULL DEFAULT 1,
+        cia_id varchar(255) unique,
         PRIMARY KEY (id),
         FOREIGN KEY (charm_id) REFERENCES charm(id)
       );

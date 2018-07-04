@@ -6,8 +6,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.util.RND;
 
 import java.io.File;
@@ -60,8 +60,8 @@ public class ClientRenderImplPdf implements ClientRender {
   }
 
   @Override
-  public void append(ClientRow clientRow) {
-    addRows(table, clientRow);
+  public void append(ClientRecord record) {
+    addRows(table, record);
   }
 
   private void addTableHeader(PdfPTable table) {
@@ -83,7 +83,7 @@ public class ClientRenderImplPdf implements ClientRender {
     return font;
   }
 
-  private void addRows(PdfPTable table, ClientRow cr) {
+  private void addRows(PdfPTable table, ClientRecord cr) {
     BaseColor bColor = getBackgroundColor();
     Stream.of(cr.id+"", cr.surname, cr.name, cr.patronymic, cr.age+"", cr.middle_balance+"", cr.max_balance+"", cr.min_balance+"")
       .forEach(columnTitle -> {
@@ -129,8 +129,8 @@ public class ClientRenderImplPdf implements ClientRender {
     clientRenderImplPdf.finish();
   }
 
-  private static ClientRow getRandomClientRow(int i) {
-    ClientRow row = new ClientRow();
+  private static ClientRecord getRandomClientRow(int i) {
+    ClientRecord row = new ClientRecord();
     row.id=i;
     row.surname = RND.str(10);
     row.name = RND.str(10);

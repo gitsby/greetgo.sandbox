@@ -16,6 +16,21 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
   }
 
   @Override
+  public void select() {
+
+  }
+
+  @Override
+  public void from() {
+
+  }
+
+  @Override
+  public void join() {
+
+  }
+
+  @Override
   public void update() {
     if (isExist(clientToSave)) return;
     sql.append("UPDATE client ");
@@ -59,6 +74,21 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
   }
 
   @Override
+  public void groupBy() {
+
+  }
+
+  @Override
+  public void orderBy() {
+
+  }
+
+  @Override
+  public void offsetAndLimit() {
+
+  }
+
+  @Override
   public void returning() {
     sql.append("RETURNING id");
   }
@@ -74,9 +104,10 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
 
   @Override
   public Integer run(PreparedStatement ps) throws SQLException {
+    Integer res = null;
     try(ResultSet rs = ps.executeQuery()) {
-      if (rs.next()) return fromRs(rs);
+      if (rs.next()) res = fromRs(rs);
     }
-    return null;
+    return res;
   }
 }

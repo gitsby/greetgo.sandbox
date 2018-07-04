@@ -24,7 +24,7 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public void createTmpTables() throws SQLException {
+  public void createTmpTables() {
 
   }
 
@@ -40,6 +40,26 @@ public class FRSWorker extends Worker {
 
   @Override
   public void loadCsvFilesToTmp() {
+
+  }
+
+  @Override
+  public void fuseTmpTables() {
+
+  }
+
+  @Override
+  public void validateTmpTables() {
+
+  }
+
+  @Override
+  public void migrateToTables() {
+
+  }
+
+  @Override
+  public void deleteTmpTables() {
 
   }
 

@@ -40,8 +40,4 @@ public class ConfigData {
     if (!data.containsKey(key)) throw new IllegalArgumentException("No key " + key);
     return data.get(key);
   }
-
-  private boolean isNum(String str) {
-    return str.matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+");
-  }
 }

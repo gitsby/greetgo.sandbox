@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.worker;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,17 +26,21 @@ public abstract class Worker implements WorkerInterface {
     this.migrationConfig = migrationConfig;
   }
 
-  public final void execute() throws SQLException, IOException {
+  public final void execute() throws SQLException, IOException, SAXException {
     createTmpTables();
     prepareStatements();
     createCsvFiles();
     loadCsvFile();
     loadCsvFilesToTmp();
+    fuseTmpTables();
+    validateTmpTables();
+    migrateToTables();
+    deleteTmpTables();
     finish();
   }
 
 
-  public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
+  public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) throws SAXException {
     return new CIAWorker(connections, inputStream, migrationConfig);
   }
 
@@ -45,7 +50,7 @@ public abstract class Worker implements WorkerInterface {
 
   public void exec(String sql, String tmp) {
     String executingSql = r(sql, tmp);
-    try (Statement statement = nextConncetion().createStatement()) {
+    try (Statement statement = nextConnection().createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
       System.out.println(e);
@@ -54,7 +59,7 @@ public abstract class Worker implements WorkerInterface {
 
   private static int last = 0;
 
-  public Connection nextConncetion() {
+  public Connection nextConnection() {
     return connections.get(last % connections.size());
   }
 
