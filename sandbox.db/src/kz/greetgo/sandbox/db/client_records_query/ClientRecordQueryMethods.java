@@ -9,6 +9,8 @@ import java.util.List;
 
 public abstract class ClientRecordQueryMethods<T> implements ConnectionCallback<T> {
 
+  // FIXME: 7/4/18 Вынеси код, который не относится к каунту в нужное место
+
   public String clientRecordsSelect = "client.id,\n" +
     "  client.name,\n" +
     "  client.surname,\n" +
@@ -64,6 +66,7 @@ public abstract class ClientRecordQueryMethods<T> implements ConnectionCallback<
   }
 
   public void addSorting(ClientRecordFilter filter, SQL sql, boolean useLimit) {
+    // FIXME: 7/4/18 фильтр уже есть в класса, зачем ты его еще раз передаешь?
     String limit = "";
     if (useLimit) {
       limit = "LIMIT ? OFFSET ?";

@@ -65,6 +65,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     ClientRecordsQuery query = new ClientRecordsQuery(filter);
     query.sql.WHERE("client.id=?");
+    // FIXME: 7/4/18 Не должно быть желтым
     query.params.add(0, editedClient.id);
 
     return jdbc.get().execute(query).get(0);

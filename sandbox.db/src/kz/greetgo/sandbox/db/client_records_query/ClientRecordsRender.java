@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class ClientRecordsRender extends ClientRecordQueryMethods<Void> {
-
+  // FIXME: 7/4/18 Код для отчета и рекордов общий во многих местах, кроме лимита. Сделай ОБЩИМ!
   private ClientRecordsReportView view;
 
   private ClientRecordFilter filter;

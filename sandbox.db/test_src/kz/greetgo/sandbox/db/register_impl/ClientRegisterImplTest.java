@@ -1,7 +1,13 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -12,7 +18,11 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -302,6 +312,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
+    // FIXME: 7/4/18 = Comparator.comparingDouble(o -> o.minBalance)
     Comparator<ClientRecord> clientRecordMinComparator = (o1, o2) -> o1.minBalance >= o2.minBalance ? 1 : -1;
 
 
@@ -455,6 +466,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
     //
     //
+
+
+    // FIXME: 7/4/18 Тест не правильный. Везде должны быть ассерты(хотябы по айди)
 
     Comparator<ClientRecord> clientRecordAgeComparator = (o1, o2) -> o1.age <= o2.age ? 1 : -1;
 
