@@ -20,9 +20,8 @@ public class TableRegisterStand implements TableRegister {
         AGE,
         TOTALBALANCE,
         MAXBALANCE,
-        MINBALANCE,;
-
-    }
+        MINBALANCE,
+    };
 
     @Override
     public TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType){

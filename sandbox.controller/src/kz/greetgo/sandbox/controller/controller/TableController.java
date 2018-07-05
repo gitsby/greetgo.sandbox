@@ -24,8 +24,10 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-table-data")
-    public TableToSend getTableData(@Par("skipNumber") int skipNumber, @Par("limit") int limit, @Par("sortDirection") String sortDirection, @Par("sortType") String sortType) {
-        return tableRegister.get().getTableData(skipNumber, limit, sortDirection, sortType);
+    public TableToSend getTableData(@Par("skipNumber") Integer skipNumber, @Par("limit") Integer limit,
+                                    @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
+                                    @Par("filterType") String  filterType, @Par("filtexText") String filterText) {
+        return tableRegister.get().getTableData(skipNumber,limit, sortDirection, sortType, filterType, filterText);
     }
 
 
@@ -33,7 +35,7 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-exact-user")
-    public User getExactUser(@Par("userID") int userID){
+    public User getExactUser(@Par("userID") Integer userID){
         return tableRegister.get().getExactUser(userID);
     }
 
@@ -42,7 +44,7 @@ public class TableController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/create-user")
-    public int createUser(@Par("user") @Json User user) {
+    public Integer createUser(@Par("user") @Json User user) {
         return tableRegister.get().createUser(user);
     }
 
@@ -61,7 +63,7 @@ public class TableController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/delete-user")
-    public String deleteUser(@Par("userID") int userID){
+    public String deleteUser(@Par("userID") Integer userID){
         return tableRegister.get().deleteUser(userID);
     }
 

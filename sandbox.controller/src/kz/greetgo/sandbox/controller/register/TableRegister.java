@@ -7,15 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface TableRegister {
-    TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType);
+    TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText);
 
-    User getExactUser(int userID);
+    User getExactUser(Integer userID);
 
-    int createUser(User user);
+    Integer createUser(User user);
 
     String changeUser(User user);
 
-    String deleteUser(int userID);
+    String deleteUser(Integer userID);
 
 
 }

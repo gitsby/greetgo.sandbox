@@ -414,84 +414,85 @@ public class AuthRegisterImplTest extends ParentTestNg {
   }
 
 
-  @Test
-  public void getUserInfo_ok_checkPoliceGreen() throws Exception {
-    String accountName = RND.str(10);
-    String surname = RND.str(10);
-    String name = RND.str(10);
-    String patronymic = RND.str(10);
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, accountName, "asd", 1);
-    authTestDao.get().updatePersonField(id, "surname", surname);
-    authTestDao.get().updatePersonField(id, "name", name);
-    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
+//  @Test
+//  public void getUserInfo_ok_checkPoliceGreen() throws Exception {
+//    String accountName = RND.str(10);
+//    String surname = RND.str(10);
+//    String name = RND.str(10);
+//    String patronymic = RND.str(10);
+//    String id = RND.str(10);
+//    authTestDao.get().insertUser(id, accountName, "asd", 1);
+//    authTestDao.get().updatePersonField(id, "surname", surname);
+//    authTestDao.get().updatePersonField(id, "name", name);
+//    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
+//
+//    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
+//
+//    //
+//    //
+//    UserInfo userInfo = authRegister.get().getUserInfo(id);
+//    //
+//    //
+//
+//    assertThat(userInfo).isNotNull();
+//    assertThat(userInfo.id).isEqualTo(id);
+//    assertThat(userInfo.accountName).isEqualTo(accountName);
+//    assertThat(userInfo.surname).isEqualTo(surname);
+//    assertThat(userInfo.name).isEqualTo(name);
+//    assertThat(userInfo.patronymic).isEqualTo(patronymic);
+//
+//    assertThat(userInfo.yellow).isFalse();
+//
+//    assertThat(policeCheckService.get().checkNaturalPerson_input).hasSize(1);
+//    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).surname).isEqualTo(surname);
+//    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).name).isEqualTo(name);
+//    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).patronymic).isEqualTo(patronymic);
+//  }
 
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
-
-    //
-    //
-    UserInfo userInfo = authRegister.get().getUserInfo(id);
-    //
-    //
-
-    assertThat(userInfo).isNotNull();
-    assertThat(userInfo.id).isEqualTo(id);
-    assertThat(userInfo.accountName).isEqualTo(accountName);
-    assertThat(userInfo.surname).isEqualTo(surname);
-    assertThat(userInfo.name).isEqualTo(name);
-    assertThat(userInfo.patronymic).isEqualTo(patronymic);
-
-    assertThat(userInfo.yellow).isFalse();
-
-    assertThat(policeCheckService.get().checkNaturalPerson_input).hasSize(1);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).surname).isEqualTo(surname);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).name).isEqualTo(name);
-    assertThat(policeCheckService.get().checkNaturalPerson_input.get(0).patronymic).isEqualTo(patronymic);
-  }
-
-  @Test
-  public void getUserInfo_ok_checkPoliceYellow() throws Exception {
-    String accountName = RND.str(10);
-    String surname = RND.str(10);
-    String name = RND.str(10);
-    String patronymic = RND.str(10);
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, accountName, "asd", 1);
-    authTestDao.get().updatePersonField(id, "surname", surname);
-    authTestDao.get().updatePersonField(id, "name", name);
-    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
-
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.YELLOW));
-
-    //
-    //
-    UserInfo userInfo = authRegister.get().getUserInfo(id);
-    //
-    //
-
-    assertThat(userInfo.yellow).isTrue();
-  }
-
-  @Test(expectedExceptions = RedPoliceResponse.class)
-  public void getUserInfo_ok_checkPoliceRed() throws Exception {
-    String accountName = RND.str(10);
-    String surname = RND.str(10);
-    String name = RND.str(10);
-    String patronymic = RND.str(10);
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, accountName, "asd", 1);
-    authTestDao.get().updatePersonField(id, "surname", surname);
-    authTestDao.get().updatePersonField(id, "name", name);
-    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
-
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.RED));
-
-    //
-    //
-    authRegister.get().getUserInfo(id);
-    //
-    //
-  }
-
+//  @Test
+//  public void getUserInfo_ok_checkPoliceYellow() throws Exception {
+//    String accountName = RND.str(10);
+//    String surname = RND.str(10);
+//    String name = RND.str(10);
+//    String patronymic = RND.str(10);
+//    String id = RND.str(10);
+//    authTestDao.get().insertUser(id, accountName, "asd", 1);
+//    authTestDao.get().updatePersonField(id, "surname", surname);
+//    authTestDao.get().updatePersonField(id, "name", name);
+//    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
+//
+//    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.YELLOW));
+//
+//    //
+//    //
+//    UserInfo userInfo = authRegister.get().getUserInfo(id);
+//    //
+//    //
+//
+//    assertThat(userInfo.yellow).isTrue();
+//  }
+//
+//  @Test(expectedExceptions = RedPoliceResponse.class)
+//  public void getUserInfo_ok_checkPoliceRed() throws Exception {
+//    String accountName = RND.str(10);
+//    String surname = RND.str(10);
+//    String name = RND.str(10);
+//    String patronymic = RND.str(10);
+//    String id = RND.str(10);
+//    authTestDao.get().insertUser(id, accountName, "asd", 1);
+//    authTestDao.get().updatePersonField(id, "surname", surname);
+//    authTestDao.get().updatePersonField(id, "name", name);
+//    authTestDao.get().updatePersonField(id, "patronymic", patronymic);
+//
+//    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.RED));
+//
+//    //
+//    //
+//    authRegister.get().getUserInfo(id);
+//    //
+//    //
+//  }
+//
+//
 
 }

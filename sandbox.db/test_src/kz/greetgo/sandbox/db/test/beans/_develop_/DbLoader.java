@@ -17,7 +17,7 @@ public class DbLoader {
   final Logger logger = Logger.getLogger(getClass());
 
   public BeanGetter<StandDb> standDb;
-//  public BeanGetter<StandJsonDb> standJsonDb;
+  public BeanGetter<StandJsonDb> standJsonDb;
 
   public BeanGetter<AuthTestDao> authTestDao;
   public BeanGetter<TokenRegister> tokenManager;
@@ -31,6 +31,14 @@ public class DbLoader {
       .peek(p -> p.encryptedPassword = passwordEncryption.apply(p.password))
       .peek(PersonDot::showInfo)
       .forEach(authTestDao.get()::insertPersonDot);
+//
+//    standJsonDb.get().users.data.stream()
+//            .peek(p -> p.encryptedPassword = passwordEncryption.apply(p.password))
+//            .peek(PersonDot::showInfo)
+//            .forEach(authTestDao.get()::insertPersonDot);
+//
+
+
 
     logger.info("Finish loading test data");
   }
