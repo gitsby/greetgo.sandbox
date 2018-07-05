@@ -271,6 +271,7 @@ public class TableRegisterImplTest extends ParentTestNg{
 
     }
 
+
     @Test
     void tableFunctionalityTest(){
         TableToSend tableToSend = tableRegister.get().getTableData(0,8,"ASC","FULLNAME","SURNAME","Pavlov");
@@ -279,6 +280,14 @@ public class TableRegisterImplTest extends ParentTestNg{
                 ) {
             System.err.println(tableModel.toString());
         }
+
+        String[] sortDirections = {"ASC","DESC"};
+        String[] sortTypes = {"FULLNAME","AGE","TOTALBALANCE","MINBALANCE","MAXBALANCE"};
+        int[] ranges = {0,33,66,100};
+        String[] filterTypes = {"NAME","SURNAME","PATRONYMIC"};
+        String[] filterNames = {"adam","denis","isaak"};
+        String[] filterPatronymic = {"Vladimirovich","Timofeyevich","Victorovich"};
+        String[] filterSurnames = {"Ts%v","Siy%v","ch%v"};
 
 
 

@@ -14,4 +14,7 @@ public class TableModel {
         return id +" "+ fullName +" "+ charm +" "+ age +" "+ totalBalance +" "+ minBalance +" "+ maxBalance;
     }
 
+
+
+
 }
