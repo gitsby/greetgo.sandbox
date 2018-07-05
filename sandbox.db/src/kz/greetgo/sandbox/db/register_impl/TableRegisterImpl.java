@@ -23,15 +23,67 @@ public class TableRegisterImpl implements TableRegister{
     public DbModelConverter dbModelConverter = new DbModelConverter();
 
     @Override
-    public TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType){
-        return null;
+    public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+
+        TableToSend tableToSend = new TableToSend();
+
+        sortDirection = sortDirection.toUpperCase();
+        filterType = filterType.toUpperCase();
+        sortType = sortType.toUpperCase();
+        filterText = "%"+ filterText + "%";
+        if (checkParams(skipNumber,limit,sortDirection,sortType,filterType,filterText)){
+            tableToSend.table.add(new TableModel());
+            return tableToSend;
+        }
+
+        if(sortType.equals("FULLNAME")){
+            tableToSend.table= sortDirection.equals("DESC")?
+                    tableDao.get().getFullNameDesc(skipNumber, limit, filterType, filterText):
+                    tableDao.get().getFullNameAsc(skipNumber, limit, filterType, filterText);
+        }
+        if(sortType.equals("AGE")){
+            tableToSend.table= sortDirection.equals("DESC")?
+                    tableDao.get().getAgeDesc(skipNumber, limit, filterType, filterText):
+                    tableDao.get().getAgeAsc(skipNumber, limit, filterType, filterText);
+        }
+        if(sortType.equals("MINBALANCE")){
+            tableToSend.table= sortDirection.equals("DESC")?
+                    tableDao.get().getMinBalanceDesc(skipNumber, limit, filterType, filterText):
+                    tableDao.get().getMinBalanceAsc(skipNumber, limit, filterType, filterText);
+        }
+        if(sortType.equals("MAXBALANCE")){
+            tableToSend.table= sortDirection.equals("DESC")?
+                    tableDao.get().getMaxBalanceDesc(skipNumber, limit, filterType, filterText):
+                    tableDao.get().getMaxBalanceAsc(skipNumber, limit, filterType, filterText);
+        }
+        if(sortType.equals("TOTALBALANCE")){
+            tableToSend.table= sortDirection.equals("DESC")?
+                    tableDao.get().getTotalBalanceDesc(skipNumber, limit, filterType, filterText):
+                    tableDao.get().getTotalBalanceAsc(skipNumber, limit, filterType, filterText);
+        }
+
+        tableToSend.size=tableDao.get().getTableSize();
+        return tableToSend;
+    }
+
+    public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+
+        return skipNumber==-1 || limit==-1 ||
+                sortDirection.isEmpty() ||sortType.isEmpty() ||
+                filterText.isEmpty() || filterType.isEmpty() ||
+                skipNumber==null ||  limit==null ||
+                sortDirection==null || sortType==null ||
+                filterText==null || filterType==null ||
+                !sortDirection.matches("(ASC|DESC)") ||
+                !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
+                !filterType.matches("NAME|SURNAME|PATRONYMIC");
+
     }
 
 
     @Override
-    public User getExactUser(int userID){
+    public User getExactUser(Integer userID){
         boolean existence = tableDao.get().countClientsWithUserID( userID) > 0;
-//        System.err.println(existence);
         if(!existence){
             User user = new User();
             user.id = -1;
@@ -88,14 +140,16 @@ public class TableRegisterImpl implements TableRegister{
 
     @Override
     public Integer createUser(User user){
-
-        if(tableDao.get().countClientsWithUserID( user.id) <= 0){
-            return -1;
-        }
+//
+//        if(tableDao.get().countClientsWithUserID( user.id) <= 0){
+//            return -2;
+//        }
 
         if(!checkForContraints(user))
             return -1;
-        System.err.println(user.toString());
+
+        user.validity=true;
+
 
         Integer charmId = charmCheck(user.charm);
 
@@ -111,6 +165,9 @@ public class TableRegisterImpl implements TableRegister{
         }
         tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressRegistered(user));
         tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressFactual(user));
+
+        tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
+        tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
         return user.id;
     }
 
@@ -141,9 +198,10 @@ public class TableRegisterImpl implements TableRegister{
         if(!checkForContraints(user))
             return "-1";
 
+        user.validity=true;
 
         DbClientPhone[] dbClientPhonesLoaded = tableDao.get().getPhones(user.id);
-        DbClientPhone[]  dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
+        DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
 
         for (int i = 0; i <dbClientPhones.length; i++) {
             for (int j = 0; j <dbClientPhonesLoaded.length ; j++) {
@@ -170,8 +228,9 @@ public class TableRegisterImpl implements TableRegister{
     }
 
     @Override
-    public String deleteUser(int userID){
-        if(tableDao.get().countClientsWithUserID(userID) <= 0){
+    public String deleteUser(Integer userID){
+
+        if(tableDao.get().countClientsWithUserID(userID) <= 0 || userID==null){
             return "-1";
         }
         tableDao.get().deleteClient(userID);

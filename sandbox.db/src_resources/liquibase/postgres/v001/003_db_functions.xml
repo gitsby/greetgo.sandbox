@@ -10,13 +10,13 @@
 <changeSet id="create-filtered-table" author="arpanetus">
     <sql endDelimiter=";;"><![CDATA[
             create or replace function filtered_names(filter_type varchar, filter_text varchar)
-        returns table(id int, surname varchar(255), name varchar(255), patronymic varchar(255), birth_date int, charm integer)
+        returns table(id int, surname varchar(255), name varchar(255), patronymic varchar(255), birthDate Date, charm integer)
         as $$ begin return query select
-        cl.id, cl.surname, cl.name, cl.patronymic, cl.birth_date, cl.charm  from client as cl
+        cl.id, cl.surname, cl.name, cl.patronymic, cl.birthDate, cl.charm  from client as cl
         where case
-              when filter_type='NAME' then  cl.name like filter_text
-              when filter_type='SURNAME' then  cl.surname like filter_text
-              when filter_type='PATRONYMIC' then  cl.patronymic like filter_text
+              when filter_type='NAME' then  cl.name ilike filter_text
+              when filter_type='SURNAME' then  cl.surname ilike filter_text
+              when filter_type='PATRONYMIC' then  cl.patronymic ilike filter_text
               else cl.name like filter_text
               end;
         end; $$
@@ -25,85 +25,356 @@
 
     </sql>
 </changeSet>
+
+<changeSet id="create-account-selection" author="arpanetus">
+    <sql endDelimiter=";;"><![CDATA[
+        create or replace function filtered_accounts()
+        returns TABLE(client integer, totalbalance double precision, minbalance double precision, maxbalance double precision)
+        language plpgsql
+        as $$
+        begin return query select
+                     ca.client as client,
+                     max(ca.money) as maxBalance,
+                     min(ca.money) as minBalance,
+                     sum(ca.money) as totalBalance
+                   from client_account as ca
+                   group by ca.client;
+        end;
+        $$;
+    ]]></sql>
+</changeSet>
+
+
 <changeSet id="create-table-to-view" author="arpanetus">
     <sql endDelimiter=";;"><![CDATA[
-        create or replace function table_to_view(filter_type varchar, filter_text varchar)
-        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
-        as $$ begin return query select
-         cl.id as id, concat_ws(' ', cl.name, cl.surname, cl.patronymic) as fullName,
-         cast(extract(epoch from cl.birth_date) as integer) as age,ch.name as charm,
-         max(ca.money) as maxBalance, min(ca.money) as minBalance, sum(ca.money) as totalBalance
-            from filtered_names(filter_type, filter_text) as cl, client_account as ca, charm as ch
-            where cl.id = ca.client AND cl.charm = ch.id
-            group by cl.id, ch.name;
-        end; $$
-        language plpgsql;
-
-
-
-    ]]>
+create or replace function table_to_view(filter_type character varying, filter_text character varying)
+  returns TABLE(id integer, fullname text, age bigint, charm character varying, totalbalance double precision, minbalance double precision, maxbalance double precision)
+language plpgsql
+as $$
+begin return query select
+                     cl.id as id,
+                     cl.surname||' '||cl.name||' '||cl.patronymic as fullName,
+                     cast(extract(epoch from cl.birthDate) as bigint) as age,
+                     ch.name as charm,
+                     ca.maxBalance as maxBalance, ca.minBalance as minBalance, ca.totalBalance as totalBalance
+                   from filtered_names(filter_type, filter_text) as cl
+                     left join filtered_accounts() as ca on cl.id = ca.client
+                     left join charm as ch on cl.charm = ch.id
+                   group by cl.id, ch.name,cl.patronymic,cl.birthDate, cl.name, cl.surname, ca.maxbalance,ca.minbalance, ca.totalbalance;
+end;
+$$;]]>
     </sql>
 </changeSet>
-    <changeSet id="create-table-sorted-table" author="arpanetus">
-        <sql endDelimiter=";;"><![CDATA[
-            create or replace function sort_table(sort_direction varchar,sort_type varchar, filter_type varchar, filter_text varchar)
-        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
-        as $$ begin return query select
-        case
-            when sort_direction='DESC' then
-                (select * from table_to_view(filter_type, filter_text) as ttv
-                    order by case
-                        when sort_type='FULLNAME' then fullName
-                        when sort_type='AGE' then age
-                        when sort_type='TOTALBALANCE' then totalBalance
-                        when sort_type='MINBALANCE' then minBalance
-                        when sort_type='MAXBALANCE' then maxBalance
-                        else fullName
-                     end
-                     DESC)
-            else (select * from table_to_view(filter_type, filter_text) as ttv
-                    order by case
-                        when sort_type='FULLNAME' then fullName
-                        when sort_type='AGE' then age
-                        when sort_type='TOTALBALANCE' then totalBalance
-                        when sort_type='MINBALANCE' then minBalance
-                        when sort_type='MAXBALANCE' then maxBalance
-                        else fullName
-                     end
-                     ASC)
-             end;
-        end; $$
-        language plpgsql;
 
+    <!--
+    Once God said: if your time is scarce and plsql doesn't want to be your conscious property
+    then write some 'Kosteels'.
+    So did I.
+    -->
 
-    ]]>
-        </sql>
-    </changeSet>
-    <changeSet id="create-sliced-table" author="arpanetus">
+    <changeSet id="create-" author="arpanetus">
         <sql endDelimiter=";;"><![CDATA[
-        create or replace function final_table(skip_number int,limit_number int, sort_direction varchar,sort_type varchar, filter_type varchar, filter_text varchar)
-        returns table(id int, fullName text, age int, charm varchar, totalBalance float,minBalance float, maxBalance float)
-        as $$ begin return query select *
-        from sort_table(sort_direction, sort_type, filter_type, filter_text)
+create or replace function
+        sortedfullNameDesc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+      returns table(
+        id int,
+        fullName text,
+        age bigint,
+        charm varchar,
+        totalBalance float,
+        minBalance float,
+        maxBalance float)
+      as $$ begin return query
+        select
+          processed.id as id,
+          processed.fullName as fullName,
+          processed.age as age,
+          processed.charm as charm,
+          processed.totalBalance as totalBalance,
+          processed.minBalance as minBalance,
+          processed.maxBalance as maxBalance
+        from (select * from table_to_view(filter_type,filter_text) as ttv
+              order by ttv.fullname desc) as processed
         limit limit_number offset skip_number;
-        end; $$
-        language plpgsql;
+      end; $$
+      language plpgsql;
 
-    ]]>
+
+      create or replace function
+        sortedfullNameAsc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.fullname asc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+
+      create or replace function
+        sortedAgeDesc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.age desc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+      create or replace function
+        sortedAgeAsc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.age asc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+
+      create or replace function
+        sortedTotalBalanceDesc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.totalbalance desc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+      create or replace function
+        sortedTotalBalanceAsc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.totalbalance asc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+
+      create or replace function
+        sortedMinBalanceDesc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.minbalance desc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+      create or replace function
+        sortedMinBalanceAsc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.minbalance asc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+      create or replace function
+        sortedMaxBalanceDesc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.maxbalance desc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+
+      create or replace function
+        sortedMaxBalanceAsc(
+        skip_number int,
+        limit_number int,
+        filter_type varchar,
+        filter_text varchar)
+        returns table(
+          id int,
+          fullName text,
+          age bigint,
+          charm varchar,
+          totalBalance float,
+          minBalance float,
+          maxBalance float)
+      as $$ begin return query
+      select
+        processed.id as id,
+        processed.fullName as fullName,
+        processed.age as age,
+        processed.charm as charm,
+        processed.totalBalance as totalBalance,
+        processed.minBalance as minBalance,
+        processed.maxBalance as maxBalance
+      from (select * from table_to_view(filter_type,filter_text) as ttv
+            order by ttv.maxbalance asc) as processed
+      limit limit_number offset skip_number;
+      end; $$
+      language plpgsql;
+
+
+        ]]>
         </sql>
     </changeSet>
 
 
-<!--create or replace function myelif(a varchar)
-        returns integer
-        as $$ begin return case
-            when a='a' then 0
-            else 1
-            end
-        end; $$
-        language plpgsql;
-
--->
         </databaseChangeLog>
 
 

@@ -1,10 +1,11 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClientAddress;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClientPhone;
+import kz.greetgo.sandbox.controller.model.dbmodels.*;
 import org.apache.ibatis.annotations.*;
+import kz.greetgo.sandbox.controller.model.*;
+
+import java.util.ArrayList;
+
 
 public interface TableDao {
 
@@ -69,10 +70,10 @@ public interface TableDao {
 //    String getTableWithFilters(@Param("") short smth);
 
     @Select("select last_value from client_id_seq")
-    int getLastClientID();
+    Integer getLastClientID();
 
     @Select("select count(id) from client")
-    String getTableSize();
+    Integer getTableSize();
 
     @Select("select charm.id from charm where charm.name=#{charm}")
     Integer getCharmId(String charm);
@@ -122,6 +123,10 @@ public interface TableDao {
             "#{name},#{surname},#{patronymic},#{gender},#{charm},"+
             "#{validity},#{birthDate})")
     void insertClient(DbClient dbClient);
+
+    @Insert("insert into client_account(client,money,number,registered_at, validity) values(" +
+            "#{client},#{money},#{number},#{registered_at}, #{validity})")
+    void insertAccount(DbClientAccount dbClientAccount);
 
 
 
@@ -184,11 +189,216 @@ public interface TableDao {
             "where client=#{userID}")
     void deleteAccount(@Param("userID") int userID);
 
-/////////////////////////////
 
-//
+    @Update("update client_account set " +
+            "money=#{money}" +
+            "where client_account.id=#{id}")
+    void updateAccount(DbClientAccount dbClientAccount);
 
-//    @Select("select count(id) from client")
-//    String getTableSize();
+
+    @Select("select id from client_account "+
+            "where client=#{userID}")
+    Integer[] getAccount(@Param("userID") int userID);
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedFullNameDesc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getFullNameDesc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedFullNameAsc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getFullNameAsc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedMaxBalanceDesc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getMaxBalanceDesc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedMaxBalanceAsc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getMaxBalanceAsc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedMinBalanceAsc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getMinBalanceAsc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedMinBalanceDesc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getMinBalanceDesc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedTotalBalanceAsc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getTotalBalanceAsc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedTotalBalanceDesc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getTotalBalanceDesc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedAgeAsc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getAgeAsc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+    @Select("select processed.id, " +
+            "processed.fullName, " +
+            "processed.age, " +
+            "processed.charm, " +
+            "processed.minBalance, " +
+            "processed.maxBalance, " +
+            "processed.totalBalance from " +
+            "sortedAgeDesc( "+
+            "#{skip_number}, " +
+            "#{limit_number}, " +
+            "#{filter_type}, " +
+            "#{filter_text})" +
+            "as processed")
+    ArrayList<TableModel> getAgeDesc(
+            @Param("skip_number") Integer skipNumber,
+            @Param("limit_number") Integer limitNumber,
+            @Param("filter_type") String filterType,
+            @Param("filter_text") String filterText
+    );
+
+
+
 
 }

@@ -7,12 +7,12 @@ public class User {
     public String surname;
     public String name;
     public String patronymic;
-    public long birthDate;
+    public Long birthDate;
     public String charm;
     public Phone[] phones;
     public Address factualAddress;
     public Address registeredAddress;
-    public boolean validity;
+    public Boolean validity;
 
     public GenderType genderType;
 

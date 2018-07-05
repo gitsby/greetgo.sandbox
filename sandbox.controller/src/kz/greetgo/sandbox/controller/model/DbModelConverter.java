@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.controller.model;
 
 import kz.greetgo.sandbox.controller.model.dbmodels.*;
+import kz.greetgo.util.RND;
 import sun.security.pkcs11.Secmod;
 
 import java.time.Instant;
@@ -88,6 +89,16 @@ public class DbModelConverter {
         }
 
         return dbClientPhones;
+    }
+
+    public DbClientAccount convertToDbClientAccount(User user){
+        DbClientAccount dbClientAccount = new DbClientAccount();
+        dbClientAccount.client=user.id;
+        dbClientAccount.number=RND.str(20);
+        dbClientAccount.money=0;
+        dbClientAccount.registered_at = new Date();
+        dbClientAccount.validity=true;
+        return  dbClientAccount;
     }
 
     public TableToSend convertToTableToSend(DbTableModel[] dbTableModels, int size){

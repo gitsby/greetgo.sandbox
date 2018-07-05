@@ -1,15 +1,13 @@
 package kz.greetgo.sandbox.db.register_impl;
 
+import com.google.gson.Gson;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.IllegalLoginOrPassword;
 import kz.greetgo.sandbox.controller.errors.NoAccountName;
 import kz.greetgo.sandbox.controller.errors.NoPassword;
 import kz.greetgo.sandbox.controller.errors.NotFound;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClientAddress;
-import kz.greetgo.sandbox.controller.model.dbmodels.DbClientPhone;
+import kz.greetgo.sandbox.controller.model.dbmodels.*;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.db.dao.TableDao;
 import kz.greetgo.sandbox.db.test.dao.TableTestDao;
@@ -56,66 +54,75 @@ public class TableRegisterImplTest extends ParentTestNg{
             assertThat(sentUsers[i].equals(gotUsers[i]));
         }
     }
-//
-//    @Test
-//    public void insertUsersWithNullParsTest(){
-//        deleteAllData();
-//        User[] sentUsers = new User[10];
-//        User[] gotUsers = new User[10];
-//        String[] move  = {"name","surname","gender","charm","registeredAddress","mobile"};
-//        int i=0;
-//        for(String option: move) {
-//            sentUsers[i]=testDataGenerator.generateUser();
-//            if(option.equals("name")){
-//                sentUsers[i].name=null;
-//            } else if(option.equals("surname")){
-//                sentUsers[i].surname=null;
-//            } else if(option.equals("gender")){
-//                sentUsers[i].genderType = null;
-//            } else if(option.equals("charm")){
-//                sentUsers[i].charm = null;
-//            } else if(option.equals("registeredAddress")){
-//                sentUsers[i].registeredAddress = null;
-//            } else if(option.equals("mobile")){
-//                sentUsers[i].phones = null;
-//            }
-//
-//            Integer id = tableRegister.get().createUser(sentUsers[i]);
-//            assertThat(id).isNull();
-//        }
-//
-//    }
-//
-//    @Test
-//    public void deleteUserX10Test(){
-//        deleteAllData();
-//        User[] sentUsers = new User[10];
-//        for (int i=0; i<10; i++){
-//            sentUsers[i]=testDataGenerator.generateUser();
-//            String name = sentUsers[i].name;
-//            Phone[] phones = sentUsers[i].phones;
-//            Address fact = sentUsers[i].factualAddress;
-//            Address reg = sentUsers[i].registeredAddress;
-//            String charm = sentUsers[i].charm.toString();
-//            String surname = sentUsers[i].surname;
-//            String patronymic = sentUsers[i].patronymic;
-//            String gender = sentUsers[i].genderType.toString();
-//            tableTestDao.get().insertCharm(charm, charm, 225.0f);
-//            tableTestDao.get().insertClient(name,charm, surname,gender,patronymic);
-//            int userID = tableTestDao.get().getLastClientID();
-//            for(int j=0; j<phones.length; j++){
-//                tableTestDao.get().insertPhone(userID, phones[j].number, phones[j].phoneType.toString());
-//            }
-//            tableTestDao.get().insertAddress(userID,"FACT",fact.street, fact.house, fact.flat);
-//            tableTestDao.get().insertAddress(userID,"REG",reg.street, reg.house, reg.flat);
-//            sentUsers[i].id=userID;
-//            tableRegister.get().deleteUser(userID);
-//        }
-//        for(int i=0;i<10; i++){
-//                assertThat(tableTestDao.get().getExactClient(sentUsers[i].id)).isNull();
-//        }
-//    }
-//
+
+    @Test
+    public void insertUsersWithNullParsTest(){
+        deleteAllData();
+        String[] move  = {"name","surname","gender","charm","registeredAddress","birthDate"};
+        for(String option: move) {
+            User user = testDataGenerator.generateUser();
+            if(option.equals("name")){
+                user.name=null;
+            } else if(option.equals("surname")){
+                user.surname=null;
+            } else if(option.equals("gender")){
+                user.genderType = null;
+            } else if(option.equals("charm")){
+                user.charm = null;
+            } else if(option.equals("registeredAddress")){
+                user.registeredAddress = null;
+            } else if(option.equals("birthDate")){
+                user.birthDate = null;
+            }
+            Integer id = tableRegister.get().createUser(user);
+            assertThat(id==-1);
+        }
+        for(String option: move) {
+            User user=testDataGenerator.generateUser();
+            if(option.equals("name")){
+                user.name="";
+            } else if(option.equals("surname")){
+                user.surname="";
+            } else if(option.equals("gender")){
+                user.genderType = null;
+            } else if(option.equals("charm")){
+                user.charm = "";
+            } else if(option.equals("registeredAddress")){
+                user.registeredAddress.house = "";
+                user.registeredAddress.flat = "";
+                user.registeredAddress.street = "";
+            } else if(option.equals("birthDate")){
+                user.birthDate = null;
+            }
+            Integer id = tableRegister.get().createUser(user);
+            assertThat(id).isEqualTo(-1);
+        }
+
+        String[] moveByType = {"NOMOBILE","LESSTHAN11","LETTERS"};
+
+        for(String option:moveByType){
+            User user=testDataGenerator.generateUser();
+            if(option.equals("NOMOBILE")){
+                for (int j = 0; j < user.phones.length ; j++) {
+                    if(user.phones[j].phoneType==PhoneType.MOBILE){
+                        user.phones[j].phoneType=PhoneType.WORK;
+                    }
+                }
+            }
+            if (option.equals("LESSTHAN11")){
+                user.phones[0].number="123456";
+            }
+            if (option.equals("LETTERS")){
+                user.phones[0].number="asdsada";
+            }
+            Integer id = tableRegister.get().createUser(user);
+            assertThat(id).isEqualTo(-1);
+
+        }
+
+
+    }
+
 
     @Test
     public void getExactClientTest(){
@@ -199,48 +206,85 @@ public class TableRegisterImplTest extends ParentTestNg{
     }
 
 
+    @Test
+    public void deleteNullUserTest() throws Exception {
+        deleteAllData();
+        String ans = tableRegister.get().deleteUser(1);
+        assertThat(("-1").equals(ans));
+    }
 
 
-    //
-//    @Test
-//    public void deleteNullUserTest() throws Exception {
-//        deleteAllData();
-//        String ans = tableRegister.get().deleteUser(1);
-//        assertThat(("-1").equals(ans));
-//    }
-//
-//
-//    @Test
-//    public void updateUserTest() throws Exception {
-//        deleteAllData();
-//        User user = testDataGenerator.generateUser();
-//        tableTestDao.get().insertCharm(user.charm.toString(),user.charm.toString(),255.0f);
-//        tableTestDao.get().insertClient(user.name,user.charm.toString(),user.surname,user.genderType.toString(),user.patronymic);
-//        int userID = tableTestDao.get().getLastClientID();
-//        user.id=userID;
-//        for(int j=0; j<user.phones.length; j++){
-//            tableTestDao.get().insertPhone(userID, user.phones[j].number, user.phones[j].phoneType.toString());
-//        }
-//        tableTestDao.get().insertAddress(userID,"FACT",user.factualAddress.street, user.factualAddress.house, user.factualAddress.flat);
-//        tableTestDao.get().insertAddress(userID,"REG",user.registeredAddress.street, user.registeredAddress.house, user.registeredAddress.flat);
-//        user=testDataGenerator.generateUser();
-//        user.id=userID;
-//        tableRegister.get().changeUser(user);
-//        User updatedUser = tableRegister.get().getExactUser(userID);
-//        assertThat(user.equals(updatedUser));
-//    }
-//
-//    @Test
-//    public void updateNullUser() throws Exception {
-//        deleteAllData();
-//        int userID = 1;
-//        User user = testDataGenerator.generateUser();
-//        user.id=userID;
-//        tableRegister.get().changeUser(user);
-//        User updatedUser = tableRegister.get().getExactUser(userID);
-//        assertThat(updatedUser).isNull();
-//    }
-//
+
+    @Test
+    public void updateNullUser() throws Exception {
+        deleteAllData();
+        int userID = 1;
+        User user = testDataGenerator.generateUser();
+        user.id=userID;
+        tableRegister.get().changeUser(user);
+        User updatedUser = tableRegister.get().getExactUser(userID);
+        assertThat(updatedUser.id==-1);
+    }
+
+    @Test
+    public void enterTheDataNotTest() {
+        deleteAllData();
+        String namesJson = "{\"data\":[{\"surname\":\"Solovyov\",\"name\":\"Konstantin (Kostya)\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Trukhin\",\"name\":\"Pavel (Pasha)\",\"patronymic\":\"Victorovich\"},{\"surname\":\"Ryabtsev\",\"name\":\"Zhenka\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Siyasinov\",\"name\":\"Sergey (Seryozha)\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Siyankov\",\"name\":\"Yegor (Jora)\",\"patronymic\":\"Ruslanovich\"},{\"surname\":\"Yakimov\",\"name\":\"Artemiy\",\"patronymic\":\"Yakovich\"},{\"surname\":\"Steblev\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Yaroslavovich\"},{\"surname\":\"Shchegolyayev\",\"name\":\"Vladislav (Slava)\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Nardin\",\"name\":\"Sergei\",\"patronymic\":\"Igorevich\"},{\"surname\":\"Yumatov\",\"name\":\"Dionisiy\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Entsky\",\"name\":\"Maksim\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Susnin\",\"name\":\"Luchok\",\"patronymic\":\"Vladimirovich\"},{\"surname\":\"Yudachyov\",\"name\":\"Yevgeniy (Zhenya)\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Yermolovo\",\"name\":\"Ippolit\",\"patronymic\":\"Kirillovich\"},{\"surname\":\"Vanzin\",\"name\":\"Onufri\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Glukhov\",\"name\":\"Radoslav\",\"patronymic\":\"Alesnarovich\"},{\"surname\":\"Turov\",\"name\":\"Vasiliy (Vasya)\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Preobrazhensky\",\"name\":\"Slava\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Ipatyev\",\"name\":\"Alexei\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Kadnikov\",\"name\":\"Valentin (Valya)\",\"patronymic\":\"Pavlovich\"},{\"surname\":\"Kuzmich\",\"name\":\"Vyacheslav (Slava)\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Gulin\",\"name\":\"Ikovle\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Loginovsky\",\"name\":\"Isaak\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Barkov\",\"name\":\"Mili\",\"patronymic\":\"Andreevich\"},{\"surname\":\"Osin\",\"name\":\"Artem (Tyoma)\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Zuyev\",\"name\":\"Adam\",\"patronymic\":\"Leonidovich\"},{\"surname\":\"Uglitsky\",\"name\":\"Sergei\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Antipov\",\"name\":\"Valerian (Lera)\",\"patronymic\":\"Yermolayevich\"},{\"surname\":\"Petrov\",\"name\":\"Mili\",\"patronymic\":\"Dmitrievich\"},{\"surname\":\"Uralets\",\"name\":\"Miron\",\"patronymic\":\"Vsevolodovich\"},{\"surname\":\"Golovin\",\"name\":\"Artur\",\"patronymic\":\"Alesnarovich\"},{\"surname\":\"Shishov\",\"name\":\"Adam\",\"patronymic\":\"Konstantinovich\"},{\"surname\":\"Chudov\",\"name\":\"Nikolay (Kolya)\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Roshchin\",\"name\":\"Danya\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Chaadayev\",\"name\":\"Samuil\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Ryabkin\",\"name\":\"Timofei\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Osennykh\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Khanipov\",\"name\":\"Luka\",\"patronymic\":\"Yemelyanovich\"},{\"surname\":\"Manyakin\",\"name\":\"Demian\",\"patronymic\":\"Yevgenievich\"},{\"surname\":\"Leskov\",\"name\":\"Kusma (Kusya)\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Uglichinin\",\"name\":\"Kirill (Kirilka)\",\"patronymic\":\"Denisovich\"},{\"surname\":\"Markin\",\"name\":\"Josef\",\"patronymic\":\"Victorovich\"},{\"surname\":\"Valevach\",\"name\":\"Valeriy (Valera)\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Korablyov\",\"name\":\"Erik\",\"patronymic\":\"Denisovich\"},{\"surname\":\"Osolodkin\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Ilyich\"},{\"surname\":\"Koptsev\",\"name\":\"Sergei\",\"patronymic\":\"Vsevolodovich\"},{\"surname\":\"Lytkin\",\"name\":\"Lukyan\",\"patronymic\":\"Germanovich\"},{\"surname\":\"Tselner\",\"name\":\"Danya\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Lukin\",\"name\":\"Zigfrids\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Mishutin\",\"name\":\"Petr\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Yushakov\",\"name\":\"Pyotr (Petya)\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Uvarov\",\"name\":\"Zakhar (Zakharik)\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Volikov\",\"name\":\"Yakov (Yasha)\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Anrep\",\"name\":\"Jaromir\",\"patronymic\":\"Innokentievich\"},{\"surname\":\"Tredyakovsky\",\"name\":\"Oleg (Olezhka)\",\"patronymic\":\"Zakharovich\"},{\"surname\":\"Tychkin\",\"name\":\"Anton (Antosha)\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Pavlov\",\"name\":\"Adam\",\"patronymic\":\"Valeryevich\"},{\"surname\":\"Buturovich\",\"name\":\"Larion (Larya)\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Khmelnov\",\"name\":\"Robert\",\"patronymic\":\"Yegorovich\"},{\"surname\":\"Penkin\",\"name\":\"Krasimir\",\"patronymic\":\"Anatolievich\"},{\"surname\":\"Shulgin\",\"name\":\"Filipp (Filya)\",\"patronymic\":\"Savelievich\"},{\"surname\":\"Votyakov\",\"name\":\"Isaak\",\"patronymic\":\"Makarovich\"},{\"surname\":\"Sabitov\",\"name\":\"Aleksandr (Sasha)\",\"patronymic\":\"Vitalievich\"},{\"surname\":\"Dresvyanin\",\"name\":\"Foma\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Vorontsov\",\"name\":\"Ippolit\",\"patronymic\":\"Mikhailovich\"},{\"surname\":\"Subotin\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Valentinovich\"},{\"surname\":\"Kasharin\",\"name\":\"Isaak\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Revyakin\",\"name\":\"Panteley\",\"patronymic\":\"Romanovich\"},{\"surname\":\"Kosaryov\",\"name\":\"Boris (Borya)\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Kravchuk\",\"name\":\"Radoslav\",\"patronymic\":\"Timurovich\"},{\"surname\":\"Muravyov\",\"name\":\"Ilya (Ilik)\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Izyumov\",\"name\":\"Boleslaw\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Dudko\",\"name\":\"Fridrik\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Yasenev\",\"name\":\"Jaromir\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Lyovkin\",\"name\":\"Karl\",\"patronymic\":\"Romanovich\"},{\"surname\":\"Gorelov\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Savelievich\"},{\"surname\":\"Fomin\",\"name\":\"Robert\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Romanov\",\"name\":\"Tsezar\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Ulyanin\",\"name\":\"Demian\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Yazov\",\"name\":\"Lavro\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Ruchkin\",\"name\":\"Vissarion\",\"patronymic\":\"Dmitrievich\"},{\"surname\":\"Vyrypayev\",\"name\":\"Androniki\",\"patronymic\":\"Valeryevich\"},{\"surname\":\"Shirinov\",\"name\":\"Radoslav\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Guskov\",\"name\":\"Gotfrid\",\"patronymic\":\"Germanovich\"},{\"surname\":\"Legkodimov\",\"name\":\"Roman (Roma)\",\"patronymic\":\"Yanovich\"},{\"surname\":\"Mukhomorov\",\"name\":\"Anatoliy (Tolya)\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Lapotnikov\",\"name\":\"Kvetoslav\",\"patronymic\":\"Vladimirovich\"},{\"surname\":\"Khantsev\",\"name\":\"Nikolay (Kolya)\",\"patronymic\":\"Mikhailovich\"},{\"surname\":\"Ilyushin\",\"name\":\"Lukyan\",\"patronymic\":\"Gennadiyevich\"},{\"surname\":\"Zolotov\",\"name\":\"Christov\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Ardankin\",\"name\":\"Alexei\",\"patronymic\":\"Andreevich\"},{\"surname\":\"Ivanov\",\"name\":\"Miron\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Marinkin\",\"name\":\"Gavrila\",\"patronymic\":\"Anatolievich\"},{\"surname\":\"Razin\",\"name\":\"Vyacheslav (Slava)\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Krupnov\",\"name\":\"Fridrik\",\"patronymic\":\"Larionovich\"},{\"surname\":\"Yenotov\",\"name\":\"Vikentiy\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Astankov\",\"name\":\"Nil\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Tsvilenev\",\"name\":\"Samuil\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Sharshin\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Ivanovich\"},{\"surname\":\"Tsvetnov\",\"name\":\"Dionisiy\",\"patronymic\":\"Andreevich\"}]}";
+        Gson gson = new Gson();
+        Names names = gson.fromJson(namesJson,Names.class);
+        int[] userids = new int[100];
+        int[] accountids = new int[200];
+        int[] mins = new int[100];
+        int[] maxs = new int[100];
+        for (int i = 0; i <100 ; i++) {
+            mins[i]=RND.plusInt(1000);
+            maxs[i]=1000+RND.plusInt(1000);
+        }
+        for (int i = 0; i < 100; i++) {
+            User user = testDataGenerator.generateUser();
+            user.name = names.data[i].name;
+            user.surname = names.data[i].surname;
+            user.patronymic= names.data[i].patronymic;
+            System.err.println(user.toString());
+            userids[i] = tableRegister.get().createUser(user);
+            System.err.println(userids[i]);
+            Integer[] ids = tableDao.get().getAccount(userids[i]);
+            System.err.println(ids.length);
+            accountids[i*2]=ids[0];
+            accountids[i*2+1]=ids[1];
+
+            DbClientAccount dbClientAccount = new DbClientAccount();
+            dbClientAccount.money = mins[i]+0.0f;
+            dbClientAccount.client = userids[i];
+            dbClientAccount.id = accountids[i*2];
+            System.err.println(dbClientAccount.toString());
+            tableDao.get().updateAccount(dbClientAccount);
+            dbClientAccount.money = maxs[i]+0.0f;
+            dbClientAccount.client = userids[i];
+            dbClientAccount.id = accountids[i*2+1];
+            System.err.println(dbClientAccount.toString());
+            tableDao.get().updateAccount(dbClientAccount);
+        }
+
+
+
+
+    }
+
+    @Test
+    void tableFunctionalityTest(){
+        TableToSend tableToSend = tableRegister.get().getTableData(0,8,"ASC","FULLNAME","SURNAME","Pavlov");
+        for (TableModel tableModel:
+             tableToSend.table
+                ) {
+            System.err.println(tableModel.toString());
+        }
+
+
+
+    }
+
+
 //    @Test
 //    public void getTableToView(){
 //        deleteAllData();
