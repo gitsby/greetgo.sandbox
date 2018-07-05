@@ -55,10 +55,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private void isEqual(ClientDetails d1, ClientDetails d2) {
     assertThat(d1).isNotNull();
-    assertThat(d1.surname).isEqualTo(d2.surname);
-    assertThat(d1.name).isEqualTo(d2.name);
-    assertThat(d1.patronymic).isEqualTo(d2.patronymic);
-    assertThat(d1.charmId).isEqualTo(d2.charmId);
+    assertThat(d1).isEqualsToByComparingFields(d2);
 
     isEqual(d1.birthDate, d2.birthDate);
 
@@ -77,18 +74,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private void isEqual(ClientAddress a1, ClientAddress a2) {
     assertThat(a1).isNotNull();
-    assertThat(a1.client).isEqualTo(a2.client);
-    assertThat(a1.type).isEqualTo(a2.type);
-    assertThat(a1.street).isEqualTo(a2.street);
-    assertThat(a1.house).isEqualTo(a2.house);
-    assertThat(a1.flat).isEqualTo(a2.flat);
+    assertThat(a1).isEqualsToByComparingFields(a2);
   }
 
   private void isEqual(ClientPhone p1, ClientPhone p2) {
     assertThat(p1).isNotNull();
-    assertThat(p1.client).isEqualTo(p2.client);
-    assertThat(p1.type).isEqualTo(p2.type);
-    assertThat(p1.number).isEqualTo(p2.number);
+    assertThat(p1).isEqualsToByComparingFields(p2);
   }
 
   @Test
@@ -116,6 +107,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private void isEqual(ClientDetails details, ClientToSave clientToSave) {
     ClientDot clientDot = getClientDot(details.id);
+
     ClientAddressDot addressFactDot = getClientAddressDot(details.id, AddressTypeEnum.FACT);
     ClientAddressDot addressRegDot = getClientAddressDot(details.id, AddressTypeEnum.REG);
     ClientPhoneDot homePhoneDot = getClientPhoneDot(details.id, PhoneType.HOME);
@@ -139,12 +131,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private void isEqual(ClientPhoneDot phoneDot, ClientPhone phone) {
+    assertThat(phoneDot).isNotNull();
     assertThat(phoneDot.client).isEqualTo(phone.client);
     assertThat(phoneDot.type).isEqualTo(phone.type);
     assertThat(phoneDot.number).isEqualTo(phone.number);
   }
 
   private void isEqual(ClientAddressDot addressDot, ClientAddress address) {
+    assertThat(addressDot).isNotNull();
     assertThat(addressDot.client).isEqualTo(address.client);
     assertThat(addressDot.type).isEqualTo(address.type);
     assertThat(addressDot.street).isEqualTo(address.street);
@@ -254,18 +248,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRecordList.size()).isEqualTo(limit);
 
     for (int i = 0; i < limit; i++)
-      isEqual(clientRecordList.get(i), fromDot(leftDots.get(i+offset)));
-  }
-
-  private void isEqual(ClientRecord r1, ClientRecord r2) {
-    assertThat(r1.id).isEqualTo(r2.id);
-    assertThat(r1.surname).isEqualTo(r2.surname);
-    assertThat(r1.name).isEqualTo(r2.name);
-    assertThat(r1.patronymic).isEqualTo(r2.patronymic);
-    assertThat(r1.age).isEqualTo(r2.age);
-    assertThat(r1.middle_balance).isEqualTo(r2.middle_balance);
-    assertThat(r1.max_balance).isEqualTo(r2.max_balance);
-    assertThat(r1.min_balance).isEqualTo(r2.min_balance);
+      assertThat(clientRecordList.get(i)).isEqualsToByComparingFields(fromDot(leftDots.get(i+offset)));
   }
 
   enum FioEnum {
@@ -324,7 +307,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRecordList).isNotNull();
     assertThat(clientRecordList.size()).isEqualTo(1);
 
-    isEqual(clientRecordList.get(0), fromDot(dot));
+    assertThat(clientRecordList.get(0)).isEqualsToByComparingFields(fromDot(dot));
   }
 
   @DataProvider
@@ -377,8 +360,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(result).isNotNull();
     assertThat(result).hasSize(clientRecords.size());
 
-    for (int i = 0; i < result.size(); i++)
-      isEqual(result.get(i), clientRecords.get(i));
+    for (int i = 0; i < result.size(); i++) {
+      System.out.println(result.get(i));
+      System.out.println(clientRecords.get(i));
+      assertThat(result.get(i)).isEqualsToByComparingFields(clientRecords.get(i));
+    }
   }
 
   @Test

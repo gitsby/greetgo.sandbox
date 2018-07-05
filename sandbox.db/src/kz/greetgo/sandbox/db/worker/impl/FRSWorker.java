@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.db.worker.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import kz.greetgo.sandbox.controller.model.TMPClientAccount;
@@ -15,14 +14,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 public class FRSWorker extends Worker {
 
   private static Logger logger = Logger.getLogger(FRSWorker.class);
   private JsonParser jsonParser;
-  private JsonToken jsonToken;
   private JSONHandler handler;
 
   private File clientAccountCsvFile;
@@ -99,7 +96,6 @@ public class FRSWorker extends Worker {
     try {
       handler.startDocument();
       while (jsonParser.nextToken() != null) {
-        jsonToken = jsonParser.nextToken();
         handler.element(jsonParser.readValueAsTree());
       }
       handler.endDocument();
@@ -161,7 +157,10 @@ public class FRSWorker extends Worker {
 
   @Override
   public void migrateToTables() {
-
+    //language=PostgreSQL
+    exec("INSERT INTO client_account(client, money, registered_at) " +
+      "SELECT (SELECT id FROM client WHERE cia_id=TMP_TABLE.client_id) AS client, 0, to_date(registered_at, 'yyyy-MM-dd') " +
+      "FROM TMP_TABLE;", clientAccountTmp);
   }
 
   @Override
@@ -170,7 +169,7 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public void finish() throws SQLException {
+  public void finish() {
 
   }
 

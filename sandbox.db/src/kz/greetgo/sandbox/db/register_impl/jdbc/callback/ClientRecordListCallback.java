@@ -33,7 +33,10 @@ public class ClientRecordListCallback extends ClientRecordSelectCallback<List<Cl
   public List<ClientRecord> run(PreparedStatement ps) throws SQLException {
     List<ClientRecord> clientRecords = Lists.newArrayList();
     try (ResultSet rs = ps.executeQuery()) {
-      while (rs.next()) clientRecords.add(fromRs(rs));
+      while (rs.next()) {
+        assert clientRecords != null;
+        clientRecords.add(fromRs(rs));
+      }
     }
     return clientRecords;
   }
