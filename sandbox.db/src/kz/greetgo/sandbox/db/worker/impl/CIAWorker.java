@@ -15,21 +15,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class CIAWorker extends Worker {
 
-  private Logger logger = Logger.getLogger("worker_log");
+  private static Logger logger = Logger.getLogger(CIAWorker.class);
 
   private XMLReader xmlReader;
-
-  private PreparedStatement clientPs;
-  private PreparedStatement clientAddressPs;
-  private PreparedStatement clientPhonePs;
 
   private String clientTmp;
   private String clientAddressTmp;
@@ -39,11 +31,9 @@ public class CIAWorker extends Worker {
   private File clientAddressCsvFile;
   private File clientPhoneCsvFile;
 
-  private Writer clientBw;
-  private Writer clientAddressBw;
-  private Writer clientPhoneBw;
-
-  private final String TMP_DIR = "build/tmp/";
+  private Writer clientCsvBw;
+  private Writer clientAddressCsvBw;
+  private Writer clientPhoneCsvBw;
 
   public CIAWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
     super(connections, inputStream, migrationConfig);
@@ -60,139 +50,109 @@ public class CIAWorker extends Worker {
   }
 
   @Override
-  public void prepareStatements() throws SQLException {
-    info("START");
-    clientPs = nextConnection().prepareStatement("");
-    clientAddressPs = nextConnection().prepareStatement("");
-    clientPhonePs = nextConnection().prepareStatement("");
-  }
-
-  @Override
   public void createTmpTables() {
-    createTmpNames();
+    logger.info("create tmp tables");
+    setTmpTableNames();
     //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (id VARCHAR(255) NOT NULL, error varchar(255), surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birth_date varchar(255), charm VARCHAR(255))", clientTmp);
     //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
     //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255) NOT NULL, error varchar(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
+    logger.info("tmp tables created");
   }
 
-  private void createTmpNames() {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    Date nowDate = new Date();
-    clientTmp = "cia_migration_client_" + sdf.format(nowDate);
-    clientAddressTmp = "cia_migration_client_address_" + sdf.format(nowDate);
-    clientPhoneTmp = "cia_migration_client_phone_" + sdf.format(nowDate);
+  private void setTmpTableNames() {
+    clientTmp = getTmpTableName("cia_migration_client");
+    clientAddressTmp = getTmpTableName("cia_migration_client_address");
+    clientPhoneTmp = getTmpTableName("cia_migration_client_phone");
   }
 
   @Override
   public void createCsvFiles() {
+    logger.info("create csv files");
+    try {
+      createFiles();
+      createWriters();
+    } catch (IOException e) {
+      logger.error(e.getMessage());
+    }
+    logger.info("csv files created");
+  }
+
+  private void createFiles() throws IOException {
     clientCsvFile = createFile(TMP_DIR+"client.csv");
     clientAddressCsvFile = createFile(TMP_DIR+"client_address.csv");
     clientPhoneCsvFile = createFile(TMP_DIR+"client_phone.csv");
-    try {
-      clientBw = getWriter(clientCsvFile);
-      clientAddressBw = new BufferedWriter(new PrintWriter(clientAddressCsvFile));
-      clientPhoneBw = new BufferedWriter(new PrintWriter(clientPhoneCsvFile));
-    } catch (IOException e) {
-      logger.error(e.getMessage());
-    }
   }
 
-  private Writer getWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
-    FileOutputStream fos = new FileOutputStream(file);
-    OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
-    BufferedWriter bw = new BufferedWriter(osw, 100_000);
-    return new PrintWriter(bw, true);
-  }
-
-  private File createFile(String path) {
-    File file = new File(path);
-    if (!file.exists()) { new File(file.getParent()).mkdirs(); }
-    try {
-      file.createNewFile();
-    } catch (IOException e) {
-      logger.error(e.getMessage());
-    }
-    return file;
+  private void createWriters() throws FileNotFoundException, UnsupportedEncodingException {
+    clientCsvBw = getWriter(clientCsvFile);
+    clientAddressCsvBw = new BufferedWriter(new PrintWriter(clientAddressCsvFile));
+    clientPhoneCsvBw = new BufferedWriter(new PrintWriter(clientPhoneCsvFile));
   }
 
   @Override
   public void loadCsvFile() {
+    logger.info("begin loading file");
     try {
       xmlReader.parse(new InputSource(inputStream));
     } catch (Exception e) {
-      e.getMessage();
+      logger.error(e.getMessage());
     }
   }
 
-  private void parse(TMPClient tmpClient, TMPClientAddresses tmpClientAddresses, TMPClientPhones tmpClientPhones) throws Exception {
-    writeTmpClient(tmpClient);
-    writeTmpClientAddress(tmpClient.id, tmpClientAddresses.addressFact);
-    writeTmpClientAddress(tmpClient.id, tmpClientAddresses.addressReg);
+  private void write(TMPClient tmpClient, TMPClientAddresses tmpClientAddresses, TMPClientPhones tmpClientPhones) throws Exception {
+    writeTmpClientCsv(tmpClient);
+    writeTmpClientAddressCsv(tmpClient.id, tmpClientAddresses.addressFact);
+    writeTmpClientAddressCsv(tmpClient.id, tmpClientAddresses.addressReg);
     for (ClientPhone phone : tmpClientPhones.phones) {
-      writeTmpClientPhone(tmpClient.id, phone);
+      writeTmpClientPhoneCsv(tmpClient.id, phone);
     }
   }
 
-  private void writeTmpClient(TMPClient client) throws IOException {
-    clientBw.write(String.format("%s|\\N|%s|%s|%s|%s|%s|%s\n", client.id, checkStr(client.surname, System.nanoTime()),
+  private void writeTmpClientCsv(TMPClient client) throws IOException {
+    clientCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s|%s|%s\n", client.id, checkStr(client.surname, System.nanoTime()),
       checkStr(client.name, System.nanoTime()), checkStr(client.patronymic, System.nanoTime()),
       checkStr(client.gender, System.nanoTime()), checkStr(client.birthDate, System.nanoTime()),
       checkStr(client.charm, System.nanoTime())));
   }
 
-  private void writeTmpClientAddress(String clientId, ClientAddress address) throws IOException {
-    clientAddressBw.write(String.format("%s|\\N|%s|%s|%s|%s\n", clientId, checkStr(address.type.name(), null),
+  private void writeTmpClientAddressCsv(String clientId, ClientAddress address) throws IOException {
+    clientAddressCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s\n", clientId, checkStr(address.type.name(), null),
       checkStr(address.street, System.nanoTime()), checkStr(address.house,System.nanoTime()),
       checkStr(address.flat,System.nanoTime())));
   }
 
-  private void writeTmpClientPhone(String clientId, ClientPhone phone) throws IOException {
-    clientPhoneBw.write(String.format("%s|\\N|%s|%s\n", clientId, checkStr(phone.type.name(),null), checkStr(phone.number, null)));
-  }
-
-  private String checkStr(String str, Long counter) {
-    if (str == null) return "\\N";
-    str = str.trim();
-    if (!str.isEmpty()) {
-      if (counter == null) return str;
-      else return counter + "#" + str;
-    }
-    return "\\N";
+  private void writeTmpClientPhoneCsv(String clientId, ClientPhone phone) throws IOException {
+    clientPhoneCsvBw.write(String.format("%s|\\N|%s|%s\n", clientId, checkStr(phone.type.name(),null), checkStr(phone.number, null)));
   }
 
   @Override
   public void loadCsvFilesToTmp(){
-    CopyManager copyManager = null;
+    CopyManager copyManager;
     try {
-      clientBw.flush();
-      clientAddressBw.flush();
-      clientPhoneBw.flush();
+      flushWriters();
+
       copyManager = new CopyManager((BaseConnection) nextConnection());
+
+      copy(copyManager, clientCsvFile, clientTmp);
+      copy(copyManager, clientAddressCsvFile, clientAddressTmp);
+      copy(copyManager, clientPhoneCsvFile, clientPhoneTmp);
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
-
-    copy(copyManager, clientCsvFile, clientTmp);
-    copy(copyManager, clientAddressCsvFile, clientAddressTmp);
-    copy(copyManager, clientPhoneCsvFile, clientPhoneTmp);
   }
 
-  private void copy(CopyManager copyManager, File file, String tmp) {
-    //language=PostgreSQL
-    String copyQuery = "COPY TMP_TABLE FROM STDIN WITH DELIMITER '|'";
-    try (FileReader reader = new FileReader(file)) {
-      copyManager.copyIn(r(copyQuery, tmp), reader);
-    } catch (Exception e) {
-      logger.error(e.getMessage());
-    }
+  private void flushWriters() throws IOException {
+    clientCsvBw.flush();
+    clientAddressCsvBw.flush();
+    clientPhoneCsvBw.flush();
   }
 
   @Override
   public void fuseTmpTables() {
-    logger.info("FUSE START");
+    logger.info("fuse tmp tables start");
     //language=PostgreSQL
     exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientTmp);
     //language=PostgreSQL
@@ -233,10 +193,11 @@ public class CIAWorker extends Worker {
       "FROM TMP_TABLE_conductor " +
       "GROUP BY client, \"type\", error;", clientPhoneTmp);
 
-    logger.info("FUSE END");
+    logger.info("fuse tmp tables end");
   }
 
   private void createIsDateFunction() {
+    logger.info("create is_date function");
     //language=PostgreSQL
     exec("CREATE OR REPLACE FUNCTION is_date(s varchar) RETURNS BOOLEAN AS $$ " +
       "BEGIN " +
@@ -250,7 +211,7 @@ public class CIAWorker extends Worker {
 
   @Override
   public void validateTmpTables() {
-    logger.info("VALIDATION START");
+    logger.info("validation of tables begin");
     //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='surname is not defined'" +
       "WHERE error IS NULL AND surname IS NULL;", clientTmp);
@@ -266,13 +227,13 @@ public class CIAWorker extends Worker {
     //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='birth_date format is wrong'" +
       "WHERE error isnull and not is_date(birth_date)", clientTmp);
-
-
-    logger.info("VALIDATION END");
+    logger.info("validation of tables end");
   }
 
   @Override
   public void migrateToTables() {
+    logger.info("migration of tables begin");
+    logger.info("migration of client table begin");
     //language=PostgreSQL
     exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm_id, cia_id) " +
         "SELECT t2.surname, t2.name, t2.patronymic, t2.gender, to_date(t2.birth_date, 'yyyy-MM-dd'), 1, t2.id " +
@@ -285,15 +246,12 @@ public class CIAWorker extends Worker {
         "birth_date=EXCLUDED.birth_date," +
         "charm_id=1;",
       clientTmp);
+    logger.info("migration of client table end");
 
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET " +
-      "client=(SELECT id FROM client WHERE client.cia_id=TMP_TABLE.client);", clientAddressTmp);
+    findAndCheckClientId(clientAddressTmp);
+    findAndCheckClientId(clientPhoneTmp);
 
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET error='client not exist'" +
-      "WHERE error IS NULL AND client IS NULL;", clientAddressTmp);
-
+    logger.info("migration of client_address table begin");
     //language=PostgreSQL
     exec("INSERT INTO client_address(client, type, street, house, flat) " +
       "SELECT client::int, t2.type, t2.street, t2.house, t2.flat FROM TMP_TABLE t2 " +
@@ -301,44 +259,48 @@ public class CIAWorker extends Worker {
       "street=EXCLUDED.street," +
       "house=EXCLUDED.house," +
       "flat=EXCLUDED.flat;", clientAddressTmp);
+    logger.info("migration of client_address table end");
 
 
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET " +
-      "client=(SELECT id FROM client WHERE client.cia_id=TMP_TABLE.client);", clientPhoneTmp);
-
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET error='client not exist'" +
-      "WHERE error IS NULL AND client IS NULL;", clientPhoneTmp);
-
+    logger.info("migration of client_phone table begin");
     //language=PostgreSQL
     exec("INSERT INTO client_phone(client, type, number) " +
       "SELECT client::int, t2.type, t2.number FROM TMP_TABLE t2 " +
       "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
       "number=EXCLUDED.number;", clientPhoneTmp);
+    logger.info("migration of client_phone table end");
+    logger.info("migration of tables end");
+  }
+
+  private void findAndCheckClientId(String tmpTable) {
+    logger.info(tmpTable+" find client id begin");
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET " +
+      "client=(SELECT id FROM client WHERE client.cia_id=TMP_TABLE.client);", tmpTable);
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='client not exist'" +
+      "WHERE error IS NULL AND client IS NULL;", tmpTable);
+    logger.info(tmpTable+" find client id end");
   }
 
   @Override
   public void deleteTmpTables() {
-   //exec("DROP TABLE TMP_TABLE", clientTmp);
-    //exec("DROP TABLE TMP_TABLE_conductor", clientTmp);
+//    exec("DROP TABLE TMP_TABLE", clientTmp);
+//    exec("DROP TABLE TMP_TABLE_conductor", clientTmp);
   }
 
   @Override
-  public void finish() throws SQLException, IOException {
-    info("FINISH");
-    clientPs.close();
-    clientAddressPs.close();
-    clientPhonePs.close();
+  public void finish() throws IOException {
+    logger.info("start of finish method");
 
-    clientBw.close();
-    clientAddressBw.close();
-    clientPhoneBw.close();
+    clientCsvBw.close();
+    clientAddressCsvBw.close();
+    clientPhoneCsvBw.close();
 
     clientCsvFile.delete();
     clientAddressCsvFile.delete();
     clientPhoneCsvFile.delete();
-    logger.info("FINISH ALL");
+    logger.info("end of finish method");
   }
 
   class XMLHandler extends DefaultHandler {
@@ -350,7 +312,7 @@ public class CIAWorker extends Worker {
 
     @Override
     public void startDocument() {
-      logger.info("Start document");
+      logger.info("handler start document");
       tmpClient = new TMPClient();
       tmpClientAddresses = new TMPClientAddresses();
       tmpClientPhones = new TMPClientPhones();
@@ -408,7 +370,7 @@ public class CIAWorker extends Worker {
 
     private void upload() {
       try {
-        parse(tmpClient, tmpClientAddresses, tmpClientPhones);
+        write(tmpClient, tmpClientAddresses, tmpClientPhones);
       } catch (Exception e) {
         logger.error(e.getMessage());
       }
@@ -434,7 +396,7 @@ public class CIAWorker extends Worker {
 
     @Override
     public void endDocument() {
-      logger.info("End document.");
+      logger.info("handler end document");
     }
   }
 }

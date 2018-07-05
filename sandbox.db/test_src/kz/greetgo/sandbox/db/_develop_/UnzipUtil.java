@@ -36,21 +36,21 @@ public class UnzipUtil {
     info("Replace file to tmp.");
     File inDirFile = getFile(unzipFolder);
 
-    File newXml = new File(file.getParent()+"/"+inDirFile.getName());
-    newXml.createNewFile();
+    File newFile = new File(file.getParent()+"/"+inDirFile.getName());
+    newFile.createNewFile();
 
-    inDirFile.renameTo(newXml);
+    inDirFile.renameTo(newFile);
     info("File " + inDirFile.getName() + " replaced.");
 
     info("Delete zip file and unzip folder.");
     file.delete();
     FileUtils.deleteDirectory(unzipFolder);
 
-    return newXml;
+    return newFile;
   }
 
   private static File getFile(File file) {
-    if (file.getName().endsWith("xml") || file.getName().endsWith("json_row")) return file;
+    if (file.getName().endsWith("xml") || file.getName().endsWith("txt")) return file;
     File[] children = file.listFiles();
     if (children == null) return null;
     for (File child : children) {

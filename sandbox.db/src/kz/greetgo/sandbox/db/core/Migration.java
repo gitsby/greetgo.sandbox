@@ -90,7 +90,7 @@ public class Migration extends Informative implements Closeable {
       case "xml":
         Worker.getCiaWorker(connections, inputStream, migrationConfig).execute();
         break;
-      case "json_row":
+      case "txt":
         Worker.getFrsWorker(connections, inputStream, migrationConfig).execute();
     }
     for (int i = 0; i < connections.size(); i++) connections.get(i).setAutoCommit(true);
@@ -100,7 +100,7 @@ public class Migration extends Informative implements Closeable {
   private static String getFileFormat(String path) {
     String res = FilenameUtils.getExtension(path);
     if (res.isEmpty()) return null;
-    if (res.equals("xml") || res.equals("json_row")) return res;
+    if (res.equals("xml") || res.equals("txt")) return res;
     return getFileFormat(FilenameUtils.removeExtension(path));
   }
 }

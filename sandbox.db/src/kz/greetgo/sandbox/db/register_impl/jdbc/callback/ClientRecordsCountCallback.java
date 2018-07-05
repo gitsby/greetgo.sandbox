@@ -23,17 +23,8 @@ public class ClientRecordsCountCallback extends ClientFilterCallback<Integer, In
     sql.append("FROM client ");
   }
 
-  // FIXME: 7/4/18 update, set и прочее определи в ClientFilterCallback
   @Override
   public void join() {}
-  @Override
-  public void update() {}
-  @Override
-  public void set() {}
-  @Override
-  public void insert() {}
-  @Override
-  public void values() {}
   @Override
   public void groupBy() {}
   @Override

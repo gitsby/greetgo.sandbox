@@ -16,54 +16,6 @@ public class ClientRecordListCallback extends ClientRecordSelectCallback<List<Cl
   }
 
   @Override
-  public void update() {
-
-  }
-
-  @Override
-  public void set() {
-
-  }
-
-  @Override
-  public void insert() {
-
-  }
-
-  @Override
-  public void values() {
-
-  }
-
-  @Override
-  public void orderBy() {
-    String direct = getSortDirection(filter);
-
-    if (filter.sortByEnum != null)
-      switch (filter.sortByEnum) {
-        case FULL_NAME:
-          sql.append(String.format("ORDER BY client.surname %s, client.name %s, client.patronymic %s ", direct, direct, direct));
-          return;
-        case AGE:
-          sql.append(String.format("ORDER BY age %s ", direct));
-          return;
-        case MIDDLE_BALANCE:
-          sql.append(String.format("ORDER BY middle_balance %s ", direct));
-          return;
-        case MAX_BALANCE:
-          sql.append(String.format("ORDER BY max_balance %s ", direct));
-          return;
-        case MIN_BALANCE:
-          sql.append(String.format("ORDER BY min_balance %s ", direct));
-      }
-  }
-
-  private String getSortDirection(ClientFilter clientFilter) {
-    if (clientFilter.sortDirection != null) return clientFilter.sortDirection.toString();
-    return "";
-  }
-
-  @Override
   public void offsetAndLimit() {
     if (filter.offset != null && filter.limit != null) {
       sql.append("LIMIT ? OFFSET ?");

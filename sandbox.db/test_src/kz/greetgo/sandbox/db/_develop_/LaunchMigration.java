@@ -9,14 +9,11 @@ import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.core.SSH;
 import kz.greetgo.sandbox.db.util.ConfigFiles;
 import kz.greetgo.sandbox.db.util.ConnectionUtils;
-import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintStream;
 
 public class LaunchMigration {
-
-  private static Logger logger = Logger.getLogger("migration_logger");
 
   public BeanGetter<SSHConfig> sshConfig;
   public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
@@ -42,11 +39,7 @@ public class LaunchMigration {
       }
     };
 
-    String fileNames[] = {"from_cia_2018-02-21-154929-3-30000.xml.tar.bz2",
-      "from_cia_2018-02-21-154932-4-300000.xml.tar.bz2",
-      "from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2",
-      "from_cia_2018-02-21-154929-2-3000.xml.tar.bz2",
-      "from_cia_2018-02-21-154929-1-300.xml.tar.bz2"};
+    String fileNames[] = {"from_frs_2018-02-21-155112-1-30002.json_row.txt.tar.bz2"};
     File migrationFile;
     for (String fileName : fileNames) {
       try (SSH ssh = new SSH(sshConfig)) {

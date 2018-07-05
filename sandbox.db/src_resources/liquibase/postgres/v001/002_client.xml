@@ -78,4 +78,31 @@
     </sql>
   </changeSet>
 
+
+  <changeSet id="create-table-transaction_type" author="adilbek">
+    <sql endDelimiter=";;"><![CDATA[
+      CREATE TABLE transaction_type (
+        id SERIAL PRIMARY KEY,
+        code varchar(255),
+        name varchar(255)
+      )
+    ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet id="create-table-client_account_transaction" author="adilbek">
+    <sql endDelimiter=";;"><![CDATA[
+      CREATE TABLE client_account_transaction (
+        id SERIAL PRIMARY KEY,
+        account integer,
+        money float,
+        finished_at date,
+        type integer,
+        FOREIGN KEY (type) REFERENCES transaction_type(id),
+        FOREIGN KEY (account) REFERENCES client_account(id)
+      )
+    ]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>

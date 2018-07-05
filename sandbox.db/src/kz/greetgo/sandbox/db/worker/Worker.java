@@ -3,10 +3,10 @@ package kz.greetgo.sandbox.db.worker;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
+import org.postgresql.copy.CopyManager;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,6 +19,8 @@ public abstract class Worker implements WorkerInterface {
   public List<Connection> connections;
   public InputStream inputStream;
   public MigrationConfig migrationConfig;
+  public final String TMP_DIR = "build/tmp/";
+
 
   public Worker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
     this.connections = connections;
@@ -28,7 +30,6 @@ public abstract class Worker implements WorkerInterface {
 
   public final void execute() throws SQLException, IOException, SAXException {
     createTmpTables();
-    prepareStatements();
     createCsvFiles();
     loadCsvFile();
     loadCsvFilesToTmp();
@@ -39,6 +40,44 @@ public abstract class Worker implements WorkerInterface {
     finish();
   }
 
+  public void copy(CopyManager copyManager, File file, String tmp) throws IOException, SQLException {
+    //language=PostgreSQL
+    String copyQuery = "COPY TMP_TABLE FROM STDIN WITH DELIMITER '|'";
+    FileReader reader = new FileReader(file);
+    copyManager.copyIn(r(copyQuery, tmp), reader);
+    reader.close();
+    file.delete();
+  }
+
+  public String checkStr(String str, Long counter) {
+    if (str == null) return "\\N";
+    str = str.trim();
+    if (!str.isEmpty()) {
+      if (counter == null) return str;
+      else return counter + "#" + str;
+    }
+    return "\\N";
+  }
+
+  public String getTmpTableName(String tableName) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+    Date nowDate = new Date();
+    return tableName+"_"+sdf.format(nowDate);
+  }
+
+  public Writer getWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
+    FileOutputStream fos = new FileOutputStream(file);
+    OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+    BufferedWriter bw = new BufferedWriter(osw, 10_000);
+    return new PrintWriter(bw, true);
+  }
+
+  public File createFile(String path) throws IOException {
+    File file = new File(path);
+    if (!file.exists()) { new File(file.getParent()).mkdirs(); }
+    file.createNewFile();
+    return file;
+  }
 
   public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) throws SAXException {
     return new CIAWorker(connections, inputStream, migrationConfig);
