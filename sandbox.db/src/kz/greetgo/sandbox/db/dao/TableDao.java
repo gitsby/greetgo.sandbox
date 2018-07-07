@@ -175,17 +175,17 @@ public interface TableDao {
     void updatePhone(DbClientPhone dbClientPhone);
 
     @Update("update client set " +
-            "validity=0 " +
-            "where id=#{userdID}")
+            "validity=false " +
+            "where id=#{userID}")
     void deleteClient(@Param("userID") int userID);
 
-    @Update("update client_phone set" +
-            "validity=0" +
+    @Update("update client_phone set " +
+            "validity=false " +
             "where client=#{userID}")
     void deletePhone(@Param("userID") int userID);
 
-    @Update("update client_account set" +
-            "validity=0" +
+    @Update("update client_account set " +
+            "validity=false " +
             "where client=#{userID}")
     void deleteAccount(@Param("userID") int userID);
 

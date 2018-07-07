@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 
+import com.sun.istack.internal.NotNull;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
@@ -68,12 +69,12 @@ public class TableRegisterImpl implements TableRegister{
 
     public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
 
-        return skipNumber==-1 || limit==-1 ||
-                sortDirection.isEmpty() ||sortType.isEmpty() ||
-                filterText.isEmpty() || filterType.isEmpty() ||
-                skipNumber==null ||  limit==null ||
+        return  skipNumber==null || limit==null ||
                 sortDirection==null || sortType==null ||
                 filterText==null || filterType==null ||
+                skipNumber==-1 || limit==-1 ||
+                sortDirection.isEmpty() ||sortType.isEmpty() ||
+                filterText.isEmpty() || filterType.isEmpty() ||
                 !sortDirection.matches("(ASC|DESC)") ||
                 !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
                 !filterType.matches("NAME|SURNAME|PATRONYMIC");
@@ -91,35 +92,27 @@ public class TableRegisterImpl implements TableRegister{
         }
 
         DbClient dbClient = tableDao.get().getExactClient(userID);
-        System.err.println(dbClient.toString());
         DbCharm  dbCharm = tableDao.get().getCharm(1);
-        System.err.println(dbCharm.toString());
 
         DbClientPhone[] dbClientPhones = tableDao.get().getPhones(userID);
-        if(dbClientPhones!=null)
-            for (DbClientPhone dbClientPhone:dbClientPhones){
-                System.err.println(dbClientPhone.toString());
-            }
 
         DbClientAddress dbClientAddressFactual = tableDao.get().getClientAddress(userID, AddressType.FACT.toString());
-        System.err.println(dbClientAddressFactual.toString());
 
         DbClientAddress dbClientAddressRegistered = tableDao.get().getClientAddress(userID, AddressType.REG.toString());
-        System.err.println(dbClientAddressRegistered.toString());
 
         User user = dbModelConverter.convertToUser(dbClient,dbCharm,dbClientPhones,dbClientAddressFactual,dbClientAddressRegistered);
         return user;
     }
 
-
     private Boolean checkForContraints(User user){
-        if (    user.name.isEmpty() || user.name==null ||
-                user.surname.isEmpty() || user.surname==null ||
+        if (    user.name==null || user.name.isEmpty() ||
+                user.surname==null || user.surname.isEmpty() ||
                 user.charm==null || user.genderType==null ||
                 user.phones==null || user.registeredAddress==null ||
-                user.registeredAddress.street.isEmpty() || user.registeredAddress.street == null ||
-                user.registeredAddress.flat.isEmpty() || user.registeredAddress.flat == null ||
-                user.registeredAddress.house.isEmpty() || user.registeredAddress.house == null){
+                user.birthDate==null ||
+                user.registeredAddress.street == null || user.registeredAddress.street.isEmpty() ||
+                user.registeredAddress.flat == null || user.registeredAddress.flat.isEmpty() ||
+                user.registeredAddress.house == null || user.registeredAddress.house.isEmpty() ){
             return false;
         }
         boolean va=true;
@@ -147,10 +140,7 @@ public class TableRegisterImpl implements TableRegister{
 
         if(!checkForContraints(user))
             return -1;
-
         user.validity=true;
-
-
         Integer charmId = charmCheck(user.charm);
 
         DbClient dbClient = dbModelConverter.convertToDbClient(user,charmId);
@@ -230,7 +220,7 @@ public class TableRegisterImpl implements TableRegister{
     @Override
     public String deleteUser(Integer userID){
 
-        if(tableDao.get().countClientsWithUserID(userID) <= 0 || userID==null){
+        if(userID==null || tableDao.get().countClientsWithUserID(userID) <= 0){
             return "-1";
         }
         tableDao.get().deleteClient(userID);
