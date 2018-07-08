@@ -7,6 +7,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Bean
@@ -23,32 +24,47 @@ public class TableRegisterStand implements TableRegister {
         MINBALANCE,
     };
 
+
+
     @Override
-    public TableToSend getTableData(int skipNumber, int limit, String sortDirection, String sortType){
-        Table queriedTable  = new Table();
-        queriedTable.data=db.get().table.data.stream().sorted(((o1, o2) -> {
+    public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+        System.out.println(skipNumber+" \n"+
+                           limit+" \n"+
+                            sortDirection+" \n"+
+                            filterType+" \n"+
+                            filterText);
+        if(skipNumber==null){
+            skipNumber=0;
+        }
+        if(filterText==null){
+            filterText="";
+        }
+        TableToSend queriedTable  = new TableToSend();
+        db.get().filter.filterText=filterText;
+        db.get().filter.filterType=FilterType.valueOf(filterType.toUpperCase());
+        db.get().tableCreate();
+
+        queriedTable.table=db.get().table.table.stream().sorted(((o1, o2) -> {
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
             switch (enumSortType) {
                 case FULLNAME:
-                    return "desc".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
+                    return "DESC".equals(sortDirection.toUpperCase())?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
                 case CHARM:
-                    return "desc".equals(sortDirection)?-o1.charm.compareTo(o2.charm):o1.charm.compareTo(o2.charm);
+                    return "DESC".equals(sortDirection.toUpperCase())?-o1.charm.compareTo(o2.charm):o1.charm.compareTo(o2.charm);
                 case AGE:
-                    return "desc".equals(sortDirection)?-Long.compare(o1.age,o2.age):Long.compare(o1.age,o2.age);
+                    return "DESC".equals(sortDirection.toUpperCase())?-Long.compare(o1.age,o2.age):Long.compare(o1.age,o2.age);
                 case TOTALBALANCE:
-                    return "desc".equals(sortDirection)?-Double.compare(o1.totalBalance,o2.totalBalance):Double.compare(o1.totalBalance,o2.totalBalance);
+                    return "DESC".equals(sortDirection.toUpperCase())?-Double.compare(o1.totalBalance,o2.totalBalance):Double.compare(o1.totalBalance,o2.totalBalance);
                 case MAXBALANCE:
-                    return "desc".equals(sortDirection)?-Double.compare(o1.maxBalance,o2.maxBalance):Double.compare(o1.maxBalance,o2.maxBalance);
+                    return "DESC".equals(sortDirection.toUpperCase())?-Double.compare(o1.maxBalance,o2.maxBalance):Double.compare(o1.maxBalance,o2.maxBalance);
                 case MINBALANCE:
-                    return "desc".equals(sortDirection)?-Double.compare(o1.minBalance,o2.minBalance):Double.compare(o1.minBalance,o2.minBalance);
+                    return "DESC".equals(sortDirection.toUpperCase())?-Double.compare(o1.minBalance,o2.minBalance):Double.compare(o1.minBalance,o2.minBalance);
                 default:
-                    return "desc".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
+                    return "DESC".equals(sortDirection.toUpperCase())?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        TableToSend table = new TableToSend();
-        table.table=queriedTable.data;
-        table.size=tableSize();
-        return table;
+        queriedTable.size=tableSize();
+        return queriedTable;
     }
 
     public int tableSize(){
@@ -71,9 +87,9 @@ public class TableRegisterStand implements TableRegister {
 
 
     @Override
-    public User getExactUser(int userID){
+    public User getExactUser(Integer userID){
         try {
-            return db.get().users.data.stream().filter((user) -> userID==user.id).findFirst().get();
+            return db.get().users.data.stream().filter((user) -> Objects.equals(userID, user.id)).findFirst().get();
         } catch (Exception e){
             e.printStackTrace();
             return new User();
@@ -99,31 +115,36 @@ public class TableRegisterStand implements TableRegister {
     }
 
 
+    @Override
+    public String[] getCharms(){
+        return null;
+    }
+
     private Boolean checkForValidity(User user){
-
-        if ("".equals(user.name) ||"".equals(user.surname)){
+        if (    user.name==null || user.name.isEmpty() ||
+                user.surname==null || user.surname.isEmpty() ||
+                user.charm==null || user.genderType==null ||
+                user.phones==null || user.registeredAddress==null ||
+                user.birthDate==null ||
+                user.registeredAddress.street == null || user.registeredAddress.street.isEmpty() ||
+                user.registeredAddress.flat == null || user.registeredAddress.flat.isEmpty() ||
+                user.registeredAddress.house == null || user.registeredAddress.house.isEmpty() ){
             return false;
         }
-
-        if (user.charm==null || user.genderType==null
-                || user.name==null || user.surname==null
-                || user.phones==null || user.registeredAddress==null){
-            return false;
-        }
-
-        if("".equals(user.registeredAddress.street)||"".equals(user.registeredAddress.flat)||"".equals(user.registeredAddress.house)){
-            return  false;
-        }
-        boolean val=false;
+        boolean va=true;
+        boolean mob=false;
         for(Phone phone: user.phones){
-            if(phone.phoneType==PhoneType.MOBILE && phone.number.matches("^(\\d{11})?$")){
-                val=true;
-            }else if(phone.number.matches("^(\\d{11})?$")){
-                val=true;
+            if(phone.number.matches("^(\\d{11})?$")){
+
+                va=va&&true;
+                if(phone.phoneType==PhoneType.MOBILE ) {
+                    mob=true;
+                }
+            }else {
+                va=false;
             }
         }
-
-        return val;
+        return va&&mob;
     }
 
     @Override
@@ -138,8 +159,8 @@ public class TableRegisterStand implements TableRegister {
     }
 
     @Override
-    public String deleteUser(int userID){
-        db.get().users.data.removeIf(user -> userID==user.id);
+    public String deleteUser(Integer userID){
+        db.get().users.data.removeIf(user -> userID.equals(user.id));
         db.get().updateDB();
         return "User was successfully deleted";
     }

@@ -26,10 +26,17 @@ public class TableController implements Controller{
     @Mapping("/get-table-data")
     public TableToSend getTableData(@Par("skipNumber") Integer skipNumber, @Par("limit") Integer limit,
                                     @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
-                                    @Par("filterType") String  filterType, @Par("filtexText") String filterText) {
+                                    @Par("filterType") String  filterType, @Par("filterText") String filterText) {
         return tableRegister.get().getTableData(skipNumber,limit, sortDirection, sortType, filterType, filterText);
     }
 
+
+    @NoSecurity
+    @ToJson
+    @Mapping("/get-charms")
+    public String[] getCharms(){
+        return tableRegister.get().getCharms;
+    }
 
 
     @NoSecurity

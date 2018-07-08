@@ -262,6 +262,11 @@ public class TableRegisterImplTest extends ParentTestNg{
         MINBALANCE,
     };
 
+
+
+
+
+
     @Test
     void tableFunctionalityTest(){
         deleteAllData();

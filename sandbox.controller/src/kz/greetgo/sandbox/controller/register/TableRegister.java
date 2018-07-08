@@ -13,6 +13,8 @@ public interface TableRegister {
 
     Integer createUser(User user);
 
+    String[] getCharms();
+
     String changeUser(User user);
 
     String deleteUser(Integer userID);
