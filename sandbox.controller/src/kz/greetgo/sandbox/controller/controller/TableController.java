@@ -35,7 +35,7 @@ public class TableController implements Controller{
     @ToJson
     @Mapping("/get-charms")
     public String[] getCharms(){
-        return tableRegister.get().getCharms;
+        return tableRegister.get().getCharms();
     }
 
 

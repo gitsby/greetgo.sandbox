@@ -165,4 +165,6 @@ public class TableRegisterStand implements TableRegister {
         return "User was successfully deleted";
     }
 
+
+
 }
