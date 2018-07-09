@@ -30,7 +30,7 @@ public class ClientHandler extends DefaultHandler {
 
   private int clientBatchSize = 1000;
 
-  private volatile int threadNum = 0;
+  private int threadNum = 0;
 
   private List<ClientFromMigration> clients = new LinkedList<>();
 
@@ -162,33 +162,27 @@ public class ClientHandler extends DefaultHandler {
   }
 
   private void joinDeadThreads() {
-    while (threadNum > 6) {
-      try {
-        Thread.sleep(100);
-
-        for (ClientSenderThread thread : clientSenderThreads) {
-          if (!thread.isAlive()) {
-            clientSenderThreads.remove(thread);
-            break;
-          }
+    while (threadNum > 1) {
+      for (ClientSenderThread thread : clientSenderThreads) {
+        if (!thread.isAlive()) {
+          clientSenderThreads.remove(thread);
+          break;
         }
+      }
 
-        for (AddressSenderThread thread : addressSenderThreads) {
-          if (!thread.isAlive()) {
-            addressSenderThreads.remove(thread);
-            break;
-          }
+      for (AddressSenderThread thread : addressSenderThreads) {
+        if (!thread.isAlive()) {
+          addressSenderThreads.remove(thread);
+          break;
         }
+      }
 
-        for (PhoneSenderThread thread : phoneSenderThreads) {
-          if (!thread.isAlive()) {
-            phoneSenderThreads.remove(thread);
-            threadNum--;
-            break;
-          }
+      for (PhoneSenderThread thread : phoneSenderThreads) {
+        if (!thread.isAlive()) {
+          phoneSenderThreads.remove(thread);
+          threadNum--;
+          break;
         }
-      } catch (InterruptedException e) {
-        e.printStackTrace();
       }
     }
   }

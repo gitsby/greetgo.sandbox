@@ -30,6 +30,7 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   public Integer doInConnection(Connection connection) throws Exception {
 
     prepareSql();
+
     PreparedStatement statement = connection.prepareStatement(sql.toString());
 
     for (int i = 0; i < params.size(); i++) {
@@ -40,6 +41,7 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
     resultSet.next();
     int count = resultSet.getInt("count");
 
+    resultSet.close();
     statement.close();
     return count;
   }
@@ -58,10 +60,12 @@ public class ClientRecordsCounter extends ClientRecordQueryMethods<Integer> {
   }
 
   @Override
-  void orderBy() {
+  void where() {
+    sql.WHERE("client.actual=1");
   }
 
   @Override
-  void limit() {
+  void orderBy() {
   }
+
 }

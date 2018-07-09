@@ -81,6 +81,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
     int clientId = set.getInt("id");
 
     connection.close();
+    set.close();
     return clientId;
   }
 }

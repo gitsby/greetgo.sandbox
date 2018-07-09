@@ -6,4 +6,9 @@ public class ClientAccount {
   public float money;
   public String number;
   public String registeredAt;
+
+  public ClientAccount(int id, float money){
+    this.id = id;
+    this.money = money;
+  }
 }

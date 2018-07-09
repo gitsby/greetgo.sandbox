@@ -9,7 +9,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   @Override
   public void migrate() throws Exception {
-    XMLManager xmlManager = new XMLManager("C:\\Programs\\Web\\Greetgo\\from_300.xml");
+    XMLManager xmlManager = new XMLManager("C:\\Programs\\Web\\Greetgo\\from_100000.xml");
 
     InMigration inMigration = new InMigration();
 

@@ -1,4 +1,6 @@
-package kz.greetgo.sandbox.db.client_records_report;
+package kz.greetgo.sandbox.controller.report;
+
+import kz.greetgo.sandbox.controller.model.ClientRecordRow;
 
 import java.util.Date;
 

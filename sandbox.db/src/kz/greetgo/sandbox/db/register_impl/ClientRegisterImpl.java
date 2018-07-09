@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.db.client_records_query.ClientRecordsCounter;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsQuery;
 import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
 import kz.greetgo.sandbox.db.client_records_query.ClientSaveQuery;
-import kz.greetgo.sandbox.db.client_records_report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
 import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -65,7 +64,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     ClientRecordsQuery query = new ClientRecordsQuery(filter);
     query.sql.WHERE("client.id=?");
-    // FIXME: 7/4/18 Не должно быть желтым
+
     query.params.add(0, editedClient.id);
 
     return jdbc.get().execute(query).get(0);
@@ -88,22 +87,6 @@ public class ClientRegisterImpl implements ClientRegister {
         }
       }
     }
-  }
-
-  @Override
-  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws Exception {
-    ClientRecordsReportView reportView = null;
-    switch (type) {
-      case "pdf":
-        reportView = new ClientRecordsViewPdf(outputStream);
-        break;
-      case "xlsx":
-        reportView = new ClientRecordsViewXlsx(outputStream);
-        break;
-    }
-    assert reportView != null;
-    jdbc.get().execute(new ClientRecordsRender(filter, reportView));
-    reportView.finish(userName, new Date());
   }
 
   private void saveAddresses(List<Address> addresses, String type, int clientId) {
