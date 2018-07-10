@@ -19,5 +19,8 @@ public interface TableRegister {
 
     String deleteUser(Integer userID);
 
+    String makeReport(String sortDirection, String sortType, String filterType,
+                      String filterText,String user, String reportType);
+
 
 }

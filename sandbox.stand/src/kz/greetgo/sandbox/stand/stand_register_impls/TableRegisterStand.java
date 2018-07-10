@@ -6,7 +6,15 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -14,6 +22,8 @@ import java.util.stream.Collectors;
 public class TableRegisterStand implements TableRegister {
 
     public BeanGetter<StandJsonDb> db;
+
+    public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
 
     public enum SortType{
         FULLNAME,
@@ -63,13 +73,13 @@ public class TableRegisterStand implements TableRegister {
                     return "DESC".equals(sortDirection.toUpperCase())?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        queriedTable.size=tableSize();
+        queriedTable.size=getTableSize();
         return queriedTable;
     }
 
-    public int tableSize(){
+    public int getTableSize(){
         try {
-            return db.get().users.data.size();
+            return db.get().table.table.size();
         } catch (NullPointerException e) {
             e.printStackTrace();
             return 0;
@@ -165,6 +175,63 @@ public class TableRegisterStand implements TableRegister {
         return "User was successfully deleted";
     }
 
+    @Override
+    public String makeReport(String sortDirection, String sortType, String filterType,
+                             String filterText,String user, String reportType) throws Exception{
+        ReportTableView reportTableView;
+        OutputStream out;
+        Date date = new Date();
+        String filename =user+"_"+date.getTime();
+        if(reportType.equals("PDF")){
+            filename+="."+reportType;
+            out = new FileOutputStream(new File(reportsPath+filename));
+            reportTableView = new ReportTableViewPdf(out);
+        }else if(reportType.equals("XML")){
+            filename+="."+reportType;
+            out = new FileOutputStream(new File(reportsPath+filename));
+            reportTableView = new ReportTableViewXlsx(out);
+        }else {
+            return "-1";
+        }
+        TableToSend tableToSend;
+
+        reportTableView.start(user,date);
+        for (int i = 0; i < getTableSize()-getTableSize()%4; i=i+4) {
+            tableToSend=getTableData(i,4, sortDirection,sortType, filterType, filterText);
+            int j=0;
+            for (TableModel tableModel:tableToSend.table) {
+                reportTableView.append(tableModel,i+j);
+                j++;
+            }
+        }
+        tableToSend=getTableData(getTableSize()-getTableSize()%4,4,sortDirection,sortType,filterType,filterText);
+        int j=0;
+        for (TableModel tableModel:tableToSend.table) {
+            reportTableView.append(tableModel,j+getTableSize());
+            j++;
+        }
+
+        reportTableView.finish();
+        return filename;
+    }
+
+    public void downloadReport(String filename, HttpServletResponse response)
+            throws Exception{
+        if(!(new File(reportsPath+filename)).exists()){
+            return;
+        }
+        String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
+        response.setHeader("Content-Disposition","attachment; filename="+urlEncodedFileName);
+        ServletOutputStream servletOutputStream= response.getOutputStream();
+        FileInputStream fileInputStream = (new FileInputStream(new File(reportsPath + filename)));
+        byte[] buffer = new byte[8];
+        int len = 0;
+        while((len=fileInputStream.read(buffer))>=0){
+            servletOutputStream.write(buffer,0,len);
+        }
+        fileInputStream.close();
+        response.flushBuffer();
+    }
 
 
 }

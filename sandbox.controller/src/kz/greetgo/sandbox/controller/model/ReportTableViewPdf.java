@@ -20,6 +20,7 @@ public class ReportTableViewPdf implements ReportTableView {
     private final OutputStream out;
     private String user;
     private Document document;
+    private Date date;
 
     public ReportTableViewPdf(OutputStream out){
         this.out=out;
@@ -29,7 +30,8 @@ public class ReportTableViewPdf implements ReportTableView {
     @Override
     public void start(String user, Date reportDate) throws Exception{
 
-        this.user=user;
+        this.user = user;
+        this.date = reportDate;
         document = new Document();
         PdfWriter.getInstance(document,out);
 

@@ -75,5 +75,18 @@ public class TableController implements Controller{
     }
 
 
+    @NoSecurity
+    @ToJson
+    @MethodFilter(POST)
+    @Mapping("/make-report")
+    public String makeReport(@Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
+                             @Par("filterType") String  filterType, @Par("filterText") String filterText,
+                             @Par("user") String user, @Par("reportType") String reportType){
+        return tableRegister.get().makeReport(sortDirection,sortType, filterType, filterText, user, reportType);
+    }
+
+
+
+
 
 }
