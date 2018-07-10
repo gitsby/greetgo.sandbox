@@ -5,7 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
-import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
+import kz.greetgo.sandbox.db.client_queries.ClientRecordsRender;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.Date;

@@ -1,29 +1,34 @@
-package kz.greetgo.sandbox.db.client_records_query;
+package kz.greetgo.sandbox.db.client_queries;
 
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientRecordRow;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import org.apache.ibatis.jdbc.SQL;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.List;
 
-public class ClientRecordsQuery extends ClientRecordsView<List<ClientRecord>> {
+public class ClientRecordsRender extends ClientRecordsView<Void> {
 
-  private ClientRecordFilter filter;
+  private ClientRecordsReportView view;
 
-  public ClientRecordsQuery(ClientRecordFilter filter) {
+  public ClientRecordsRender(ClientRecordFilter filter, ClientRecordsReportView view) {
     super(filter, new SQL(), new ArrayList<>());
-    this.filter = filter;
+    this.view = view;
+    view.start();
   }
 
   @Override
-  public List<ClientRecord> doInConnection(Connection connection) throws Exception {
+  void orderBy() {
+    addSorting(false);
+  }
+
+  @Override
+  public Void doInConnection(Connection connection) throws Exception {
     prepareSql();
 
-    List<ClientRecord> clientRecords = new ArrayList<>();
     PreparedStatement statement = connection.prepareStatement(sql.toString());
 
     for (int i = 0; i < params.size(); i++) {
@@ -31,30 +36,24 @@ public class ClientRecordsQuery extends ClientRecordsView<List<ClientRecord>> {
     }
 
     ResultSet resultSet = statement.executeQuery();
-    while (resultSet.next()) {
-      ClientRecord clientRecord = new ClientRecord();
-      clientRecord.id = resultSet.getInt("id");
 
+    while (resultSet.next()) {
+      ClientRecordRow clientRecord = new ClientRecordRow();
+      clientRecord.id = resultSet.getInt("id");
       clientRecord.surname = resultSet.getString("surname");
       clientRecord.name = resultSet.getString("name");
       clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("patronymic") : "";
       clientRecord.charm = resultSet.getString("charm");
-      clientRecord.age = resultSet.getInt("age");
 
+      clientRecord.age = resultSet.getInt("age");
       clientRecord.maxBalance = resultSet.getDouble("maxBalance");
       clientRecord.minBalance = resultSet.getDouble("minBalance");
       clientRecord.accBalance = resultSet.getDouble("accBalance");
-      clientRecords.add(clientRecord);
+
+      view.appendRow(clientRecord);
     }
-    resultSet.close();
-    statement.close();
-    return clientRecords;
+    connection.close();
+
+    return null;
   }
-
-
-  @Override
-  void orderBy() {
-    addSorting(true);
-  }
-
 }

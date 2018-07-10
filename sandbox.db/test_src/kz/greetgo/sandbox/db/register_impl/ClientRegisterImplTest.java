@@ -88,7 +88,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.addedAddresses.add(address);
 
     ClientRecord record = clientRegister.get().save(clientToSave);
-
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(record.id), record);
     assertWithAddressDot(testDaoBeanGetter.get().getAddressDot(record.id), address);
     assertWithPhoneDot(testDaoBeanGetter.get().getPhoneDot(record.id), phone);
@@ -266,7 +265,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMinAsc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.minBalance));
 
@@ -310,7 +309,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMinDesc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.minBalance));
 
@@ -354,7 +353,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMaxAsc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.maxBalance));
 
@@ -396,7 +395,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByMaxDesc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.maxBalance));
 
@@ -439,7 +438,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByTotalAsc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
 
@@ -481,7 +480,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void testSortedByTotalDesc() throws Exception {
-    List<ClientRecord> clientRecords = getClientRecords();
+    List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.accBalance));
 
@@ -622,8 +621,31 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void clientCountIsValid() {
+  public void paginationTest() {
+    List<ClientRecord> clientRecords = getClientRecords(100);
+    clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
 
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "total";
+    clientRecordFilter.paginationPage = 1;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> recordsFromDB = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    assertThat(recordsFromDB).hasSize(10);
+
+    for (int i = 0; i < recordsFromDB.size(); i++) {
+      assertThat(recordsFromDB.get(i).id).isEqualTo(clientRecords.get(i + 10).id);
+    }
+  }
+
+
+  @Test
+  public void clientCountIsValid() {
     clearAndInputClients();
 
     ClientRecordFilter filter = new ClientRecordFilter();
@@ -717,7 +739,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private void assertWithPhoneDot(PhoneDot phoneDot, Phone phone) {
-    assertThat(phoneDot.client_id).isEqualTo(phone.client_id);
     assertThat(phoneDot.number).isEqualTo(phone.editedTo);
     assertThat(phoneDot.type).isEqualTo(phone.type);
   }
@@ -762,8 +783,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return ids;
   }
 
-  private List<ClientRecord> getClientRecords() {
-    List<Integer> ids = insertClientsAndGetIds(10);
+  private List<ClientRecord> getClientRecords(int num) {
+    List<Integer> ids = insertClientsAndGetIds(num);
 
     List<ClientRecord> clientRecords = new ArrayList<>();
 
@@ -833,6 +854,5 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     return clientDotList;
   }
-
 
 }

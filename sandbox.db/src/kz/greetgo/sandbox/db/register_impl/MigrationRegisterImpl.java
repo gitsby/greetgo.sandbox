@@ -14,13 +14,9 @@ public class MigrationRegisterImpl implements MigrationRegister {
     InMigration inMigration = new InMigration();
 
     inMigration.execute();
-    xmlManager.load(client -> inMigration.sendClient(client),
-      addressFromMigration -> {
-        inMigration.sendAddresses(addressFromMigration);
-      },
-      phonesFromMigration -> {
-        inMigration.sendPhones(phonesFromMigration);
-      }
+    xmlManager.load(inMigration::sendClient,
+      inMigration::sendAddresses,
+      inMigration::sendPhones
     );
     System.out.println("FINISHED ALL TASKS------------------------");
   }

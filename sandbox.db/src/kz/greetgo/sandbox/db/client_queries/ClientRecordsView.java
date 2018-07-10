@@ -1,6 +1,5 @@
-package kz.greetgo.sandbox.db.client_records_query;
+package kz.greetgo.sandbox.db.client_queries;
 
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import org.apache.ibatis.jdbc.SQL;
 
@@ -74,7 +73,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
     String limit = "";
     if (useLimit) {
       limit = "LIMIT ? OFFSET ?";
-      params.add(Math.abs(filter.sliceNum * filter.paginationPage + filter.sliceNum));
+      params.add(filter.sliceNum);
       params.add(Math.abs(filter.sliceNum * filter.paginationPage));
     }
     switch (filter.columnName) {

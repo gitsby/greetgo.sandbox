@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.client_records_query;
+package kz.greetgo.sandbox.db.client_queries;
 
 
 import kz.greetgo.db.ConnectionCallback;
