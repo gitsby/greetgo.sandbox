@@ -32,7 +32,7 @@
           id int not null primary key,
           name varchar(30) not null,
           surname varchar(30) not null,
-          patronymic varchar(30) not null,
+          patronymic varchar(30),
           gender varchar(10) not null,
           birth_date date,
           charm int not null,

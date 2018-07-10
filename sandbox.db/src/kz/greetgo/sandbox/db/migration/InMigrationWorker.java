@@ -19,7 +19,6 @@ public class InMigrationWorker extends SqlWorker {
 
   public void prepare() throws SQLException {
 //    exec("drop table temp_client");
-//    System.out.println("DROPPED");
 //    exec("drop table temp_phone");
 //    exec("drop table temp_address");
     exec("create table temp_client ( \n" +
@@ -33,6 +32,7 @@ public class InMigrationWorker extends SqlWorker {
       "          birth_date date, \n" +
       "          charm varchar(15), \n" +
       "          error text)");
+
     exec("create table temp_phone(" +
       "client_id varchar(40)," +
       "number varchar(30)," +
@@ -44,8 +44,13 @@ public class InMigrationWorker extends SqlWorker {
       "flat varchar(100)," +
       "house varchar(100)," +
       "type varchar(10))");
+
     connection.commit();
-    System.out.println("CREATED TABLES");
+
+  }
+
+  public void updater(){
+
   }
 
   public void sendClient(List<ClientFromMigration> clients) throws SQLException {
@@ -85,7 +90,7 @@ public class InMigrationWorker extends SqlWorker {
       params.add(client.patronymic);
       params.add(client.gender);
       params.add(client.charm);
-      params.add(error);
+      params.add(error.toString());
       builder.append(client.getInsertString());
     }
     exec(builder.toString(), params.toArray());
@@ -161,7 +166,6 @@ public class InMigrationWorker extends SqlWorker {
         connection.commit();
       }
     }
-    System.out.println("FINISHED");
     connection.commit();
   }
 }

@@ -18,6 +18,4 @@ public interface ClientRegister {
   List<CharmRecord> charm();
 
   int getClientCount(ClientRecordFilter clientRecordFilter);
-
-  void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws Exception;
 }

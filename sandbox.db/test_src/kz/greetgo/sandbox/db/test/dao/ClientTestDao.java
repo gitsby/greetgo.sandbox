@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.test.dao;
 
+import kz.greetgo.sandbox.controller.model.ClientAccount;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
@@ -22,43 +23,22 @@ public interface ClientTestDao {
     "values(#{client_id},#{number},#{type})")
   void insertNewPhoneDot(PhoneDot phoneDot);
 
+  @Insert("insert into client_account (client_id, money) values (#{id}, #{money})")
+  void insertNewAccount(ClientAccount account);
+
   // ------------------------------------
   @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
     "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")
   int insertNewClient(ClientDot clientDot);
 
   @Select("insert into characters (name) values(#{charm}) RETURNING id;")
-  int insertNewCharacter(String charm);
+  int insertNewCharm(String charm);
 
   @Select("select count(*) from client " +
     "WHERE concat(Lower(name), Lower(surname), Lower(patronymic)) like '%'||#{searchName}||'%'" +
     " and actual=1")
   Integer getClientCount(ClientRecordFilter filter);
 
-  @Select("select\n" +
-    "  client.id,\n" +
-    "  client.name,\n" +
-    "  client.surname,\n" +
-    "  client.patronymic,\n" +
-    "  client.gender,\n" +
-    "  extract(year from age(birth_date)) as age,\n" +
-    "  c2.name                            as charm,\n" +
-    "  accountMoneys.min                  as minBalance,\n" +
-    "  accountMoneys.max                  as maxBalance,\n" +
-    "  accountMoneys.sum                  as accBalance,\n" +
-    "  client.actual\n" +
-    "from client\n" +
-    "  join characters c2 on client.charm = c2.id\n" +
-    "  left join (select\n" +
-    "               client_id,\n" +
-    "               SUM(money),\n" +
-    "               max(money),\n" +
-    "               min(money)\n" +
-    "             from client\n" +
-    "               join client_account a on client.id = a.client_id\n" +
-    "             group by client_id) as accountMoneys on client.id = accountMoneys.client_id\n" +
-    "where client.actual = 1 and client.id=#{id}")
-  ClientRecord getClientRecordById(int id);
 
   @Select("select * from client where id =#{id} and actual=1")
   ClientDot getClientDotById(int id);

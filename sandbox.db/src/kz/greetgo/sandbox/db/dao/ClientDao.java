@@ -10,17 +10,6 @@ import java.util.List;
 public interface ClientDao {
 
   // ---------------------------------------
-  @Insert("insert into client_address (   client_id,    type,    street,    house, flat) " +
-    "                  values ( #{clientId}, #{type}, #{street}, #{house},#{flat})")
-  void insertAddress(Address address);
-
-
-  @Insert("insert into client_phone (   client_id,    number,    type) " +
-    "                  values ( #{client_id}, #{number}, #{type})")
-  void insertPhone(Phone phone);
-
-
-  // ---------------------------------------
   @Select("select id, name from characters where actual=1")
   List<CharmRecord> getCharms();
 
@@ -40,20 +29,4 @@ public interface ClientDao {
 
   @Update("update client set actual=0 where id=#{id}")
   void deleteClient(int id);
-
-  @Update("update client_phone set number=#{editedTo} " +
-    "where client_id=#{client_id} and number=#{number}")
-  void updatePhone(Phone phone);
-
-  @Update("update client_address set street=#{street}, house=#{house}, flat=#{flat} " +
-    "where client_id=#{clientId} and type=#{type}")
-  void updateAddress(Address address);
-
-
-  @Update("update client_address set actual=0 where client_id=#{clientId} and type=#{type}")
-  void deleteAddress(Address address);
-
-  @Update("update client_phone set actual=0 where client_id=#{clientId} and number=#{number}")
-  void deletePhone(Phone phone);
-
 }

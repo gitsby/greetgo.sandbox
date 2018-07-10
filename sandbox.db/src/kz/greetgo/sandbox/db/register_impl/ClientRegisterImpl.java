@@ -4,23 +4,15 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.db.client_records_query.ClientRecordsCounter;
-import kz.greetgo.sandbox.db.client_records_query.ClientRecordsQuery;
-import kz.greetgo.sandbox.db.client_records_query.ClientRecordsRender;
-import kz.greetgo.sandbox.db.client_records_query.ClientSaveQuery;
-import kz.greetgo.sandbox.db.client_records_report.ClientRecordsReportView;
-import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
-import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
+import kz.greetgo.sandbox.db.client_queries.*;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.io.OutputStream;
-import java.util.Date;
 import java.util.List;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
-  // FIXME: 7/4/18 Теста на отчет нет
+
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<JdbcSandbox> jdbc;
 
@@ -49,15 +41,14 @@ public class ClientRegisterImpl implements ClientRegister {
   public ClientRecord save(ClientToSave editedClient) {
     editedClient.id = jdbc.get().execute(new ClientSaveQuery(editedClient));
 
-    saveAddresses(editedClient.addedAddresses, "add", editedClient.id);
-    saveAddresses(editedClient.editedAddresses, "edit", editedClient.id);
-    saveAddresses(editedClient.deletedAddresses, "delete", editedClient.id);
+    jdbc.get().execute(new AddressSaveQuery(editedClient));
 
-    savePhones(editedClient.addedPhones, "add", editedClient.id);
-    savePhones(editedClient.editedPhones, "edit", editedClient.id);
-    savePhones(editedClient.deletedPhones, "delete", editedClient.id);
+    jdbc.get().execute(new PhoneSaveQuery(editedClient));
 
+    return getClientRecordById(editedClient.id);
+  }
 
+  private ClientRecord getClientRecordById(int clientId) {
     ClientRecordFilter filter = new ClientRecordFilter();
     filter.paginationPage = 0;
     filter.sliceNum = 1;
@@ -65,65 +56,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
     ClientRecordsQuery query = new ClientRecordsQuery(filter);
     query.sql.WHERE("client.id=?");
-    // FIXME: 7/4/18 Не должно быть желтым
-    query.params.add(0, editedClient.id);
 
+    query.params.add(clientId);
     return jdbc.get().execute(query).get(0);
-  }
-
-  private void savePhones(List<Phone> phones, String type, int clientId) {
-    if (phones != null) {
-      for (Phone phone : phones) {
-        phone.client_id = clientId;
-        switch (type) {
-          case "add":
-            clientDao.get().insertPhone(phone);
-            break;
-          case "edit":
-            clientDao.get().updatePhone(phone);
-            break;
-          case "delete":
-            clientDao.get().deletePhone(phone);
-            break;
-        }
-      }
-    }
-  }
-
-  @Override
-  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws Exception {
-    ClientRecordsReportView reportView = null;
-    switch (type) {
-      case "pdf":
-        reportView = new ClientRecordsViewPdf(outputStream);
-        break;
-      case "xlsx":
-        reportView = new ClientRecordsViewXlsx(outputStream);
-        break;
-    }
-    assert reportView != null;
-    jdbc.get().execute(new ClientRecordsRender(filter, reportView));
-    reportView.finish(userName, new Date());
-  }
-
-  private void saveAddresses(List<Address> addresses, String type, int clientId) {
-    if (addresses != null) {
-      for (Address address : addresses) {
-        address.clientId = clientId;
-        switch (type) {
-          case "add":
-            clientDao.get().insertAddress(address);
-            break;
-          case "edit":
-            clientDao.get().updateAddress(address);
-            break;
-          case "delete":
-            clientDao.get().deleteAddress(address);
-            break;
-        }
-      }
-    }
-
   }
 
   @Override

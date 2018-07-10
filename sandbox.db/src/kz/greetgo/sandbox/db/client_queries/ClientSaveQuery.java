@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.client_records_query;
+package kz.greetgo.sandbox.db.client_queries;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
@@ -16,7 +16,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
   private ClientToSave client;
 
   private SQL sql = new SQL();
-  private List params = new ArrayList();
+  private List<Object> params = new ArrayList<>();
 
   public ClientSaveQuery(ClientToSave client) {
     this.client = client;
@@ -67,6 +67,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
 
   }
 
+
   @Override
   public Integer doInConnection(Connection connection) throws Exception {
     PreparedStatement statement = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
@@ -76,6 +77,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
     }
 
     statement.execute();
+
     ResultSet set = statement.getGeneratedKeys();
     set.next();
     int clientId = set.getInt("id");
@@ -83,4 +85,6 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
     connection.close();
     return clientId;
   }
+
+
 }

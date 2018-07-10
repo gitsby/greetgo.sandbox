@@ -1,5 +1,7 @@
 package kz.greetgo.sandbox.db.client_records_report;
 
+import kz.greetgo.sandbox.controller.model.ClientRecordRow;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.util.RND;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -87,7 +89,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
     Random random = new Random();
     for (int i = 0; i < 101; i++) {
       ClientRecordRow recordRow = new ClientRecordRow();
-      recordRow.id = i;// asdasd
+      recordRow.id = i;
       recordRow.surname = RND.str(11);
       recordRow.name = RND.str(10);
       recordRow.patronymic = RND.str(10);

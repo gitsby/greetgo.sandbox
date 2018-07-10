@@ -10,7 +10,11 @@ import kz.greetgo.mvc.core.RequestMethod;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.ReportRegister;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.controller.util.Controller;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewPdf;
+import kz.greetgo.sandbox.db.client_records_report.ClientRecordsViewXlsx;
 
 import java.io.IOException;
 
@@ -18,7 +22,7 @@ import java.io.IOException;
 @Mapping("/report")
 public class ReportController implements Controller {
 
-  public BeanGetter<ClientRegister> clientRegister;
+  public BeanGetter<ReportRegister> clientRegister;
 
   @MethodFilter(RequestMethod.GET)
   @Mapping("/render")
@@ -28,20 +32,22 @@ public class ReportController implements Controller {
     @Par("fileType") String fileType,
     BinResponse binResponse) throws Exception {
 
-    System.out.println("In report");
     binResponse.setFilename(String.format("%s." + fileType, fileName));
     binResponse.setContentTypeByFilenameExtension();
+
+    ClientRecordsReportView view;
+
     try {
       binResponse.out().flush();
     } catch (IOException e) {
       e.printStackTrace();
     }
-    clientRegister.get().renderClientList(filter, "", fileType, binResponse.out());
+    if (fileType.equals("xlsx")){
+      view = new ClientRecordsViewXlsx(binResponse.out());
+    }else {
+      view = new ClientRecordsViewPdf(binResponse.out());
+    }
+    clientRegister.get().renderClientList(filter, "", view);
     binResponse.flushBuffers();
-  }
-
-  @Mapping("/test")
-  public void test() {
-    System.out.println("TESTED!");
   }
 }
