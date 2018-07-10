@@ -40,6 +40,7 @@ public class ReportController implements Controller {
         try {
           binResponse.out().flush();
         } catch (IOException e) {
+          // FIXME: 7/10/18 Нельзя использовать стандартный принт
           e.printStackTrace();
         }
     }
