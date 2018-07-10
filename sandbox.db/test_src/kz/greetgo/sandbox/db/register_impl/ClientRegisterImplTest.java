@@ -1,7 +1,14 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.db.classes.TestView;
@@ -19,12 +26,18 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
+  // FIXME: 7/10/18 Нужны тесты, которые показывают, что не актуальные записи не берутся
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientRegister> clientRegister;
 
@@ -108,6 +121,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     List<AddressDot> addressDots = testDaoBeanGetter.get().getAddressDots(newClientId);
 
+    // FIXME: 7/10/18 assertThat(details.addresses).hasSameSizeAs(addressDots);
+
     for (int i = 0; i < details.addresses.size(); i++) {
       assertThat(details.addresses.get(i).street).isEqualTo(addressDots.get(i).street);
       assertThat(details.addresses.get(i).flat).isEqualTo(addressDots.get(i).flat);
@@ -162,6 +177,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     editedAddress.type = "REG";
 
     clientToSave.editedAddresses = new ArrayList<>();
+    // FIXME: 7/10/18 Сделай несколько адресов
     clientToSave.editedAddresses.add(editedAddress);
 
     Phone phone = new Phone();
@@ -171,6 +187,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     phone.type = "MOBILE";
 
     clientToSave.editedPhones = new ArrayList<>();
+    // FIXME: 7/10/18 И несолько телефонов
     clientToSave.editedPhones.add(phone);
 
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
@@ -189,12 +206,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void testSortedByFIOAsc() {
 
     List<ClientDot> clientDots = getInsertedClients();
+    // FIXME: 7/10/18 А если patronymic = null
     clientDots.sort((o1, o2) ->
-      Collator.getInstance(new Locale("ru", "RU")).compare(
-        o1.surname + o1.name + o1.patronymic
-        , o2.surname
-          + o2.name
-          + o2.patronymic));
+      Collator.getInstance(new Locale("ru", "RU")).compare(o1.surname + o1.name + o1.patronymic, o2.surname + o2.name + o2.patronymic));
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
@@ -220,6 +234,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         o2.surname +
           o2.name +
           o2.patronymic,
+        // FIXME: 7/10/18 Сделай уже метод, который будет делаит фио из стрингов
         o1.surname +
           o1.name +
           o1.patronymic));
