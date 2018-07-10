@@ -21,7 +21,7 @@ import java.io.IOException;
 @Bean
 @Mapping("/report")
 public class ReportController implements Controller {
-
+  // FIXME: 7/10/18 Проект не собирается
   public BeanGetter<ReportRegister> clientRegister;
 
   @MethodFilter(RequestMethod.GET)
