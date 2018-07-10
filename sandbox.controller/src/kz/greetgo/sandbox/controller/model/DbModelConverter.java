@@ -30,7 +30,6 @@ public class DbModelConverter {
             phone.validity = dbClientPhone.validity;
             user.phones[i]=phone;
         }
-        System.err.print(dbAddressFactual + "\n" + dbAddressRegistered);
         user.factualAddress = new Address();
         user.factualAddress.house = dbAddressFactual.house;
         user.factualAddress.flat = dbAddressFactual.flat;

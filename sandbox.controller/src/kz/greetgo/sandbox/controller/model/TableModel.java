@@ -11,7 +11,10 @@ public class TableModel {
 
     @Override
     public String toString(){
-        return id +" "+ fullName +" "+ charm +" "+ age +" "+ totalBalance +" "+ minBalance +" "+ maxBalance;
+        return "\n\t\t\t"+id +" "+ fullName +" "+ charm +" "+ age +" "+ totalBalance +" "+ minBalance +" "+ maxBalance+"\n";
     }
+
+
+
 
 }

@@ -23,8 +23,9 @@ public class StandJsonDb implements HasAfterInject{
     public ArrayUsers users = new ArrayUsers();
     public int lastId = 0;
     public Accounts accounts = new Accounts();
-    public Table table = new Table();
-    
+    public TableToSend table = new TableToSend();
+    public Filter filter = new Filter();
+
     public  Gson gson  = new Gson();
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
@@ -35,28 +36,65 @@ public class StandJsonDb implements HasAfterInject{
     public void afterInject() throws Exception {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(usersPath));
         users = gson.fromJson(bufferedReader, ArrayUsers.class);
-
         bufferedReader = new BufferedReader(new FileReader(accountsPath));
         accounts = gson.fromJson(bufferedReader,Accounts.class);
         tableCreate();
     }
 
     public void tableCreate(){
-        table.data.clear();
+
+        String filterText = "[\\s\\S]*";
+        FilterType filterType = FilterType.NAME;
+
+        Boolean wasEmpty = true;
+        if(!(filter.filterText==null) && !filter.filterText.equals("")){
+            filterText = filter.filterText;
+            wasEmpty = false;
+        }else{
+            wasEmpty = true;
+        }
+
+        if(!(filter.filterType==null) ){
+            filterType = filter.filterType;
+        }
+
+        table.table.clear();
+
         for(int i=0; i<users.data.size(); i++){
             if(users.data.get(i).id>lastId){
                 lastId=users.data.get(i).id;
             }
-            TableModel tableModel = new TableModel();
-            tableModel.fullName= users.data.get(i).surname + " " + users.data.get(i).name + " " + users.data.get(i).patronymic;
-            tableModel.id = users.data.get(i).id;
-            tableModel.charm = users.data.get(i).charm;
-            tableModel.age = users.data.get(i).birthDate;
-            tableModel.minBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-            tableModel.maxBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-            tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
-            table.data.add(tableModel);
+            if(wasEmpty){
+                add(i);
+            }else
+             switch (filterType){
+
+                case NAME:
+                    if(filterText.matches(users.data.get(i).name)){ add(i); }
+                    break;
+                case SURNAME:
+                    if(filterText.matches(users.data.get(i).surname)){ add(i); }
+                    break;
+                case PATRONYMIC:
+                    if(filterText.matches(users.data.get(i).patronymic)){ add(i); }
+                    break;
+                default:
+                    add(i);
+                    break;
+            }
         }
+    }
+
+    private void add(int i){
+        TableModel tableModel = new TableModel();
+        tableModel.fullName= users.data.get(i).surname + " " + users.data.get(i).name + " " + users.data.get(i).patronymic;
+        tableModel.id = users.data.get(i).id;
+        tableModel.charm = users.data.get(i).charm;
+        tableModel.age = users.data.get(i).birthDate;
+        tableModel.minBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+        tableModel.maxBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+        tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
+        table.table.add(tableModel);
     }
 
     public void updateDB() {

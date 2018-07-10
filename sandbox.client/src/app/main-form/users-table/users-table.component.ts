@@ -8,6 +8,7 @@ import {User} from "../../../models/User";
 import {TableService} from "../../../services/TableService";
 import {forEach} from "@angular/router/src/utils/collection";
 import {merge, Observable} from "rxjs/";
+import {FormControl} from "@angular/forms";
 
 
 
@@ -25,6 +26,9 @@ export class UsersTableComponent implements OnInit {
   @Output() selectedUserID: EventEmitter<string> = new EventEmitter<string>();
   selectedRowIndex = '-1';
   displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
+
+  filterText = new FormControl("");
+  filterType = new FormControl("NAME");
 
 
   constructor(private httpService: HttpService){
@@ -87,7 +91,7 @@ export class UsersTableComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    merge(this.sort.sortChange,this.paginator.page).pipe(
+    merge(this.sort.sortChange,this.paginator.page, this.filterText.valueChanges,this.filterType.valueChanges).pipe(
       tap(() => {
         this.dataSource = new UsersTableCustomDatasource(this.tableFetcher());
         this.dataSource.loadTable();
@@ -99,11 +103,15 @@ export class UsersTableComponent implements OnInit {
     let skipNumber = 0;
     let sortDirection='asc';
     let sortType='fullname';
+    let filterType = "NAME";
+    let filterText = "";
     if(!ngInit) {
        limit = this.paginator.pageSize;
        skipNumber = this.paginator.pageIndex*this.paginator.pageSize ;
        sortDirection=this.sort.direction;
        sortType=this.sort.active;
+       filterText = this.filterText.value.replace(/\s\s+/g, '');
+       filterType = this.filterType.value;
     }
 
     console.log(skipNumber,limit,sortDirection,sortType);
@@ -112,7 +120,9 @@ export class UsersTableComponent implements OnInit {
       skipNumber:skipNumber,
       limit: limit,
       sortDirection:sortDirection,
-      sortType:sortType}
+      sortType:sortType,
+      filterType: filterType,
+      filterText: filterText}
     );
   }
 
