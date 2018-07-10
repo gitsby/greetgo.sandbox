@@ -15,7 +15,8 @@ import kz.greetgo.sandbox.db.dao.TableDao;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
+// TODO: war не собирается, исправь ошибку.
+// TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
 @Bean
 public class TableRegisterImpl implements TableRegister{
 
