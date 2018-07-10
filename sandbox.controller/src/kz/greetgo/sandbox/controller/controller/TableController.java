@@ -15,9 +15,15 @@ import java.util.List;
 import static kz.greetgo.mvc.core.RequestMethod.GET;
 import static kz.greetgo.mvc.core.RequestMethod.POST;
 
+// TODO: Все переменные и названия любых классох, директорий должны быть понятными !!!
+
 @Bean
+// TODO: маппинг сделать понятным. О каком table идёт речь и что он делает
 @Mapping("/table")
+// TODO: контроль соответственно назвать так, чтобы было понятно
 public class TableController implements Controller{
+
+    // TODO: переменную и класс регистра тоже переименую
     public BeanGetter<TableRegister> tableRegister;
     private String userID;
 
@@ -73,7 +79,4 @@ public class TableController implements Controller{
     public String deleteUser(@Par("userID") Integer userID){
         return tableRegister.get().deleteUser(userID);
     }
-
-
-
 }
