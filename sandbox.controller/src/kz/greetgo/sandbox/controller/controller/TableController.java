@@ -49,7 +49,7 @@ public class TableController implements Controller {
   @NoSecurity
   @ToJson
   @Mapping("/get-exact-user")
-  // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Record для данного случая.
+  // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Details для данного случая.
   // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
   public User getExactUser(@Par("userID") Integer userID) {
     return tableRegister.get().getExactUser(userID);

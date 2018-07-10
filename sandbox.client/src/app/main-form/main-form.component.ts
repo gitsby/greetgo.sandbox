@@ -50,6 +50,7 @@ export class MainFormComponent implements OnDestroy{
         hasBackdrop: true,
         minWidth: 400,
         data: {
+          // TODO: должен передаваться только ID либо null (При добавлении нового клиента)
           user: user,
           titleType: titleType
         }
@@ -93,6 +94,9 @@ export class MainFormComponent implements OnDestroy{
     this.openDialog("Create");
   }
 
+  // TODO: по наименованию не понятно, что этот метод делает на самом деле.
+  // Кажется, что он должен вывести мне только пользователя и всё.
+  // TODO: назови правильно.
   getSelectedUser(callback) {
     return (this.httpService.get('/table/get-exact-user', {'userID': this.selectedUserID}).toPromise().then(
       res => {
