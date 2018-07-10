@@ -20,35 +20,7 @@ public class ClientRenderCallback extends ClientRecordSelectCallback<Void> {
   }
 
   @Override
-  public void update() {
-
-  }
-
-  @Override
-  public void set() {
-
-  }
-
-  @Override
-  public void insert() {
-
-  }
-
-  @Override
-  public void values() {
-
-  }
-
-  @Override
-  public void orderBy() {
-// FIXME: 7/4/18 order by doljen byt'
-  }
-
-  @Override
-  public void offsetAndLimit() {
-    // FIXME: 7/4/18 если тело пустое, то сделай как в returning ниже: {}
-  }
-
+  public void offsetAndLimit() {}
 
   @Override
   public void returning() {}

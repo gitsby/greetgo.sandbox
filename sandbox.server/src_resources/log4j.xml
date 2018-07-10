@@ -49,11 +49,6 @@
     <!--<appender-ref ref="CONSOLE"/>-->
   </category>
 
-  <category name="kz.greetgo.sandbox.db.register_impl" additivity="true">
-    <priority value="TRACE"/>
-    <!--<appender-ref ref="CONSOLE"/>-->
-  </category>
-
   <root>
     <priority value="INFO"/>
     <appender-ref ref="SERVER"/>

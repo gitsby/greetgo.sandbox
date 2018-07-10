@@ -16,19 +16,13 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
   }
 
   @Override
-  public void select() {
-
-  }
+  public void select() {}
 
   @Override
-  public void from() {
-
-  }
+  public void from() {}
 
   @Override
-  public void join() {
-
-  }
+  public void join() {}
 
   @Override
   public void update() {
@@ -74,19 +68,13 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
   }
 
   @Override
-  public void groupBy() {
-
-  }
+  public void groupBy() {}
 
   @Override
-  public void orderBy() {
-
-  }
+  public void orderBy() {}
 
   @Override
-  public void offsetAndLimit() {
-
-  }
+  public void offsetAndLimit() {}
 
   @Override
   public void returning() {

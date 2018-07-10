@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public interface WorkerInterface {
-  void prepareStatements() throws SQLException;
   void createTmpTables();
   void createCsvFiles() throws IOException;
   void loadCsvFile() throws IOException, SAXException;

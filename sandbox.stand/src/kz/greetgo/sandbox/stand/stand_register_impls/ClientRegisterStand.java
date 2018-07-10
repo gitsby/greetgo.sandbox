@@ -5,7 +5,6 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.sandbox.controller.render.model.ClientRow;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
@@ -24,14 +23,13 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public Integer save(ClientToSave clientToSave) {
+  public ClientRecord save(ClientToSave clientToSave) {
     ClientDot clientDot;
     if (clientToSave.id == null) {
       clientDot = new ClientDot();
       db.get().clientsStorage.add(clientDot);
       clientDot.id = db.get().clientsStorage.size();
     } else clientDot = getClient(clientToSave.id);
-    System.out.println(clientToSave.birthDate);
     clientDot.name = clientToSave.name;
     clientDot.surname = clientToSave.surname;
     clientDot.patronymic = clientToSave.patronymic;
@@ -43,7 +41,7 @@ public class ClientRegisterStand implements ClientRegister {
     saveClientPhone(clientDot.id, clientToSave.workPhone);
     saveClientPhone(clientDot.id, clientToSave.mobilePhone);
     clientDot.charmId = clientToSave.charmId;
-    return clientDot.id;
+    return toClientRecords(clientDot);
   }
 
   @Override
@@ -79,22 +77,9 @@ public class ClientRegisterStand implements ClientRegister {
     List<ClientRecord> clientRecords = getAllRecordWithFilter(clientFilter);
     render.start(name, new Date());
     for (ClientRecord clientRecord : clientRecords) {
-      render.append(getClientFowFromRecord(clientRecord));
+      render.append(clientRecord);
     }
     render.finish();
-  }
-
-  private ClientRow getClientFowFromRecord(ClientRecord clientRecord) {
-    ClientRow clientRow = new ClientRow();
-    clientRow.id = clientRecord.id;
-    clientRow.surname = clientRecord.surname;
-    clientRow.name = clientRecord.name;
-    clientRow.patronymic = clientRecord.patronymic;
-    clientRow.age = clientRecord.age;
-    clientRow.middle_balance = clientRecord.middle_balance;
-    clientRow.max_balance = clientRecord.max_balance;
-    clientRow.min_balance = clientRecord.min_balance;
-    return clientRow;
   }
 
   private List<ClientRecord> getAllRecordWithFilter(ClientFilter clientFilter) {
