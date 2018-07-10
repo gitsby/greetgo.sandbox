@@ -27,7 +27,7 @@ public class ReportTableViewXlsx implements ReportTableView {
 
 
     @Override
-    public void start(String user, Date reportDate){
+    public void start(String user, Date reportDate)throws Exception{
         xlsx = new Xlsx();
         this.user=user;
         sheet =xlsx.newSheet(true);
@@ -56,7 +56,7 @@ public class ReportTableViewXlsx implements ReportTableView {
 
 
     @Override
-    public void append(TableModel tableModel, int index){
+    public void append(TableModel tableModel, int index)throws Exception{
         sheet.row().start();
         sheet.cellInt(1,index);
         sheet.cellStr(2,tableModel.fullName);
@@ -70,7 +70,7 @@ public class ReportTableViewXlsx implements ReportTableView {
 
 
     @Override
-    public void finish(){
+    public void finish()throws Exception{
         sheet.skipRow();
         sheet.skipRow();
 
