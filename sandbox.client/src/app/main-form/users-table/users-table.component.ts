@@ -143,7 +143,7 @@ export class UsersTableComponent implements OnInit {
         filename=response.json();
         let toPrint = (this.httpService.download("/table/download-report", {"filename":filename}).toString())
         console.log(toPrint);
-        window.open(toPrint)
+        window.open(toPrint, "_blank");
       }
     );
   }
