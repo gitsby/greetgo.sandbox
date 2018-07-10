@@ -1,10 +1,13 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
+import com.itextpdf.text.pdf.codec.Base64;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
+import org.apache.jasper.tagplugins.jstl.core.Out;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -215,22 +218,24 @@ public class TableRegisterStand implements TableRegister {
         return filename;
     }
 
-    public void downloadReport(String filename, HttpServletResponse response)
+    @Override
+    public void downloadReport(String filename, BinResponse response)
             throws Exception{
         if(!(new File(reportsPath+filename)).exists()){
             return;
         }
         String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
-        response.setHeader("Content-Disposition","attachment; filename="+urlEncodedFileName);
-        ServletOutputStream servletOutputStream= response.getOutputStream();
+        response.setContentType("application/octet-stream");
+        response.setFilename(urlEncodedFileName);
+        OutputStream outputStream =response.out();
         FileInputStream fileInputStream = (new FileInputStream(new File(reportsPath + filename)));
-        byte[] buffer = new byte[8];
+        byte[] buffer = new byte[4096];
         int len = 0;
         while((len=fileInputStream.read(buffer))>=0){
-            servletOutputStream.write(buffer,0,len);
+            outputStream.write(buffer,0,len);
         }
         fileInputStream.close();
-        response.flushBuffer();
+        response.flushBuffers();
     }
 
 

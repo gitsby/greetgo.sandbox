@@ -11,6 +11,7 @@ import { UserDialogComponent } from './user-dialog/user-dialog.component';
 import {UsersTableComponent} from "./users-table/users-table.component";
 import {Subscription} from "rxjs/";
 import {UsersTableCustomDatasource} from "./users-table/users-table-custom-datasource";
+import {Http} from "@angular/http";
 // import Subscription = Rx.Subscription;
 
 @Component({
@@ -32,6 +33,7 @@ export class MainFormComponent implements OnDestroy{
   isThereData: boolean = true;
   typeOfDialogCall: string | null = null;
   userDialogRef: MatDialogRef<UserDialogComponent>;
+  http: Http;
   @ViewChild(UsersTableComponent) private usersTableComponent: UsersTableComponent;
 
   constructor(private httpService: HttpService,

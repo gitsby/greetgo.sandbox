@@ -3,11 +3,16 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.RequestWrapper;
+import javax.xml.ws.ResponseWrapper;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,13 +82,23 @@ public class TableController implements Controller{
 
     @NoSecurity
     @ToJson
-    @MethodFilter(POST)
+    @MethodFilter(GET)
     @Mapping("/make-report")
     public String makeReport(@Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
                              @Par("filterType") String  filterType, @Par("filterText") String filterText,
-                             @Par("user") String user, @Par("reportType") String reportType){
+                             @Par("user") String user, @Par("reportType") String reportType) throws Exception {
         return tableRegister.get().makeReport(sortDirection,sortType, filterType, filterText, user, reportType);
     }
+
+    @NoSecurity
+    @Mapping("/download-report")
+    public void downloadReport(@Par("filename") String filename,
+                               BinResponse response)
+                                   throws Exception {
+        System.out.println(response.toString());
+        tableRegister.get().downloadReport(filename,response);
+    }
+
 
 
 

@@ -16,7 +16,6 @@ import {
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { HttpService } from "../services/HttpService";
 import { UserDialogComponent } from './main-form/user-dialog/user-dialog.component';
-import { TableService }  from "../services/TableService";
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {MatSelectModule} from '@angular/material/select';
 // import { ControlsComponent } from './main-form/controls/controls.component';
@@ -52,7 +51,7 @@ import {MatSelectModule} from '@angular/material/select';
   exports: [
     MatProgressSpinnerModule,
   ],
-  providers: [HttpService, TableService],
+  providers: [HttpService],
   bootstrap: [AppComponent],
   entryComponents: [UserDialogComponent]
 })

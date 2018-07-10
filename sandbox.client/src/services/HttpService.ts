@@ -105,4 +105,29 @@ export class HttpService {
 
     return this.http.delete(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
   }
+
+
+
+  public download(urlSuffix: string, keyValue?: { [key: string]: string | number | null }): String {
+    let post: string = '';
+
+    if (keyValue) {
+      let data = new URLSearchParams();
+      let appended = false;
+      for (let key in keyValue) {
+        let value = keyValue[key];
+        if (value) {
+          data.append(key, value as string);
+          appended = true;
+        }
+      }
+      if (appended) post += '?' + data.toString();
+    }
+
+    console.log(post);
+
+    return this.url(urlSuffix) + post;
+  }
+
+
 }
