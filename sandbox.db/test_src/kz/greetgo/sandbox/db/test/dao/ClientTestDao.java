@@ -45,7 +45,7 @@ public interface ClientTestDao {
                          @Param("type") PhoneType type);
 
 
-  @Insert("INSERT INTO client_account(client, number, money, registered_at) VALUES(#{client}, #{number}, #{money}, #{registered_at})")
+  @Insert("INSERT INTO client_account(client, number, money, registered_at) VALUES (#{client}, #{number}, #{money}, #{registered_at})")
   void insertClientAccount(@Param("client") Integer client,
                            @Param("number") String number,
                            @Param("money") float money,

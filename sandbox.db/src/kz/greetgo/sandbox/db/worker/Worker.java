@@ -1,8 +1,8 @@
 package kz.greetgo.sandbox.db.worker;
 
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
+import org.apache.log4j.Logger;
 import org.postgresql.copy.CopyManager;
 import org.xml.sax.SAXException;
 
@@ -11,37 +11,53 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.GregorianCalendar;
 
 public abstract class Worker implements WorkerInterface {
 
-  public List<Connection> connections;
-  public InputStream inputStream;
-  public MigrationConfig migrationConfig;
-  public final String TMP_DIR = "build/tmp/";
+  private static Logger logger = Logger.getLogger(Worker.class);
+
+  protected Connection connection;
+  protected InputStream inputStream;
 
 
-  public Worker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
-    this.connections = connections;
+  public Worker(Connection connection, InputStream inputStream) {
+    this.connection = connection;
     this.inputStream = inputStream;
-    this.migrationConfig = migrationConfig;
+  }
+
+  public static CIAWorker getCiaWorker(Connection connection, InputStream inputStream) {
+    return new CIAWorker(connection, inputStream);
+  }
+
+  public static FRSWorker getFrsWorker(Connection connection, InputStream inputStream) {
+    return new FRSWorker(connection, inputStream);
   }
 
   public final void execute() throws SQLException, IOException, SAXException {
+    logger.info("----- EXECUTING -----");
+    long start = System.nanoTime();
     createTmpTables();
     createCsvFiles();
     loadCsvFile();
-    loadCsvFilesToTmp();
-    fuseTmpTables();
-    validateTmpTables();
-    migrateToTables();
+    loadCsvFilesToTmpTables();
+    fuseMainTmpTables();
+    validateMainTmpTables();
+    migrateMainTmpTableToTables();
+    fuseChildTmpTables();
+    validateChildTmpTables();
+    migrateChildTmpTablesToTables();
     deleteTmpTables();
     finish();
+    long end = System.nanoTime();
+    Calendar c = new GregorianCalendar();
+    c.setTime(new Date(end-start));
+    logger.info(String.format("----- FINISH AT: %d n/s -----", end-start));
   }
 
-  public void copy(CopyManager copyManager, File file, String tmp) throws IOException, SQLException {
-    //language=PostgreSQL
+  protected void copy(CopyManager copyManager, File file, String tmp) throws IOException, SQLException {
     String copyQuery = "COPY TMP_TABLE FROM STDIN WITH DELIMITER '|'";
     FileReader reader = new FileReader(file);
     copyManager.copyIn(r(copyQuery, tmp), reader);
@@ -49,66 +65,59 @@ public abstract class Worker implements WorkerInterface {
     file.delete();
   }
 
-  public String checkStr(String str, Long counter) {
-    if (str == null) return "\\N";
-    str = str.trim();
-    if (!str.isEmpty()) {
-      if (counter == null) return str;
-      else return counter + "#" + str;
-    }
-    return "\\N";
-  }
-
-  public String getTmpTableName(String tableName) {
+  protected String getTmpTableName(String tableName) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     Date nowDate = new Date();
     return tableName+"_"+sdf.format(nowDate);
   }
 
-  public Writer getWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
+  protected boolean isDate(String date) {
+    if (date==null) return false;
+    return date.matches("^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$");
+  }
+
+  protected Writer getWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
     FileOutputStream fos = new FileOutputStream(file);
     OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
-    BufferedWriter bw = new BufferedWriter(osw, 10_000);
+    BufferedWriter bw = new BufferedWriter(osw, 100_000);
     return new PrintWriter(bw, true);
   }
 
-  public File createFile(String path) throws IOException {
-    File file = new File(path);
+  protected File createFile(String name) throws IOException {
+    String tmp = "build/tmp/";
+    File file = new File(tmp+name);
     if (!file.exists()) { new File(file.getParent()).mkdirs(); }
     file.createNewFile();
     return file;
   }
 
-  public static CIAWorker getCiaWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) throws SAXException {
-    return new CIAWorker(connections, inputStream, migrationConfig);
-  }
-
-  public static FRSWorker getFrsWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
-    return new FRSWorker(connections, inputStream, migrationConfig);
-  }
-
-  public void exec(String sql, String tmp) {
+  protected void exec(String sql, String tmp) {
     String executingSql = r(sql, tmp);
-    try (Statement statement = nextConnection().createStatement()) {
+    try (Statement statement = connection.createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
-      System.out.println(e);
+      logger.error(e.getMessage());
     }
   }
 
-  private static int last = 0;
-
-  public Connection nextConnection() {
-    return connections.get(last % connections.size());
-  }
-
-  public String r(String sql, String tmp) {
+  private String r(String sql, String tmp) {
     sql = sql.replaceAll("TMP_TABLE", tmp);
     return sql;
   }
 
-  public void info(String message) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    System.out.println(sdf.format(new Date()) + " [" + getClass().getSimpleName() + "] " + message);
+  protected void deleteTable(String tmp) {
+    exec("DROP TABLE IF EXISTS TMP_TABLE", tmp);
+    exec("DROP TABLE IF EXISTS TMP_TABLE_conductor", tmp);
+  }
+
+  protected String checkStr(String str, Long counter) {
+    if (str == null) return "\\N";
+    str = str.trim();
+    if (!str.isEmpty()) {
+      if (str.toLowerCase().equals("null")) return "\\N";
+      if (counter == null) return str;
+      else return counter + "#" + str;
+    }
+    return "\\N";
   }
 }

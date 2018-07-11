@@ -1,48 +1,49 @@
-package kz.greetgo.sandbox.db._develop_;
+package kz.greetgo.sandbox.db.util;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-public class UnzipUtil {
+public class ArchiveUtil {
+
+  private static Logger logger = Logger.getLogger(ArchiveUtil.class);
 
   public static File unzip(File file) throws Exception {
     return unarchiveFile(file);
   }
 
   private static File unarchiveFile(File file) throws Exception {
-    info("Begin unzip "+file.getName()+"...");
-    info("Create unzip folder.");
+    logger.info("Begin unzip "+file.getName()+"...");
+    logger.info("Create unzip folder.");
     File unzipFolder = new File(file.getParent()+"/unzipFolder");
     unzipFolder.mkdir();
-    info("Unzip folder created.");
+    logger.info("Unzip folder created.");
 
-    info("Create builder.");
+    logger.info("Create builder.");
     ProcessBuilder builder = new ProcessBuilder();
     builder.command("tar", "-xvzf", file.getPath(), "-C", unzipFolder.getPath());
     builder.inheritIO();
-    info("Builder created.");
+    logger.info("Builder created.");
 
-    info("Start unzip process...");
+    logger.info("Start unzip process...");
     long startTime = System.nanoTime();
     Process process = builder.start();
     int exitStatus = process.waitFor();
     if (exitStatus != 0) throw new RuntimeException("Error unzip file " + file + " with exit status " + exitStatus);
     process.destroy();
-    info("End unzip file: "+(System.nanoTime()-startTime)+" ns");
+    logger.info("End unzip file: "+(System.nanoTime()-startTime)+" ns");
 
-    info("Replace file to tmp.");
+    logger.info("Replace file to tmp.");
     File inDirFile = getFile(unzipFolder);
 
     File newFile = new File(file.getParent()+"/"+inDirFile.getName());
     newFile.createNewFile();
 
     inDirFile.renameTo(newFile);
-    info("File " + inDirFile.getName() + " replaced.");
+    logger.info("File " + inDirFile.getName() + " replaced.");
 
-    info("Delete zip file and unzip folder.");
+    logger.info("Delete zip file and unzip folder.");
     file.delete();
     FileUtils.deleteDirectory(unzipFolder);
 
@@ -58,10 +59,5 @@ public class UnzipUtil {
       if (res != null) return res;
     }
     return null;
-  }
-
-  private static void info(String message) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    System.out.println(sdf.format(new Date()) + " [" + UnzipUtil.class.getSimpleName() + "] " + message);
   }
 }

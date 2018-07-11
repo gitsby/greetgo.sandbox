@@ -1,100 +1,64 @@
 package kz.greetgo.sandbox.db.core;
 
-import kz.greetgo.sandbox.db.configs.ConnectionConfig;
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
-import kz.greetgo.sandbox.db.util.ConnectionUtils;
+import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.db.util.Informative;
 import kz.greetgo.sandbox.db.worker.Worker;
 import liquibase.util.file.FilenameUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.Objects;
 
+@Bean
 public class Migration extends Informative implements Closeable {
 
-  private final ConnectionConfig config;
-  private List<Connection> connections;
+  private static Logger logger = Logger.getLogger(Migration.class);
+
+  private Connection connection;
+
   private File file;
   private InputStream inputStream;
-  private MigrationConfig migrationConfig;
 
-  public Migration(ConnectionConfig config, File file, MigrationConfig migrationConfig) {
-    this.config = config;
+  public Migration(Connection connection, File file) {
+    this.connection = connection;
     this.file = file;
-    this.migrationConfig = migrationConfig;
-    connections = new ArrayList<>();
   }
 
   @Override
   public void close() {
     try {
-      closeConnection();
-      closeStream();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void closeStream() {
-    try {
       inputStream.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      logger.error(e.getMessage());
     }
-    this.inputStream = null;
   }
 
-
-  private void closeConnection() throws SQLException {
-    for (int i = 0; i < connections.size(); i++) connections.get(i).close();
-  }
-
-  private String tmpClientTable;
-
-  public int migrate() throws Exception {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    Date nowDate = new Date();
-    tmpClientTable = "migration_" + sdf.format(nowDate);
-    info("TMP_TABLE = " + tmpClientTable);
-
-    return download();
-  }
-
-  private void createConnection(int count) throws Exception {
-    for (int i = 0; i < count; i++)
-      connections.add(ConnectionUtils.create(config));
+  public void migrate() throws Exception {
+    download();
   }
 
   private void createInputStream() {
     try {
       inputStream = new FileInputStream(file);
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
   }
 
-  private int download() throws Exception {
+  private void download() throws Exception {
 
-    createConnection(1);
     createInputStream();
 
-    int res = 0;
-
-    for (int i = 0; i < connections.size(); i++) connections.get(i).setAutoCommit(false);
-    switch (getFileFormat(file.getPath())) {
+    connection.setAutoCommit(false);
+    switch (Objects.requireNonNull(getFileFormat(file.getPath()))) {
       case "xml":
-        Worker.getCiaWorker(connections, inputStream, migrationConfig).execute();
+        Worker.getCiaWorker(connection, inputStream).execute();
         break;
       case "txt":
-        Worker.getFrsWorker(connections, inputStream, migrationConfig).execute();
+        Worker.getFrsWorker(connection, inputStream).execute();
     }
-    for (int i = 0; i < connections.size(); i++) connections.get(i).setAutoCommit(true);
-    return res;
+    connection.setAutoCommit(true);
   }
 
   private static String getFileFormat(String path) {

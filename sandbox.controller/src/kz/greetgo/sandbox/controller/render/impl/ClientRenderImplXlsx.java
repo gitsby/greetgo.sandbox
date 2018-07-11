@@ -74,25 +74,23 @@ public class ClientRenderImplXlsx implements ClientRender {
   }
 
   public static void main(String[] args) throws Exception {
-    OutputStream outf = new FileOutputStream(new File("/Users/adilbekmailanov/Desktop/new.xlsx"));
-
-    ClientRenderImplXlsx asd = new ClientRenderImplXlsx(outf);
-
+    String fileName = "TEST.xlsx";
+    ClientRenderImplXlsx asd = new ClientRenderImplXlsx(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
     asd.start(RND.str(10), new Date());
-
-    for (int i=0;i<10; i++) {
-      ClientRecord row = new ClientRecord();
-      row.id=i+1;
-      row.surname = RND.str(10);
-      row.name = RND.str(10);
-      row.patronymic = RND.str(10);
-      row.age = RND.plusInt(60);
-      row.middle_balance = RND.plusInt(10000);
-      row.max_balance = RND.plusInt(10000);
-      row.min_balance = RND.plusInt(10000);
-      asd.append(row);
-    }
-
+    for (int i=0;i<10; i++) asd.append(getRandomClientRecord(i));
     asd.finish();
+  }
+
+  private static ClientRecord getRandomClientRecord(int i) {
+    ClientRecord row = new ClientRecord();
+    row.id=i;
+    row.surname = RND.str(10);
+    row.name = RND.str(10);
+    row.patronymic = RND.str(10);
+    row.age = RND.plusInt(60);
+    row.middle_balance = RND.plusInt(10000);
+    row.max_balance = RND.plusInt(10000);
+    row.min_balance = RND.plusInt(10000);
+    return row;
   }
 }

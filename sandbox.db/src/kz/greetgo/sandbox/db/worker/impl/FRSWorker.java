@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import kz.greetgo.sandbox.controller.model.TMPClientAccount;
 import kz.greetgo.sandbox.controller.model.TMPClientAccountTransaction;
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.worker.Worker;
 import org.apache.log4j.Logger;
 import org.postgresql.copy.CopyManager;
@@ -14,13 +13,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
 import java.sql.Connection;
-import java.util.List;
 
 public class FRSWorker extends Worker {
 
   private static Logger logger = Logger.getLogger(FRSWorker.class);
+
   private JsonParser jsonParser;
-  private JSONHandler handler;
 
   private File clientAccountCsvFile;
   private File clientAccountTransactionCsvFile;
@@ -34,8 +32,8 @@ public class FRSWorker extends Worker {
   private String clientAccountTransactionTmp;
   private String transactionTypeTmp;
 
-  public FRSWorker(List<Connection> connections, InputStream inputStream, MigrationConfig migrationConfig) {
-    super(connections, inputStream, migrationConfig);
+  public FRSWorker(Connection connection, InputStream inputStream) {
+    super(connection, inputStream);
     initParser();
   }
 
@@ -49,14 +47,11 @@ public class FRSWorker extends Worker {
 
   @Override
   public void createTmpTables() {
-    logger.info("create tmp tables begin");
+    logger.info("create tmp tables begin...");
     setTmpTableNames();
-    //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE(client_id VARCHAR(255), error VARCHAR(255), registered_at VARCHAR(255), account_number VARCHAR(255))", clientAccountTmp);
-    //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE(money VARCHAR(255), error VARCHAR(255), finished_at VARCHAR(255), transaction_type VARCHAR(255), account_number VARCHAR(255))", clientAccountTransactionTmp);
-    //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE()", transactionTypeTmp);
+    exec("CREATE TABLE TMP_TABLE(client_cia_id VARCHAR(255), registered_at VARCHAR(255), account_number VARCHAR(255))", clientAccountTmp);
+    exec("CREATE TABLE TMP_TABLE(money FLOAT, finished_at VARCHAR(255), transaction_type VARCHAR(255), account_number VARCHAR(255))", clientAccountTransactionTmp);
+    exec("CREATE TABLE TMP_TABLE(name VARCHAR(255));", transactionTypeTmp);
     logger.info("create tmp tables end");
   }
 
@@ -79,9 +74,9 @@ public class FRSWorker extends Worker {
   }
 
   private void createFiles() throws IOException {
-    clientAccountCsvFile = createFile(TMP_DIR+"client_account_csv_file.csv");
-    clientAccountTransactionCsvFile = createFile(TMP_DIR+"client_account_transaction_csv_file.csv");
-    transactionTypeCsvFile = createFile(TMP_DIR+"transaction_type_csv_file.csv");
+    clientAccountCsvFile = createFile("client_account_csv_file.csv");
+    clientAccountTransactionCsvFile = createFile("client_account_transaction_csv_file.csv");
+    transactionTypeCsvFile = createFile("transaction_type_csv_file.csv");
   }
 
   private void createWriters() throws FileNotFoundException, UnsupportedEncodingException {
@@ -92,7 +87,8 @@ public class FRSWorker extends Worker {
 
   @Override
   public void loadCsvFile() {
-    handler = new JSONHandler();
+    logger.info("load csv files begin...");
+    JSONHandler handler = new JSONHandler();
     try {
       handler.startDocument();
       while (jsonParser.nextToken() != null) {
@@ -102,13 +98,14 @@ public class FRSWorker extends Worker {
     } catch (Exception e) {
       logger.error(e);
     }
+    logger.info("load csv files end.");
   }
 
   private void write(TMPClientAccount tmp) {
     try {
-      clientAccountCsvBw.write(String.format("%s|\\N|%s|%s\n",
-        checkStr(tmp.clientId,null), checkStr(tmp.registeredAt,null),
-        checkStr(tmp.accountNumber,null)));
+      clientAccountCsvBw.write(String.format("%s|%s|%s\n",
+        checkStr(tmp.clientId,null), checkStr(tmp.registeredAt,System.nanoTime()),
+        checkStr(tmp.accountNumber,System.nanoTime())));
     } catch (IOException e) {
       logger.error(e.getMessage());
     }
@@ -116,27 +113,122 @@ public class FRSWorker extends Worker {
 
   private void write(TMPClientAccountTransaction tmp) {
     try {
-      clientAccountTransactionCsvBw.write(String.format("%s|\\N|%s|%s|%s\n",
-        checkStr(tmp.money,null), checkStr(tmp.finishedAt,null),
-        checkStr(tmp.transactionType,null), checkStr(tmp.accountNumber,null)));
+      clientAccountTransactionCsvBw.write(String.format("%s|%s|%s|%s\n",
+        checkStr(tmp.money,null).replace("_", ""), checkStr(tmp.finishedAt,null),
+        checkStr(tmp.transactionType,System.nanoTime()), checkStr(tmp.accountNumber,null)));
+      transactionTypeCsvBw.write(String.format("%s\n", checkStr(tmp.transactionType, null)));
     } catch (IOException e) {
       logger.error(e.getMessage());
     }
   }
 
   @Override
-  public void loadCsvFilesToTmp() {
+  public void loadCsvFilesToTmpTables() {
+    logger.info("load csv files to tmp begin...");
     CopyManager copyManager;
     try {
       flushWriters();
 
-      copyManager = new CopyManager((BaseConnection) nextConnection());
+      copyManager = new CopyManager((BaseConnection) connection);
 
       copy(copyManager, clientAccountCsvFile, clientAccountTmp);
       copy(copyManager, clientAccountTransactionCsvFile, clientAccountTransactionTmp);
+      copy(copyManager, transactionTypeCsvFile, transactionTypeTmp);
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
+    logger.info("load csv files to tmp end...");
+  }
+
+  @Override
+  public void fuseMainTmpTables() {
+    logger.info("fuse main tmp tables begin...");
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", transactionTypeTmp);
+    //language=PostgreSQL
+    exec("CREATE TABLE TMP_TABLE(name VARCHAR(255) UNIQUE NOT NULL);", transactionTypeTmp);
+    //language=PostgreSQL
+    exec("INSERT INTO TMP_TABLE SELECT DISTINCT \"name\" " +
+      "FROM TMP_TABLE_conductor t1 " +
+      "WHERE t1.name IS NOT NULL " +
+      "ON CONFLICT(\"name\") " +
+      "DO NOTHING;", transactionTypeTmp);
+
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor;", clientAccountTmp);
+    //language=PostgreSQL
+    exec("SELECT (SELECT id FROM client WHERE cia_id=t1.client_cia_id) AS client_id," +
+      "  CAST(NULL AS VARCHAR(255)) AS error," +
+      "  CAST(0 AS FLOAT) AS money," +
+      "  split_part(max(registered_at), '#', 2) AS registered_at," +
+      "  split_part(max(account_number), '#', 2) AS account_number " +
+      "INTO TMP_TABLE " +
+      "FROM TMP_TABLE_conductor t1 GROUP BY client_id;", clientAccountTmp);
+
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE t1 SET money=t1.money+t2.money FROM "+clientAccountTransactionTmp+" t2 WHERE t1.account_number=t2.account_number", clientAccountTmp);
+    logger.info("duse main tmp tables end.");
+  }
+
+  @Override
+  public void validateMainTmpTables() {
+    logger.info("valid main tmp tables begin...");
+    exec("UPDATE TMP_TABLE SET error='Клиент не найден' " +
+      "WHERE error IS NULL AND client_id IS NULL;", clientAccountTmp);
+    logger.info("valid main tmp tables end.");
+  }
+
+  @Override
+  public void migrateMainTmpTableToTables() {
+    logger.info("migrate main tmp tables begin...");
+    //language=PostgreSQL
+    exec("INSERT INTO client_account(client, money, registered_at, number) " +
+      "SELECT client_id, money, registered_at::DATE, account_number FROM TMP_TABLE WHERE error IS NULL " +
+      "ON CONFLICT(number) DO UPDATE SET " +
+      "money=EXCLUDED.money," +
+      "registered_at=EXCLUDED.registered_at;", clientAccountTmp);
+    //language=PostgreSQL
+    exec("INSERT INTO transaction_type(name)" +
+      "SELECT \"name\" FROM TMP_TABLE ON CONFLICT(name) DO NOTHING;", transactionTypeTmp);
+    logger.info("migrate main tmp tables end.");
+  }
+
+  @Override
+  public void fuseChildTmpTables() {
+    logger.info("fuse child tmp tables begin...");
+    //language=PostgreSQL
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientAccountTransactionTmp);
+    //language=PostgreSQL
+    exec("SELECT " +
+      "(SELECT id FROM client_account WHERE client_account.number=t1.account_number) AS client_account_id, " +
+      "CAST(NULL AS VARCHAR(255)) AS error, " +
+      "money, " +
+      "(SELECT id FROM transaction_type WHERE \"name\"=split_part(max(transaction_type), '#', 2)) AS transaction_type, " +
+      "finished_at, account_number " +
+      "INTO TMP_TABLE " +
+      "FROM TMP_TABLE_conductor t1 " +
+      "GROUP BY money, finished_at, account_number;", clientAccountTransactionTmp);
+    logger.info("fuse child tmp tables end.");
+  }
+
+  @Override
+  public void validateChildTmpTables() {
+    logger.info("valid child tmp tables begin...");
+    //language=PostgreSQL
+    exec("UPDATE TMP_TABLE SET error='Клиент не найден' " +
+      "WHERE error IS NULL AND client_account_id IS NULL;", clientAccountTransactionTmp);
+    logger.info("valid child tmp tables end.");
+  }
+
+  @Override
+  public void migrateChildTmpTablesToTables() {
+    logger.info("migrate child tmp tables begin...");
+    //language=PostgreSQL
+    exec("INSERT INTO client_account_transaction(account, money, finished_at, type) " +
+      "SELECT client_account_id, money::FLOAT, finished_at::DATE," +
+      "transaction_type " +
+      "FROM TMP_TABLE WHERE error IS NULL;", clientAccountTransactionTmp);
+    logger.info("migrate child tmp tables end.");
   }
 
   private void flushWriters() throws IOException {
@@ -146,46 +238,42 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public void fuseTmpTables() {
-
-  }
-
-  @Override
-  public void validateTmpTables() {
-
-  }
-
-  @Override
-  public void migrateToTables() {
-    //language=PostgreSQL
-    exec("INSERT INTO client_account(client, money, registered_at) " +
-      "SELECT (SELECT id FROM client WHERE cia_id=TMP_TABLE.client_id) AS client, 0, to_date(registered_at, 'yyyy-MM-dd') " +
-      "FROM TMP_TABLE;", clientAccountTmp);
-  }
-
-  @Override
   public void deleteTmpTables() {
-
+    logger.info("delete tmp tables begin...");
+    deleteTable(clientAccountTmp);
+    deleteTable(clientAccountTransactionTmp);
+    deleteTable(transactionTypeTmp);
+    logger.info("delete tmp tables end.");
   }
 
   @Override
-  public void finish() {
+  public void finish() throws IOException {
+    logger.info("finish method begin...");
+    clientAccountCsvBw.close();
+    clientAccountTransactionCsvBw.close();
+    transactionTypeCsvBw.close();
 
+    clientAccountCsvFile.delete();
+    clientAccountTransactionCsvFile.delete();
+    transactionTypeCsvFile.delete();
+
+    jsonParser.close();
+    logger.info("finish method end.");
   }
 
-  class JSONHandler extends DefaultHandler {
+  private class JSONHandler extends DefaultHandler {
 
     private TMPClientAccount tmpClientAccount = new TMPClientAccount();
     private TMPClientAccountTransaction tmpClientTransaction = new TMPClientAccountTransaction();
 
     @Override
     public void startDocument() {
-      logger.info("begin reading doc");
+      logger.info("handler start document...");
     }
 
-    public void element(JsonNode jsonNode) {
+    void element(JsonNode jsonNode) {
       JsonNode type = jsonNode.get("type");
-      if (type == null) System.out.println(jsonNode.toString());
+      if (type == null) return;
 
       switch (type.textValue()) {
         case "transaction":
@@ -221,12 +309,14 @@ public class FRSWorker extends Worker {
     public String get(JsonNode node, String key) {
       JsonNode res = node.get(key);
       if (res == null) return null;
+      String text = res.asText();
+      if (text.equals("null")) return null;
       return res.asText();
     }
 
     @Override
     public void endDocument() {
-      logger.info("end reading doc");
+      logger.info("handler end document.");
     }
   }
 }

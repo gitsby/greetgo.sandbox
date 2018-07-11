@@ -214,13 +214,36 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-  @Test
-  public void getRecords_pagination() {
+  enum PaginationEnum {
+    LimitLessThanOffset, OffsetLessThanLimit, LimitOffsetEqual
+  }
 
-    // FIXME: 7/10/18 offset = 18, limit = 1 => test padaet
-    // FIXME: 7/10/18 Сделай несколько тестов на пагинатор
-    int offset = RND.plusInt(10);
-    int limit = RND.plusInt(10);
+  @DataProvider
+  public Object[][] getRecords_pagination_DP() {
+    return new Object[][]{
+      new Object[]{PaginationEnum.LimitLessThanOffset},
+      new Object[]{PaginationEnum.LimitOffsetEqual},
+      new Object[]{PaginationEnum.OffsetLessThanLimit}
+    };
+  }
+
+  @Test(dataProvider = "getRecords_pagination_DP")
+  public void getRecords_pagination(PaginationEnum paginationEnum) {
+
+    int offset = 0, limit = 0;
+    switch (paginationEnum) {
+      case LimitLessThanOffset:
+        limit = RND.plusInt(100);
+        offset = RND.plusInt(100) + limit;
+        break;
+      case LimitOffsetEqual:
+        limit = RND.plusInt(100);
+        offset = limit;
+        break;
+      case OffsetLessThanLimit:
+        offset = RND.plusInt(100);
+        limit = RND.plusInt(100) + offset;
+    }
 
     ClientFilter emptyFilter = new ClientFilter();
     emptyFilter.offset = offset;
@@ -229,7 +252,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientDot> leftDots = new ArrayList<>();
 
     {
-      for (int i = 0; i < 20; i++) {
+      for (int i = 0; i < offset+limit; i++) {
         ClientDot dot = generateRandomClientDot();
         leftDots.add(dot);
         insertClient(dot);
@@ -250,7 +273,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRecordList.size()).isEqualTo(limit);
 
     for (int i = 0; i < limit; i++)
-      assertThat(clientRecordList.get(i)).isEqualsToByComparingFields(fromDot(leftDots.get(i+offset)));
+      isEqual(clientRecordList.get(i), leftDots.get(i+offset));
   }
 
   enum FioEnum {
@@ -364,8 +387,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(result).hasSize(clientRecords.size());
 
     for (int i = 0; i < result.size(); i++) {
-      System.out.println(result.get(i));
-      System.out.println(clientRecords.get(i));
       assertThat(result.get(i)).isEqualsToByComparingFields(clientRecords.get(i));
     }
   }
@@ -541,21 +562,27 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientFilter filter = new ClientFilter();
     filter.fio = rFio;
 
-    ClientDetails leftDetails;
+    List<ClientDot> leftClientDots = Lists.newArrayList();
+
+    Integer randomCount = RND.plusInt(100)+100;
 
     {
-      leftDetails = generateRandomClientDetails(RND.plusInt(Integer.MAX_VALUE));
-      switch (fioEnum) {
-        case SURNAME:
-          leftDetails.surname = RND.str(10) + rFio + RND.str(10);
-          break;
-        case NAME:
-          leftDetails.name = RND.str(10) + rFio + RND.str(10);
-          break;
-        case PATRONYMIC:
-          leftDetails.patronymic = RND.str(10) + rFio + RND.str(10);
+      for (int i = 0; i < randomCount; i++) {
+        ClientDot dot = generateRandomClientDot();
+        switch (fioEnum) {
+          case SURNAME:
+            dot.surname = RND.str(10) + rFio + RND.str(10);
+            break;
+          case NAME:
+            dot.name = RND.str(10) + rFio + RND.str(10);
+            break;
+          case PATRONYMIC:
+            dot.patronymic = RND.str(10) + rFio + RND.str(10);
+        }
+        leftClientDots.add(dot);
+        insertClient(dot);
+        generateRandomAccountsFor(dot.id, RND.plusInt(50));
       }
-      insertClient(leftDetails);
     }
 
     {
@@ -571,9 +598,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     assertThat(render.name).isEqualTo(name);
-    // FIXME: 7/10/18 Нужно чтобы было больше чем 100 клиентов
-    assertThat(render.clientRows).hasSize(1);
-    assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
+    assertThat(render.clientRows).hasSize(randomCount);
+    for (ClientDot clientDot : leftClientDots)
+      isEqual(render.clientRows.get(0), clientDot);
+  }
+
+  private void isEqual(ClientRecord clientRecord, ClientDot clientDot) {
+    assertThat(clientRecord).isEqualsToByComparingFields(fromDot(clientDot));
   }
 
   private List<ClientDetails> getClientDetailsList() {

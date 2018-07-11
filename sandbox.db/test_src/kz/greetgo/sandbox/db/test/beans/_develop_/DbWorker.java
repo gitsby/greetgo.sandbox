@@ -5,6 +5,8 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.MigrationConfig;
+import kz.greetgo.sandbox.db.configs.SshConfig;
 import kz.greetgo.sandbox.db.util.App;
 import kz.greetgo.sandbox.db.util.LiquibaseManager;
 import kz.greetgo.util.ServerUtil;
@@ -28,11 +30,16 @@ public class DbWorker {
   final Logger logger = Logger.getLogger(getClass());
 
   public BeanGetter<DbConfig> postgresDbConfig;
+  public BeanGetter<SshConfig> sshConfig;
+  public BeanGetter<MigrationConfig> migrationConfig;
+
   public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
   public BeanGetter<LiquibaseManager> liquibaseManager;
 
   public void recreateAll() throws Exception {
+    prepareMigrationConfig();
     prepareDbConfig();
+    prepareSshConfig();
     recreateDb();
 
     liquibaseManager.get().apply();
@@ -108,6 +115,46 @@ public class DbWorker {
     } else if ("null".equals(postgresDbConfig.get().url())) {
       writeDbConfigFile();
       allPostgresConfigFactory.get().reset();
+    }
+  }
+
+  private void prepareSshConfig() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(SshConfig.class);
+    if (!file.exists()) {
+      file.getParentFile().mkdirs();
+      writeSshConfigFile();
+    } else if ("null".equals(sshConfig.get().host())) {
+      writeSshConfigFile();
+      allPostgresConfigFactory.get().reset();
+    }
+  }
+
+  private void prepareMigrationConfig() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(MigrationConfig.class);
+    if (!file.exists()) {
+      file.getParentFile().mkdirs();
+      writeMigrationConfigFile();
+    } else if ("null".equals(migrationConfig.get().tmpFolder())) {
+      writeMigrationConfigFile();
+      allPostgresConfigFactory.get().reset();
+    }
+  }
+
+  private void writeMigrationConfigFile() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(MigrationConfig.class);
+    try (PrintStream out = new PrintStream(file, "UTF-8")) {
+      out.println("tmpFolder=/Users/adilbekmailanov/migration.d/tmp");
+      out.println("migrationFilesFolder=/Users/tester/migrationFolder");
+    }
+  }
+
+  private void writeSshConfigFile() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(SshConfig.class);
+    try (PrintStream out = new PrintStream(file, "UTF-8")) {
+      out.println("host=192.168.26.61");
+      out.println("user=Tester");
+      out.println("password=123");
+      out.println("port=22");
     }
   }
 

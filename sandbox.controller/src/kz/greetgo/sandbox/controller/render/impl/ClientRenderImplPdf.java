@@ -85,8 +85,8 @@ public class ClientRenderImplPdf implements ClientRender {
 
   private void addRows(PdfPTable table, ClientRecord cr) {
     BaseColor bColor = getBackgroundColor();
-    // FIXME: 7/10/18 Лучше использовать String.valueOf(...)
-    Stream.of(cr.id+"", cr.surname, cr.name, cr.patronymic, cr.age+"", cr.middle_balance+"", cr.max_balance+"", cr.min_balance+"")
+    Stream.of(String.valueOf(cr.id), cr.surname, cr.name, cr.patronymic, String.valueOf(cr.age),
+      String.valueOf(cr.middle_balance), String.valueOf(cr.max_balance), String.valueOf(cr.min_balance))
       .forEach(columnTitle -> {
         PdfPCell cell = getCell();
         cell.setBackgroundColor(bColor);
@@ -122,16 +122,14 @@ public class ClientRenderImplPdf implements ClientRender {
   }
 
   public static void main(String[] args) throws Exception {
-    Date createdDate = new Date();
-    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-    // FIXME: 7/10/18 Нельзя зашивать статичные пути. Никто кроме тебя несможет запустить
-    ClientRenderImplPdf clientRenderImplPdf = new ClientRenderImplPdf(new FileOutputStream(new File("/Users/adilbekmailanov/Desktop/test_render_"+format.format(createdDate)+".pdf")));
-    clientRenderImplPdf.start(RND.str(10), createdDate);
-    for (int i=0;i<30; i++) clientRenderImplPdf.append(getRandomClientRow(i));
-    clientRenderImplPdf.finish();
+    String fileName = "TEST.pdf";
+    ClientRenderImplPdf asd = new ClientRenderImplPdf(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
+    asd.start(RND.str(10), new Date());
+    for (int i=0;i<30; i++) asd.append(getRandomClientRecord(i));
+    asd.finish();
   }
 
-  private static ClientRecord getRandomClientRow(int i) {
+  private static ClientRecord getRandomClientRecord(int i) {
     ClientRecord row = new ClientRecord();
     row.id=i;
     row.surname = RND.str(10);

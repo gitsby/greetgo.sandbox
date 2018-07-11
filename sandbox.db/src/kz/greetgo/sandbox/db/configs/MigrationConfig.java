@@ -1,12 +1,14 @@
 package kz.greetgo.sandbox.db.configs;
 
+
 import kz.greetgo.conf.hot.DefaultStrValue;
 
 public interface MigrationConfig {
 
-  @DefaultStrValue("50_000")
-  int uploadMaxBatchSize();
+  @DefaultStrValue("/Users/adilbekmailanov/migration.d/tmp")
+  String tmpFolder();
 
-  @DefaultStrValue("50_000")
-  int downloadMaxBatchSize();
+  @DefaultStrValue("/Users/tester/migrationFolder")
+  String migrationFilesFolder();
+
 }
