@@ -122,15 +122,14 @@ public class ClientRenderImplPdf implements ClientRender {
   }
 
   public static void main(String[] args) throws Exception {
-    Date createdDate = new Date();
     String fileName = "TEST.pdf";
-    ClientRenderImplPdf clientRenderImplPdf = new ClientRenderImplPdf(new FileOutputStream(new File(System.getProperty("user.home")+"/"+fileName)));
-    clientRenderImplPdf.start(RND.str(10), createdDate);
-    for (int i=0;i<30; i++) clientRenderImplPdf.append(getRandomClientRow(i));
-    clientRenderImplPdf.finish();
+    ClientRenderImplPdf asd = new ClientRenderImplPdf(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
+    asd.start(RND.str(10), new Date());
+    for (int i=0;i<30; i++) asd.append(getRandomClientRecord(i));
+    asd.finish();
   }
 
-  private static ClientRecord getRandomClientRow(int i) {
+  private static ClientRecord getRandomClientRecord(int i) {
     ClientRecord row = new ClientRecord();
     row.id=i;
     row.surname = RND.str(10);
