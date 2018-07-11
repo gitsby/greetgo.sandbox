@@ -41,6 +41,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       pdfWriter = PdfWriter.getInstance(document, out);
     } catch (Exception e) {
+      // FIXME: 7/11/18 Проглатываение ошибки - неправильно
       e.getMessage();
     }
   }
@@ -117,6 +118,7 @@ public class ClientRenderImplPdf implements ClientRender {
       pdfWriter.close();
       out.close();
     } catch (Exception e) {
+      // FIXME: 7/11/18 Нужно перечилисть все места где есть printStackTrace?!
       e.printStackTrace();
     }
   }
