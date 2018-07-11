@@ -4,7 +4,7 @@ import kz.greetgo.conf.hot.DefaultStrValue;
 import kz.greetgo.conf.hot.Description;
 
 @Description("Параметры доступа к SSH")
-public interface SSHConfig {
+public interface SshConfig {
 
   @DefaultStrValue("127.0.0.1")
   String host();

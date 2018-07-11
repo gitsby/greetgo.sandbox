@@ -5,9 +5,9 @@ import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 
-public class ArchieUtil {
+public class ArchiveUtil {
 
-  private static Logger logger = Logger.getLogger(ArchieUtil.class);
+  private static Logger logger = Logger.getLogger(ArchiveUtil.class);
 
   public static File unzip(File file) throws Exception {
     return unarchiveFile(file);

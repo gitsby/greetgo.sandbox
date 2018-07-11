@@ -4,9 +4,10 @@ import com.jcraft.jsch.*;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
-import kz.greetgo.sandbox.db.configs.SSHConfig;
+import kz.greetgo.sandbox.db.configs.SshConfig;
 import kz.greetgo.sandbox.db.util.Informative;
 import org.apache.log4j.Logger;
+import org.fest.util.Lists;
 
 import java.io.Closeable;
 import java.io.File;
@@ -14,117 +15,114 @@ import java.util.List;
 import java.util.Vector;
 
 @Bean
-public class SSH extends Informative implements Closeable {
+public class Ssh extends Informative implements Closeable {
 
-  private final static Logger logger = Logger.getLogger(SSH.class);
+  private final static Logger logger = Logger.getLogger(Ssh.class);
 
-  public BeanGetter<SSHConfig> sshConfig;
+  public BeanGetter<SshConfig> sshConfig;
   public BeanGetter<MigrationConfig> migrationConfig;
 
   private Session session;
   private ChannelSftp sftpChannel;
 
-  public SSH(){
+  public void connect() {
+    try {
+      createSession();
+      createChanel();
+    } catch (JSchException e) {
+      logger.error(e.getMessage() + " 33");
+    }
   }
 
-  public void connect() throws JSchException {
-    JSch jsch = new JSch();
-    session = jsch.getSession(sshConfig.get().user(), sshConfig.get().host(), sshConfig.get().port());
+  public void createSession() throws JSchException {
+    session = getSession();
     session.setPassword(sshConfig.get().password());
     session.setConfig("StrictHostKeyChecking", "no");
-    logger.info("StrictHostKeyChecking");
-    logger.info("Establishing Connection...");
     session.connect();
-    logger.info("Connection established.");
+  }
+
+  private Session getSession() throws JSchException {
+    return new JSch().getSession(sshConfig.get().user(), sshConfig.get().host(), sshConfig.get().port());
   }
 
   public void createChanel() throws JSchException {
-    if (session == null) {
-      logger.info("Crating SFTP Channel failed: SSH not connected.");
-      return;
-    }
-    logger.info("Crating SFTP Channel.");
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
     sftpChannel.connect();
-    logger.info("SFTP Channel created.");
   }
 
-  public File load(String path, String name) {
-    if (path == null || name == null) throw new NullPointerException();
-    logger.info("Load file " + name + " from " + path + ".");
-    String newFilePath = migrationConfig.get().tmpFolder()+"/"+name;
+  public File load(File file) {
+    File newFile = getNewTmpFile(file.getName());
     try {
-      sftpChannel.get(path+"/"+name, newFilePath);
+      sftpChannel.get(file.getPath(), newFile.getPath());
     } catch (SftpException e) {
-      logger.error(e.getMessage());
+      logger.error(e.getMessage() + " 58");
     }
-    logger.info("File loaded");
-    return new File(newFilePath);
+    return newFile;
   }
 
-  public String getPath(String fileName) {
-    info("Finding path of file " + fileName + "...");
-    String res = find(fileName, "/");
-    if (res == null) info("File not found.");
-    else info("File found in " + res);
-    return res;
+  private File getNewTmpFile(String name) {
+    return new File(migrationConfig.get().tmpFolder()+"/"+name);
   }
 
-  public String getPath(String fileName, String path) {
-    info("Finding path of file " + fileName + "...");
-    String res = find(fileName, path);
-    if (res == null) info("File not found.");
-    else info("File found in " + res);
-    return res;
+  public void rename(File file, String newName) {
+    //FIXME
+//    String newNamePath = file.getParent() + "/" + newName;
+//    try {
+//      sftpChannel.rename("./migrationFolder/from_cia_2018-02-21-154929-1-300.xml.tar.bz2", "./migrationFolder/M_from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
+//    } catch (SftpException e) {
+//      logger.error(e.getMessage() + " 72");
+//    }
   }
 
-  private String find(String fileName, String path) {
-
-    Vector vector;
-
-    try {
-      vector = sftpChannel.ls(path);
-    } catch (SftpException e) {
-      logger.error(e.getMessage());
-      return null;
-    }
-
-    for (int i = 0; i < vector.size(); i++) {
-      ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) vector.get(i);
-      if (entry.getFilename().equals(fileName)) return path+"/"+entry.getFilename();
-      if (isNormalDir(entry)) {
-        String res = find(fileName, path+entry.getFilename()+"/");
-        if (res != null) return res;
-      }
-    }
-
-    return null;
-  }
-
-  private boolean isNormalDir (ChannelSftp.LsEntry entry) {
-    return entry.getAttrs().isDir() && entry.getFilename().matches("\\w*");
-  }
-
-  private void rename(File file, String newName) {
-    String newNamePath = file.getParent() + "/" + newName;
-    logger.info(String.format("Rename from %s to %s", file.getPath(), newNamePath));
-    try {
-      sftpChannel.rename(file.getAbsolutePath(), newNamePath);
-    } catch (SftpException e) {
-      logger.error(e.getMessage());
-      return;
-    }
-    logger.info("File renamed");
+  private void renameToMigrated(File file) {
+    rename(file, "migrated_"+file.getName());
   }
 
   @Override
   public void close() {
-    if (sftpChannel != null) sftpChannel.disconnect();
-    if (session != null) session.disconnect();
-    info("Closed.");
+    sftpChannel.disconnect();
+    session.disconnect();
+  }
+
+  private List<File> getNotMigratedFiles() throws SftpException {
+    List<File> files = Lists.newArrayList();
+    Vector migrationFilesVector = getMigrationFolderVector();
+    for (Object fileVector : migrationFilesVector) {
+      ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileVector;
+      if (!isNormalFile(entry)) continue;
+      if (!isMigrated(entry.getFilename())) files.add(getFile(entry));
+    }
+    return files;
+  }
+
+  private boolean isNormalFile (ChannelSftp.LsEntry entry) {
+    if (entry.getFilename().equals(".") || entry.getFilename().equals("..")) return false;
+    return true;
+  }
+
+  private Vector getMigrationFolderVector() throws SftpException {
+    return sftpChannel.ls(migrationConfig.get().migrationFilesFolder());
+  }
+
+  private File getFile(ChannelSftp.LsEntry entry) {
+    return new File(migrationConfig.get().migrationFilesFolder() + "/" + entry.getFilename());
+  }
+
+  private boolean isMigrated(String fileName) {
+    return fileName.substring(0, 8).equals("migrated");
   }
 
   public List<File> loadMigrationFiles() {
-    throw new UnsupportedOperationException();
+    List<File> filesForMigration = Lists.newArrayList();
+    try {
+      List<File> notMigratedFiles = getNotMigratedFiles();
+      for (File file : notMigratedFiles) {
+        filesForMigration.add(load(file));
+        renameToMigrated(file);
+      }
+    } catch (SftpException e) {
+      logger.error(e.getMessage()+" 123");
+    }
+    return filesForMigration;
   }
 }

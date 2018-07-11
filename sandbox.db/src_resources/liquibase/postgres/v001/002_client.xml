@@ -69,7 +69,7 @@
         id SERIAL PRIMARY KEY,
         client INTEGER,
         money FLOAT,
-        number VARCHAR(255),
+        number VARCHAR(255) unique,
         registered_at DATE,
         actual SMALLINT NOT NULL DEFAULT 1,
         FOREIGN KEY (client) REFERENCES client(id)
@@ -84,7 +84,7 @@
       CREATE TABLE transaction_type (
         id SERIAL PRIMARY KEY,
         code varchar(255),
-        name varchar(255)
+        name varchar(255) unique
       )
     ]]>
     </sql>
