@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.sandbox.controller.model.ClientRecordRow;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,6 +16,9 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 public class ClientRecordsViewPdf implements ClientRecordsReportView {
+
+
+  Logger logger;
 
   OutputStream outputStream;
   PdfPTable table = new PdfPTable(9);
@@ -52,6 +56,7 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
   @Override
   public void finish(String userName, Date currentDate) {
+
     try {
       document.add(table);
 
@@ -61,13 +66,15 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
       document.add(preface);
       document.close();
+
     } catch (DocumentException e) {
-      e.printStackTrace();
+      logger.debug(e.getMessage());
     }
+
   }
 
   public static void main(String[] args) throws FileNotFoundException {
-    FileOutputStream fileOutputStream = new FileOutputStream("..\\test.pdf");
+    FileOutputStream fileOutputStream = new FileOutputStream("build/test.pdf");
     ClientRecordsViewPdf pdf = new ClientRecordsViewPdf(fileOutputStream);
 
     pdf.start();

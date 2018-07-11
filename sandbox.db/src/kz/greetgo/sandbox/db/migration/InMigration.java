@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,6 +24,8 @@ public class InMigration {
   InMigrationWorker inMigrationWorker;
   Connection connection;
 
+  Logger logger;
+
   public boolean execute() throws Exception {
     System.out.println("---------Starting Connection------------");
     connection = getConnection();
@@ -35,7 +38,7 @@ public class InMigration {
       inMigrationWorker.prepare();
       return true;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.debug(e.getMessage());
     }
     return false;
   }
@@ -89,7 +92,7 @@ public class InMigration {
     try {
       inMigration.execute();
     } catch (Exception e) {
-      e.printStackTrace();
+
     }
   }
 

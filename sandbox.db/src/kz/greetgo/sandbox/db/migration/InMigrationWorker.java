@@ -48,7 +48,7 @@ public class InMigrationWorker extends SqlWorker {
     connection.commit();
   }
 
-  public void updater(){
+  public void updater() {
 
   }
 
@@ -150,7 +150,7 @@ public class InMigrationWorker extends SqlWorker {
 
   public void sendPhones(List<PhoneFromMigration> phones) throws SQLException {
     StringBuilder builder = new StringBuilder();
-    List params = new LinkedList();
+    List<Object> params = new LinkedList<Object>();
     for (int i = 0; i < phones.size(); i++) {
       PhoneFromMigration phone = phones.get(i);
 
