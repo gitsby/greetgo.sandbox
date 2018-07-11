@@ -29,6 +29,7 @@ public class ReportController implements Controller {
     @Json @Par("filter") ClientRecordFilter filter,
     @Par("fileName") String fileName,
     @Par("fileType") String fileType,
+    @Par("accName") String accName,
     BinResponse binResponse) throws Exception {
 
     binResponse.setFilename(String.format("%s." + fileType, fileName));
@@ -46,7 +47,7 @@ public class ReportController implements Controller {
     } else {
       view = new ClientRecordsViewPdf(binResponse.out());
     }
-    clientRegister.get().renderClientList(filter, "", view);
+    clientRegister.get().renderClientList(filter, accName, view);
     binResponse.flushBuffers();
   }
 }

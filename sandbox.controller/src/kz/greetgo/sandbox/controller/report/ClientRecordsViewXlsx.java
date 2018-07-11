@@ -86,6 +86,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
     ClientRecordsViewXlsx xlsx = new ClientRecordsViewXlsx(fileOutputStream);
 
     xlsx.start();
+
     Random random = new Random();
     for (int i = 0; i < 101; i++) {
       ClientRecordRow recordRow = new ClientRecordRow();
@@ -101,6 +102,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
 
       xlsx.appendRow(recordRow);
     }
+
     xlsx.finish("Me", new Date());
   }
 }
