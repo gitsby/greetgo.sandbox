@@ -14,6 +14,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplPdf;
 import kz.greetgo.sandbox.controller.render.impl.ClientRenderImplXlsx;
 import kz.greetgo.sandbox.controller.util.Controller;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class ReportController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
+  private static Logger logger = Logger.getLogger(ReportController.class.getName());
 
   @MethodFilter(RequestMethod.GET)
   @Mapping("/get-render")
@@ -40,8 +42,7 @@ public class ReportController implements Controller {
         try {
           binResponse.out().flush();
         } catch (IOException e) {
-          // FIXME: 7/10/18 Нельзя использовать стандартный принт
-          e.printStackTrace();
+          logger.error(e.getMessage());
         }
     }
     binResponse.flushBuffers();

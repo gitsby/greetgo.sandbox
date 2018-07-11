@@ -65,7 +65,6 @@ public class Ssh extends Informative implements Closeable {
   }
 
   public void rename(File file, String newName) {
-    //FIXME
 //    String newNamePath = file.getParent() + "/" + newName;
 //    try {
 //      sftpChannel.rename("./migrationFolder/from_cia_2018-02-21-154929-1-300.xml.tar.bz2", "./migrationFolder/M_from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
