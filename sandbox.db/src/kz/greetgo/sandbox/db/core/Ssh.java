@@ -5,7 +5,6 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.configs.SshConfig;
-import kz.greetgo.sandbox.db.util.Informative;
 import org.apache.log4j.Logger;
 import org.fest.util.Lists;
 
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Vector;
 
 @Bean
-public class Ssh extends Informative implements Closeable {
+public class Ssh implements Closeable {
 
   private final static Logger logger = Logger.getLogger(Ssh.class);
 
@@ -30,7 +29,7 @@ public class Ssh extends Informative implements Closeable {
       createSession();
       createChanel();
     } catch (JSchException e) {
-      logger.error(e.getMessage() + " 33");
+      logger.error(e);
     }
   }
 
@@ -55,7 +54,7 @@ public class Ssh extends Informative implements Closeable {
     try {
       sftpChannel.get(file.getPath(), newFile.getPath());
     } catch (SftpException e) {
-      logger.error(e.getMessage() + " 58");
+      logger.error(e);
     }
     return newFile;
   }
@@ -69,7 +68,7 @@ public class Ssh extends Informative implements Closeable {
 //    try {
 //      sftpChannel.rename("./migrationFolder/from_cia_2018-02-21-154929-1-300.xml.tar.bz2", "./migrationFolder/M_from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
 //    } catch (SftpException e) {
-//      logger.error(e.getMessage() + " 72");
+//      logger.error(e);
 //    }
   }
 
@@ -120,7 +119,7 @@ public class Ssh extends Informative implements Closeable {
         renameToMigrated(file);
       }
     } catch (SftpException e) {
-      logger.error(e.getMessage()+" 123");
+      logger.error(e);
     }
     return filesForMigration;
   }

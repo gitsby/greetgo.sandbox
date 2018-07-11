@@ -42,8 +42,7 @@ public class ReportController implements Controller {
         try {
           binResponse.out().flush();
         } catch (IOException e) {
-          // FIXME: 7/11/18 logger.error(e);
-          logger.error(e.getMessage());
+          logger.error(e);
         }
     }
     binResponse.flushBuffers();

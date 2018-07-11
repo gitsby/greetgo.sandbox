@@ -45,7 +45,7 @@ public class CIAWorker extends Worker {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
     } catch (SAXException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     xmlReader.setContentHandler(new XMLHandler());
   }
@@ -75,7 +75,7 @@ public class CIAWorker extends Worker {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("create csv files end.");
   }
@@ -100,7 +100,7 @@ public class CIAWorker extends Worker {
     try {
       xmlReader.parse(new InputSource(inputStream));
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("load csv files end.");
   }
@@ -151,7 +151,7 @@ public class CIAWorker extends Worker {
       copy(copyManager, clientAddressCsvFile, clientAddressTmp);
       copy(copyManager, clientPhoneCsvFile, clientPhoneTmp);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("load csv files to tmp tables end.");
   }
@@ -374,7 +374,7 @@ public class CIAWorker extends Worker {
       try {
         write(tmpClient, tmpClientAddresses, tmpClientPhones);
       } catch (Exception e) {
-        logger.error(e.getMessage());
+        logger.error(e);
       }
 
       tmpClient = new TMPClient();

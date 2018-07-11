@@ -8,10 +8,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,6 +17,8 @@ import java.util.stream.Stream;
 
 @Bean
 public class ClientRenderImplPdf implements ClientRender {
+
+  private static Logger logger = Logger.getLogger(ClientRenderImplPdf.class);
 
   private OutputStream out;
   private Document document;
@@ -41,8 +41,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       pdfWriter = PdfWriter.getInstance(document, out);
     } catch (Exception e) {
-      // FIXME: 7/11/18 Проглатываение ошибки - неправильно
-      e.getMessage();
+      logger.error(e);
     }
   }
 
@@ -52,7 +51,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       document.add(p);
     } catch (DocumentException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
 
     table = new PdfPTable(8);
@@ -118,8 +117,7 @@ public class ClientRenderImplPdf implements ClientRender {
       pdfWriter.close();
       out.close();
     } catch (Exception e) {
-      // FIXME: 7/11/18 Нужно перечилисть все места где есть printStackTrace?!
-      e.printStackTrace();
+      logger.error(e);
     }
   }
 }

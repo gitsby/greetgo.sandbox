@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.db.core;
 
 import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.sandbox.db.util.Informative;
 import kz.greetgo.sandbox.db.worker.Worker;
 import liquibase.util.file.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -11,7 +10,7 @@ import java.sql.Connection;
 import java.util.Objects;
 
 @Bean
-public class Migration extends Informative implements Closeable {
+public class Migration implements Closeable {
 
   private static Logger logger = Logger.getLogger(Migration.class);
 
@@ -30,7 +29,7 @@ public class Migration extends Informative implements Closeable {
     try {
       inputStream.close();
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
@@ -42,7 +41,7 @@ public class Migration extends Informative implements Closeable {
     try {
       inputStream = new FileInputStream(file);
     } catch (FileNotFoundException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 

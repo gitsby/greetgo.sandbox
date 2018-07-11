@@ -41,7 +41,7 @@ public class FRSWorker extends Worker {
     try {
       jsonParser = new MappingJsonFactory().createParser(inputStream);
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
@@ -68,7 +68,7 @@ public class FRSWorker extends Worker {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("create csv files end");
   }
@@ -107,7 +107,7 @@ public class FRSWorker extends Worker {
         checkStr(tmp.clientId,null), checkStr(tmp.registeredAt,System.nanoTime()),
         checkStr(tmp.accountNumber,System.nanoTime())));
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
@@ -118,7 +118,7 @@ public class FRSWorker extends Worker {
         checkStr(tmp.transactionType,System.nanoTime()), checkStr(tmp.accountNumber,null)));
       transactionTypeCsvBw.write(String.format("%s\n", checkStr(tmp.transactionType, null)));
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
@@ -135,7 +135,7 @@ public class FRSWorker extends Worker {
       copy(copyManager, clientAccountTransactionCsvFile, clientAccountTransactionTmp);
       copy(copyManager, transactionTypeCsvFile, transactionTypeTmp);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("load csv files to tmp end...");
   }

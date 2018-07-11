@@ -96,7 +96,7 @@ public abstract class Worker implements WorkerInterface {
     try (Statement statement = connection.createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
