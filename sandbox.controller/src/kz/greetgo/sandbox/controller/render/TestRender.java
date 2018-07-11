@@ -20,7 +20,9 @@ public class TestRender {
   }
 
   private static OutputStream getOutputStream(String fileName) throws FileNotFoundException {
-    return new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName));
+    File file = new File("build/tmp/"+fileName);
+    if (!file.exists()) file.getParentFile().mkdirs();
+    return new FileOutputStream(file);
   }
 
   private static String getFileName(String fileName, String format) {

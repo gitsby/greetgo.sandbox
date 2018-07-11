@@ -5,10 +5,7 @@ import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.util.RND;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -71,26 +68,5 @@ public class ClientRenderImplXlsx implements ClientRender {
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  public static void main(String[] args) throws Exception {
-    String fileName = "TEST.xlsx";
-    ClientRenderImplXlsx asd = new ClientRenderImplXlsx(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
-    asd.start(RND.str(10), new Date());
-    for (int i=0;i<10; i++) asd.append(getRandomClientRecord(i));
-    asd.finish();
-  }
-
-  private static ClientRecord getRandomClientRecord(int i) {
-    ClientRecord row = new ClientRecord();
-    row.id=i;
-    row.surname = RND.str(10);
-    row.name = RND.str(10);
-    row.patronymic = RND.str(10);
-    row.age = RND.plusInt(60);
-    row.middle_balance = RND.plusInt(10000);
-    row.max_balance = RND.plusInt(10000);
-    row.min_balance = RND.plusInt(10000);
-    return row;
   }
 }

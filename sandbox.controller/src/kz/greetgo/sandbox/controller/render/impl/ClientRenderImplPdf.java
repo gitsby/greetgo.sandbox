@@ -120,25 +120,4 @@ public class ClientRenderImplPdf implements ClientRender {
       e.printStackTrace();
     }
   }
-
-  public static void main(String[] args) throws Exception {
-    String fileName = "TEST.pdf";
-    ClientRenderImplPdf asd = new ClientRenderImplPdf(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
-    asd.start(RND.str(10), new Date());
-    for (int i=0;i<30; i++) asd.append(getRandomClientRecord(i));
-    asd.finish();
-  }
-
-  private static ClientRecord getRandomClientRecord(int i) {
-    ClientRecord row = new ClientRecord();
-    row.id=i;
-    row.surname = RND.str(10);
-    row.name = RND.str(10);
-    row.patronymic = RND.str(10);
-    row.age = RND.plusInt(60);
-    row.middle_balance = RND.plusInt(10000);
-    row.max_balance = RND.plusInt(10000);
-    row.min_balance = RND.plusInt(10000);
-    return row;
-  }
 }
