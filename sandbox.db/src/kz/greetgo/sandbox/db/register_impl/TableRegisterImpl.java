@@ -4,6 +4,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import com.sun.istack.internal.NotNull;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
@@ -12,223 +13,304 @@ import kz.greetgo.sandbox.controller.model.dbmodels.DbClientPhone;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.db.dao.TableDao;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
-
+// TODO: war не собирается, исправь ошибку.
+// TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
 @Bean
 public class TableRegisterImpl implements TableRegister{
 
-    public BeanGetter<TableDao> tableDao;
+  public BeanGetter<TableDao> tableDao;
 
-    public DbModelConverter dbModelConverter = new DbModelConverter();
+  public DbModelConverter dbModelConverter = new DbModelConverter();
 
-    @Override
-    public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+  private String reportsPath = "D:/greetgonstuff/greetgo.sandbox/reports/";
 
-        TableToSend tableToSend = new TableToSend();
+  @Override
+  public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
 
-        sortDirection = sortDirection.toUpperCase();
-        filterType = filterType.toUpperCase();
-        sortType = sortType.toUpperCase();
-        filterText = "%"+ filterText + "%";
-        if (checkParams(skipNumber,limit,sortDirection,sortType,filterType,filterText)){
-            tableToSend.table.add(new TableModel());
-            return tableToSend;
-        }
+    TableToSend tableToSend = new TableToSend();
 
-        if(sortType.equals("FULLNAME")){
-            tableToSend.table= sortDirection.equals("DESC")?
-                    tableDao.get().getFullNameDesc(skipNumber, limit, filterType, filterText):
-                    tableDao.get().getFullNameAsc(skipNumber, limit, filterType, filterText);
-        }
-        if(sortType.equals("AGE")){
-            tableToSend.table= sortDirection.equals("DESC")?
-                    tableDao.get().getAgeDesc(skipNumber, limit, filterType, filterText):
-                    tableDao.get().getAgeAsc(skipNumber, limit, filterType, filterText);
-        }
-        if(sortType.equals("MINBALANCE")){
-            tableToSend.table= sortDirection.equals("DESC")?
-                    tableDao.get().getMinBalanceDesc(skipNumber, limit, filterType, filterText):
-                    tableDao.get().getMinBalanceAsc(skipNumber, limit, filterType, filterText);
-        }
-        if(sortType.equals("MAXBALANCE")){
-            tableToSend.table= sortDirection.equals("DESC")?
-                    tableDao.get().getMaxBalanceDesc(skipNumber, limit, filterType, filterText):
-                    tableDao.get().getMaxBalanceAsc(skipNumber, limit, filterType, filterText);
-        }
-        if(sortType.equals("TOTALBALANCE")){
-            tableToSend.table= sortDirection.equals("DESC")?
-                    tableDao.get().getTotalBalanceDesc(skipNumber, limit, filterType, filterText):
-                    tableDao.get().getTotalBalanceAsc(skipNumber, limit, filterType, filterText);
-        }
-
-        tableToSend.size=tableDao.get().getTableSize();
-        return tableToSend;
+    sortDirection = sortDirection.toUpperCase();
+    filterType = filterType.toUpperCase();
+    sortType = sortType.toUpperCase();
+    filterText = "%"+ filterText + "%";
+    if (checkParams(skipNumber,limit,sortDirection,sortType,filterType,filterText)){
+      tableToSend.table.add(new TableModel());
+      return tableToSend;
     }
 
-    public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
-
-        return  skipNumber==null || limit==null ||
-                sortDirection==null || sortType==null ||
-                filterText==null || filterType==null ||
-                skipNumber==-1 || limit==-1 ||
-                sortDirection.isEmpty() ||sortType.isEmpty() ||
-                filterText.isEmpty() || filterType.isEmpty() ||
-                !sortDirection.matches("(ASC|DESC)") ||
-                !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
-                !filterType.matches("NAME|SURNAME|PATRONYMIC");
-
+    if(sortType.equals("FULLNAME")){
+      tableToSend.table= sortDirection.equals("DESC")?
+        tableDao.get().getFullNameDesc(skipNumber, limit, filterType, filterText):
+        tableDao.get().getFullNameAsc(skipNumber, limit, filterType, filterText);
+    }
+    if(sortType.equals("AGE")){
+      tableToSend.table= sortDirection.equals("DESC")?
+        tableDao.get().getAgeDesc(skipNumber, limit, filterType, filterText):
+        tableDao.get().getAgeAsc(skipNumber, limit, filterType, filterText);
+    }
+    if(sortType.equals("MINBALANCE")){
+      tableToSend.table= sortDirection.equals("DESC")?
+        tableDao.get().getMinBalanceDesc(skipNumber, limit, filterType, filterText):
+        tableDao.get().getMinBalanceAsc(skipNumber, limit, filterType, filterText);
+    }
+    if(sortType.equals("MAXBALANCE")){
+      tableToSend.table= sortDirection.equals("DESC")?
+        tableDao.get().getMaxBalanceDesc(skipNumber, limit, filterType, filterText):
+        tableDao.get().getMaxBalanceAsc(skipNumber, limit, filterType, filterText);
+    }
+    if(sortType.equals("TOTALBALANCE")){
+      tableToSend.table= sortDirection.equals("DESC")?
+        tableDao.get().getTotalBalanceDesc(skipNumber, limit, filterType, filterText):
+        tableDao.get().getTotalBalanceAsc(skipNumber, limit, filterType, filterText);
     }
 
+    tableToSend.size=tableDao.get().getTableSize(filterType,filterText);
+    return tableToSend;
+  }
 
-    @Override
-    public User getExactUser(Integer userID){
-        boolean existence = tableDao.get().countClientsWithUserID( userID) > 0;
-        if(!existence){
-            User user = new User();
-            user.id = -1;
-            return user;
-        }
+  public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
 
-        DbClient dbClient = tableDao.get().getExactClient(userID);
-        DbCharm  dbCharm = tableDao.get().getCharm(1);
+    return  skipNumber==null || limit==null ||
+      sortDirection==null || sortType==null ||
+      filterText==null || filterType==null ||
+      skipNumber==-1 || limit==-1 ||
+      sortDirection.isEmpty() ||sortType.isEmpty() ||
+      filterText.isEmpty() || filterType.isEmpty() ||
+      !sortDirection.matches("(ASC|DESC)") ||
+      !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
+      !filterType.matches("NAME|SURNAME|PATRONYMIC");
 
-        DbClientPhone[] dbClientPhones = tableDao.get().getPhones(userID);
+  }
 
-        DbClientAddress dbClientAddressFactual = tableDao.get().getClientAddress(userID, AddressType.FACT.toString());
 
-        DbClientAddress dbClientAddressRegistered = tableDao.get().getClientAddress(userID, AddressType.REG.toString());
-
-        User user = dbModelConverter.convertToUser(dbClient,dbCharm,dbClientPhones,dbClientAddressFactual,dbClientAddressRegistered);
-        return user;
+  @Override
+  public User getExactUser(Integer userID){
+    boolean existence = tableDao.get().countClientsWithUserID( userID) > 0;
+    if(!existence){
+      User user = new User();
+      user.id = -1;
+      return user;
     }
 
-    private Boolean checkForContraints(User user){
-        if (    user.name==null || user.name.isEmpty() ||
-                user.surname==null || user.surname.isEmpty() ||
-                user.charm==null || user.genderType==null ||
-                user.phones==null || user.registeredAddress==null ||
-                user.birthDate==null ||
-                user.registeredAddress.street == null || user.registeredAddress.street.isEmpty() ||
-                user.registeredAddress.flat == null || user.registeredAddress.flat.isEmpty() ||
-                user.registeredAddress.house == null || user.registeredAddress.house.isEmpty() ){
-            return false;
-        }
-        boolean va=true;
-        boolean mob=false;
-        for(Phone phone: user.phones){
-            if(phone.number.matches("^(\\d{11})?$")){
+    DbClient dbClient = tableDao.get().getExactClient(userID);
+    DbCharm  dbCharm = tableDao.get().getCharm(1);
 
-                va=va&&true;
-                if(phone.phoneType==PhoneType.MOBILE ) {
-                    mob=true;
-                }
-            }else {
-                va=false;
-            }
-        }
-        return va&&mob;
+    DbClientPhone[] dbClientPhones = tableDao.get().getPhones(userID);
+
+    DbClientAddress dbClientAddressFactual = tableDao.get().getClientAddress(userID, AddressType.FACT.toString());
+
+    DbClientAddress dbClientAddressRegistered = tableDao.get().getClientAddress(userID, AddressType.REG.toString());
+
+    User user = dbModelConverter.convertToUser(dbClient,dbCharm,dbClientPhones,dbClientAddressFactual,dbClientAddressRegistered);
+    return user;
+  }
+
+  private Boolean checkForContraints(User user){
+    if (    user.name==null || user.name.isEmpty() ||
+      user.surname==null || user.surname.isEmpty() ||
+      user.charm==null || user.genderType==null ||
+      user.phones==null || user.registeredAddress==null ||
+      user.birthDate==null ||
+      user.registeredAddress.street == null || user.registeredAddress.street.isEmpty() ||
+      user.registeredAddress.flat == null || user.registeredAddress.flat.isEmpty() ||
+      user.registeredAddress.house == null || user.registeredAddress.house.isEmpty() ){
+      return false;
     }
+    boolean va=true;
+    boolean mob=false;
+    for(Phone phone: user.phones){
+      if(phone.number.matches("^(\\d{11})?$")){
 
-    @Override
-    public Integer createUser(User user){
+        va=va&&true;
+        if(phone.phoneType==PhoneType.MOBILE ) {
+          mob=true;
+        }
+      }else {
+        va=false;
+      }
+    }
+    return va&&mob;
+  }
+
+  @Override
+  public Integer createUser(User user){
 //
 //        if(tableDao.get().countClientsWithUserID( user.id) <= 0){
 //            return -2;
 //        }
 
-        if(!checkForContraints(user))
-            return -1;
-        user.validity=true;
-        Integer charmId = charmCheck(user.charm);
+    if(!checkForContraints(user))
+      return -1;
+    user.validity=true;
+    Integer charmId = charmCheck(user.charm);
 
-        DbClient dbClient = dbModelConverter.convertToDbClient(user,charmId);
+    DbClient dbClient = dbModelConverter.convertToDbClient(user,charmId);
 
-        tableDao.get().insertClient(dbClient);
-        user.id = tableDao.get().getLastClientID();
+    tableDao.get().insertClient(dbClient);
+    user.id = tableDao.get().getLastClientID();
 
-        DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
+    DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
 
-        for (DbClientPhone dbClientPhone: dbClientPhones) {
-            tableDao.get().insertPhone(dbClientPhone);
-        }
-        tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressRegistered(user));
-        tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressFactual(user));
+    for (DbClientPhone dbClientPhone: dbClientPhones) {
+      tableDao.get().insertPhone(dbClientPhone);
+    }
+    tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressRegistered(user));
+    tableDao.get().insertAddress(dbModelConverter.convertToDbClientAddressFactual(user));
 
-        tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
-        tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
-        return user.id;
+    tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
+    tableDao.get().insertAccount(dbModelConverter.convertToDbClientAccount(user));
+    return user.id;
+  }
+
+  public int charmCheck(String charm){
+    Integer charmId = tableDao.get().getCharmId(charm);
+
+    if(charmId == null){
+      DbCharm dbCharm =  new DbCharm();
+      dbCharm.id=0;
+      dbCharm.name = charm;
+      dbCharm.description = charm;
+      dbCharm.energy = 255.0f;
+      tableDao.get().insertCharm(dbCharm);
+      charmId = tableDao.get().getCharmId(charm);
+    }
+    return charmId;
+
+  }
+
+  @Override
+  public String changeUser(User user){
+
+
+    if(tableDao.get().countClientsWithUserID( user.id) <= 0){
+      return "-1";
     }
 
-    public int charmCheck(String charm){
-        Integer charmId = tableDao.get().getCharmId(charm);
+    if(!checkForContraints(user))
+      return "-1";
 
-        if(charmId == null){
-            DbCharm dbCharm =  new DbCharm();
-            dbCharm.id=0;
-            dbCharm.name = charm;
-            dbCharm.description = charm;
-            dbCharm.energy = 255.0f;
-            tableDao.get().insertCharm(dbCharm);
-            charmId = tableDao.get().getCharmId(charm);
+    user.validity=true;
+
+    DbClientPhone[] dbClientPhonesLoaded = tableDao.get().getPhones(user.id);
+    DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
+
+    for (int i = 0; i <dbClientPhones.length; i++) {
+      for (int j = 0; j <dbClientPhonesLoaded.length ; j++) {
+        if(dbClientPhones[i].number.equals(dbClientPhonesLoaded[j].number) && dbClientPhones[i].validity!=dbClientPhonesLoaded[i].validity){
+          tableDao.get().updatePhone(dbClientPhones[i]);
+          dbClientPhones[i]=new DbClientPhone();
+          dbClientPhones[i].number="0";
         }
-        return charmId;
 
+      }
+    }
+    for (DbClientPhone dbClientPhone : dbClientPhones) {
+      if (!dbClientPhone.number.equals("0"))
+        tableDao.get().insertPhone(dbClientPhone);
     }
 
-    @Override
-    public String changeUser(User user){
+    Integer charmId = charmCheck(user.charm);
 
+    tableDao.get().updateClient(dbModelConverter.convertToDbClient(user, charmId));
+    tableDao.get().updateAddress(dbModelConverter.convertToDbClientAddressRegistered(user));
+    tableDao.get().updateAddress(dbModelConverter.convertToDbClientAddressFactual(user));
 
-        if(tableDao.get().countClientsWithUserID( user.id) <= 0){
-            return "-1";
+    return "1";
+  }
+
+  @Override
+  public String deleteUser(Integer userID){
+
+    if(userID==null || tableDao.get().countClientsWithUserID(userID) <= 0){
+      return "-1";
+    }
+    tableDao.get().deleteClient(userID);
+    tableDao.get().deletePhone(userID);
+    tableDao.get().deleteAccount(userID);
+    return "1";
+  }
+
+  int getTableSize(String filterType, String filterText){
+    int size = 0;
+      size=tableDao.get().getTableSize(filterType,filterText);
+    return size;
+  }
+
+  @Override
+  public String makeReport(String sortDirection, String sortType, String filterType,
+                           String filterText,String user, String reportType) throws Exception{
+
+      int size = getTableSize(filterType,filterText);
+      ReportTableView reportTableView;
+      OutputStream out;
+      Date date = new Date();
+      String filename =user+"_"+date.getTime();
+      if(reportType.equals("PDF")){
+        filename+="."+reportType;
+        out = new FileOutputStream(new File(reportsPath+filename));
+        reportTableView = new ReportTableViewPdf(out);
+      }else if(reportType.equals("XLSX")){
+        filename+="."+reportType;
+        out = new FileOutputStream(new File(reportsPath+filename));
+        reportTableView = new ReportTableViewXlsx(out);
+      }else {
+        return "-1";
+      }
+      TableToSend tableToSend;
+
+      reportTableView.start(user,date);
+      for (int i = 0; i < size-size%4; i=i+4) {
+        tableToSend=getTableData(i,4, sortDirection,sortType, filterType, filterText);
+        int j=0;
+        for (TableModel tableModel:tableToSend.table) {
+          reportTableView.append(tableModel,i+j);
+          j++;
         }
-
-        if(!checkForContraints(user))
-            return "-1";
-
-        user.validity=true;
-
-        DbClientPhone[] dbClientPhonesLoaded = tableDao.get().getPhones(user.id);
-        DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
-
-        for (int i = 0; i <dbClientPhones.length; i++) {
-            for (int j = 0; j <dbClientPhonesLoaded.length ; j++) {
-                if(dbClientPhones[i].number.equals(dbClientPhonesLoaded[j].number) && dbClientPhones[i].validity!=dbClientPhonesLoaded[i].validity){
-                    tableDao.get().updatePhone(dbClientPhones[i]);
-                    dbClientPhones[i]=new DbClientPhone();
-                    dbClientPhones[i].number="0";
-                }
-
-            }
-        }
-        for (DbClientPhone dbClientPhone : dbClientPhones) {
-            if (!dbClientPhone.number.equals("0"))
-                tableDao.get().insertPhone(dbClientPhone);
-        }
-
-        Integer charmId = charmCheck(user.charm);
-
-        tableDao.get().updateClient(dbModelConverter.convertToDbClient(user, charmId));
-        tableDao.get().updateAddress(dbModelConverter.convertToDbClientAddressRegistered(user));
-        tableDao.get().updateAddress(dbModelConverter.convertToDbClientAddressFactual(user));
-
-        return "1";
+      }
+      tableToSend=getTableData(size-size%4,4,sortDirection,sortType,filterType,filterText);
+      int j=0;
+      for (TableModel tableModel:tableToSend.table) {
+        reportTableView.append(tableModel,j+size);
+        j++;
     }
 
-    @Override
-    public String deleteUser(Integer userID){
+    reportTableView.finish();
+    return filename;
+  }
 
-        if(userID==null || tableDao.get().countClientsWithUserID(userID) <= 0){
-            return "-1";
-        }
-        tableDao.get().deleteClient(userID);
-        tableDao.get().deletePhone(userID);
-        tableDao.get().deleteAccount(userID);
-        return "1";
-    }
+  @Override
+  public void downloadReport(String filename, BinResponse response)          throws Exception{
+      if(!(new File(reportsPath+filename)).exists()){
+        return;
+      }
+      String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
+      response.setContentType("application/octet-stream");
+      response.setFilename(urlEncodedFileName);
+      OutputStream outputStream =response.out();
+      FileInputStream fileInputStream = (new FileInputStream(new File(reportsPath + filename)));
+      byte[] buffer = new byte[4096];
+      int len = 0;
+      while((len=fileInputStream.read(buffer))>=0){
+        outputStream.write(buffer,0,len);
+      }
+      fileInputStream.close();
+      response.flushBuffers();
+  }
 
+  @Override
+  public String[] getCharms(){
+    String[] charms = tableDao.get().getCharms();
+    return charms;
+  }
 }
 
 

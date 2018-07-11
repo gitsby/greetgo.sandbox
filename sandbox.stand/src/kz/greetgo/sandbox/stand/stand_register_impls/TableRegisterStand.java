@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -128,10 +129,6 @@ public class TableRegisterStand implements TableRegister {
     }
 
 
-    @Override
-    public String[] getCharms(){
-        return null;
-    }
 
     private Boolean checkForValidity(User user){
         if (    user.name==null || user.name.isEmpty() ||
@@ -238,5 +235,12 @@ public class TableRegisterStand implements TableRegister {
         response.flushBuffers();
     }
 
+    @Override
+    public String[] getCharms(){
+        String[] charms = db.get().users.data.stream().map(user -> {
+            return user.charm;
+        }).toArray(String[]::new);
+        return charms;
+    }
 
 }

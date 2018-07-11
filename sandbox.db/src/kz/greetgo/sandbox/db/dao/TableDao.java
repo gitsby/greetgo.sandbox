@@ -72,8 +72,9 @@ public interface TableDao {
     @Select("select last_value from client_id_seq")
     Integer getLastClientID();
 
-    @Select("select count(id) from client")
-    Integer getTableSize();
+    @Select("select count(id) from filtered_names(#{filterType},(#{filterText})")
+    Integer getTableSize(@Param("filterType") String filterType,
+                            @Param("filterText") String filterText);
 
     @Select("select charm.id from charm where charm.name=#{charm}")
     Integer getCharmId(String charm);
@@ -398,7 +399,6 @@ public interface TableDao {
             @Param("filter_text") String filterText
     );
 
-
-
-
+    @Select("select name from charm")
+    String[] getCharms();
 }

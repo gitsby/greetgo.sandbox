@@ -27,6 +27,13 @@ public class StandJsonDb implements HasAfterInject{
     public Filter filter = new Filter();
 
     public  Gson gson  = new Gson();
+
+    // TODO: Cool!
+    // TODO: But you should think about your other teammates. Don't use the absolute path, change it to relative.
+    // TODO: Cause you're not alone on the project.
+    // TODO: But the main reason is the project itself becomes inflexible
+    // TODO: Make commit and push these files too.
+    // TODO: + change the source package. Directory "beans" is for beans only.
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
     public String usersPath="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
