@@ -46,7 +46,6 @@ public class InMigrationWorker extends SqlWorker {
       "type varchar(10))");
 
     connection.commit();
-
   }
 
   public void updater(){

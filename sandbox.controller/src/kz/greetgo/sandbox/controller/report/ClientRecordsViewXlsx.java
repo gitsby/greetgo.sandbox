@@ -1,7 +1,6 @@
-package kz.greetgo.sandbox.db.client_records_report;
+package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.sandbox.controller.model.ClientRecordRow;
-import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.util.RND;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;

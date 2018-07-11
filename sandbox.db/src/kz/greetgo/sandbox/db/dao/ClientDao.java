@@ -1,7 +1,9 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.*;
-import org.apache.ibatis.annotations.Insert;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.Phone;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
