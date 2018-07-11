@@ -82,8 +82,9 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
   }
 
   public static void main(String[] args) throws FileNotFoundException {
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test.xlsx");
+    FileOutputStream fileOutputStream = new FileOutputStream("..\\test.xlsx");
     ClientRecordsViewXlsx xlsx = new ClientRecordsViewXlsx(fileOutputStream);
+
     xlsx.start();
     Random random = new Random();
     for (int i = 0; i < 101; i++) {

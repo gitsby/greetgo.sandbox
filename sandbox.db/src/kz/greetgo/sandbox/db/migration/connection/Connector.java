@@ -31,7 +31,7 @@ public class Connector {
     if (!pingIp(ip)) {
       throw new Exception("IP is not reachable");
     }
-    System.out.println("IP is reachable");
+    System.out.println("IP IS Reachable");
   }
 
   public boolean openConnection() throws JSchException {
@@ -45,12 +45,6 @@ public class Connector {
     session.setConfig("StrictHostKeyChecking", "no");
     session.setTimeout(timeOut);
     session.connect();
-//
-//    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
-//
-//    sftp.connect();
-
-    //sftp.get("/Users/tester/migrationFolder/from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2", "C:\\Programs");
 
     return res;
   }
@@ -64,11 +58,17 @@ public class Connector {
   public List<String> recData() throws IOException, JSchException {
     List<String> content = new ArrayList<>();
     InputStream stream = channel.getInputStream();
-
+    StringBuilder builder = new StringBuilder();
     int readByte = stream.read();
 
     while (readByte != 0xffffffff) {
-      content.add(((char) readByte)+"");
+
+      builder.append((char) readByte);
+      if (builder.toString().contains(".bz2")) {
+        content.add(builder.toString().replace("\n", ""));
+        builder = new StringBuilder();
+      }
+
       readByte = stream.read();
     }
     channel.disconnect();
@@ -96,17 +96,21 @@ public class Connector {
   public void downloadFile(String filePath) throws JSchException, SftpException {
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
-    sftp.get(filePath, "C:\\Programs");
+    sftp.get(filePath, "C:\\Programs\\TEST");
+    sftp.disconnect();
   }
 
   public static void main(String[] args) throws Exception {
     Connector connector = new Connector("192.168.26.61", 22, "Tester", "123", 120000);
 
     connector.openConnection();
-    connector.sendCommand("cd migrationFolder; ls");
+    connector.sendCommand("cd test; ls");
 
-    System.out.println(connector.recData());
-    System.out.println("CONNECTED");
+    for (String file : connector.recData()) {
+      connector.downloadFile("/Users/tester/test/" + file);
+    }
+
+    System.out.println("Downloaded files.");
     connector.close();
   }
 }

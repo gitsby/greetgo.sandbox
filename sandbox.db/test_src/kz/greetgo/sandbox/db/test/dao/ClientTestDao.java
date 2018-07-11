@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.db.test.dao;
 
 import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -46,11 +45,14 @@ public interface ClientTestDao {
   @Select("select * from client_address where client_id=#{client_id} and actual=1")
   AddressDot getAddressDot(int client_id);
 
+  @Select("select * from client_address where client_id=#{client_id} and actual=1 and type='REG'")
+  AddressDot getRegAddress(int client_id);
+
   @Select("select * from client_address where client_id=#{client_id} and actual=1")
   List<AddressDot> getAddressDots(int clientId);
 
-  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
-  PhoneDot getPhoneDot(int id);
+  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1 and type='MOBILE'")
+  PhoneDot getMobilePhone(int id);
 
   @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
   List<PhoneDot> getPhoneDots(int id);

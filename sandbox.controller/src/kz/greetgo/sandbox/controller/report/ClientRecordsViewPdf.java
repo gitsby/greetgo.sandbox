@@ -68,7 +68,7 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
   public static void main(String[] args) throws FileNotFoundException {
     // FIXME: 7/11/18 Нельзя хардкодить путь. У меня она не запускается
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test.pdf");
+    FileOutputStream fileOutputStream = new FileOutputStream("..\\test.pdf");
     ClientRecordsViewPdf pdf = new ClientRecordsViewPdf(fileOutputStream);
 
     pdf.start();
