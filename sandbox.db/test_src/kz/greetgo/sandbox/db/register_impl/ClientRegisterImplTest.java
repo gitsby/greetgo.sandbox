@@ -217,6 +217,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void getRecords_pagination() {
 
+    // FIXME: 7/10/18 offset = 18, limit = 1 => test padaet
+    // FIXME: 7/10/18 Сделай несколько тестов на пагинатор
     int offset = RND.plusInt(10);
     int limit = RND.plusInt(10);
 
@@ -296,6 +298,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
       insertClient(dot);
     }
+
     //
     //
     //
@@ -568,6 +571,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     assertThat(render.name).isEqualTo(name);
+    // FIXME: 7/10/18 Нужно чтобы было больше чем 100 клиентов
     assertThat(render.clientRows).hasSize(1);
     assertThat(render.clientRows.get(0).id).isEqualTo(leftDetails.id);
   }
