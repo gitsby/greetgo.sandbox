@@ -5,6 +5,8 @@ import com.jcraft.jsch.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Connector {
 
@@ -59,18 +61,18 @@ public class Connector {
     channel.connect();
   }
 
-  public String recData() throws IOException, JSchException {
-    StringBuilder outputBuffer = new StringBuilder();
+  public List<String> recData() throws IOException, JSchException {
+    List<String> content = new ArrayList<>();
     InputStream stream = channel.getInputStream();
 
     int readByte = stream.read();
 
     while (readByte != 0xffffffff) {
-      outputBuffer.append((char) readByte);
+      content.add(((char) readByte)+"");
       readByte = stream.read();
     }
     channel.disconnect();
-    return outputBuffer.toString();
+    return content;
   }
 
   public void close() {
@@ -89,6 +91,12 @@ public class Connector {
     InetAddress address = InetAddress.getByName(ip);
     boolean reachable = address.isReachable(10000);
     return reachable;
+  }
+
+  public void downloadFile(String filePath) throws JSchException, SftpException {
+    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
+    sftp.connect();
+    sftp.get(filePath, "C:\\Programs");
   }
 
   public static void main(String[] args) throws Exception {

@@ -3,4 +3,15 @@ dependencies {
   compile "kz.greetgo.depinject:greetgo.depinject:$depinjectVersion"
 
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
+
+// https://mvnrepository.com/artifact/com.jcraft/jsch
+  compile group: 'com.jcraft', name: 'jsch', version: '0.1.44-1'
+  // https://mvnrepository.com/artifact/com.impossibl.pgjdbc-ng/pgjdbc-ng
+  compile group: 'com.impossibl.pgjdbc-ng', name: 'pgjdbc-ng', version: '0.0.2'
+
+  // https://mvnrepository.com/artifact/com.itextpdf/itextpdf
+  compile group: 'com.itextpdf', name: 'itextpdf', version: '5.0.6'
+
+  // https://mvnrepository.com/artifact/org.apache.poi/poi
+  compile group: 'org.apache.poi', name: 'poi', version: '3.9'
 }

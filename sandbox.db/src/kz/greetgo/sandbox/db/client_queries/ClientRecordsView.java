@@ -71,11 +71,13 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
 
   void addSorting(boolean useLimit) {
     String limit = "";
+
     if (useLimit) {
       limit = "LIMIT ? OFFSET ?";
       params.add(filter.sliceNum);
       params.add(Math.abs(filter.sliceNum * filter.paginationPage));
     }
+
     switch (filter.columnName) {
       case "surname":
         sql.ORDER_BY("surname asc ,\n" +
