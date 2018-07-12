@@ -132,16 +132,15 @@ export class UsersTableComponent implements OnInit {
 
   getReport(reportType:string){
     let filename;
-    this.httpService.get("/table/make-report", {
+    this.httpService.post("/table/make-report", {
       'filterType':this.filterType.value,
       'filterText':this.filterText.value,
       'sortType':this.sort.active,
       'sortDirection':this.sort.direction,
-      'user':'user',
       'reportType':reportType}).subscribe(
       response => {
         filename=response.json();
-        let toPrint = (this.httpService.download("/table/download-report", {"filename":filename}).toString())
+        let toPrint = (this.httpService.download("/table/download-report", {"filename":filename}).toString());
         console.log(toPrint);
         window.open(toPrint, "_blank");
       }

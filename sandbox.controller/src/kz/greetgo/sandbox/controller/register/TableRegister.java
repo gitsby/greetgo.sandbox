@@ -27,5 +27,5 @@ public interface TableRegister {
 
     void downloadReport(String filename,BinResponse response) throws Exception;
 
-
+    void reportTest(TableModel tableModel, int i, ReportTableView view) throws Exception ;
 }

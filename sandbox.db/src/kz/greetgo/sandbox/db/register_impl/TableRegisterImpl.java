@@ -306,7 +306,16 @@ public class TableRegisterImpl implements TableRegister{
       response.flushBuffers();
   }
 
+
+
   @Override
+    public void reportTest(TableModel tableModel, int i, ReportTableView view) throws Exception {
+      view.start("user", (new Date()));
+      view.append(tableModel, i);
+      view.finish();
+    }
+
+    @Override
   public String[] getCharms(){
     String[] charms = tableDao.get().getCharms();
     return charms;

@@ -96,13 +96,12 @@ public class TableController implements Controller{
     }
 
 
-    @NoSecurity
     @ToJson
-    @MethodFilter(GET)
+    @MethodFilter(POST)
     @Mapping("/make-report")
     public String makeReport(@Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
                              @Par("filterType") String  filterType, @Par("filterText") String filterText,
-                             @Par("user") String user, @Par("reportType") String reportType) throws Exception {
+                             @ParSession("personId") String user, @Par("reportType") String reportType) throws Exception {
         return tableRegister.get().makeReport(sortDirection,sortType, filterType, filterText, user, reportType);
     }
 

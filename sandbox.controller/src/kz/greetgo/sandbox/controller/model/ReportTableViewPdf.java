@@ -1,9 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -69,7 +66,6 @@ public class ReportTableViewPdf implements ReportTableView {
 
     @Override
     public void finish()throws Exception{
-
         document.add(new Phrase("Made by "+this.user));
         document.close();
 

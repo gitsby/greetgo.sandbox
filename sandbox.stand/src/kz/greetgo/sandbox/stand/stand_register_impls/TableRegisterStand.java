@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import com.itextpdf.text.pdf.codec.Base64;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 public class TableRegisterStand implements TableRegister {
 
     public BeanGetter<StandJsonDb> db;
-
+    public BeanGetter<AuthRegister> authRegister;
     public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
 
     public enum SortType{
@@ -54,9 +55,10 @@ public class TableRegisterStand implements TableRegister {
             filterText="";
         }
         TableToSend queriedTable  = new TableToSend();
-        db.get().filter.filterText=filterText;
-        db.get().filter.filterType=FilterType.valueOf(filterType.toUpperCase());
-        db.get().tableCreate();
+        Filter filter = new Filter();
+        filter.filterText=filterText;
+        filter.filterType=FilterType.valueOf(filterType.toUpperCase());
+        db.get().tableCreate(filter);
 
         queriedTable.table=db.get().table.table.stream().sorted(((o1, o2) -> {
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
@@ -181,33 +183,29 @@ public class TableRegisterStand implements TableRegister {
         ReportTableView reportTableView;
         OutputStream out;
         Date date = new Date();
+        user = authRegister.get().getUserInfo(user).accountName;
         String filename =user+"_"+date.getTime();
         if(reportType.equals("PDF")){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportTableView = new ReportTableViewPdf(out);
-        }else if(reportType.equals("XML")){
+        }else if(reportType.equals("XLSX")){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportTableView = new ReportTableViewXlsx(out);
         }else {
             return "-1";
         }
+
         TableToSend tableToSend;
 
         reportTableView.start(user,date);
-        for (int i = 0; i < getTableSize()-getTableSize()%4; i=i+4) {
-            tableToSend=getTableData(i,4, sortDirection,sortType, filterType, filterText);
-            int j=0;
-            for (TableModel tableModel:tableToSend.table) {
-                reportTableView.append(tableModel,i+j);
-                j++;
-            }
-        }
-        tableToSend=getTableData(getTableSize()-getTableSize()%4,4,sortDirection,sortType,filterType,filterText);
-        int j=0;
+        getTableData(0,0, sortDirection,sortType, filterType, filterText);
+        tableToSend=getTableData(0,getTableSize(), sortDirection,sortType, filterType, filterText);
+        int j=1;
         for (TableModel tableModel:tableToSend.table) {
-            reportTableView.append(tableModel,j+getTableSize());
+            System.out.println(j+" "+tableModel.toString());
+            reportTableView.append(tableModel,j);
             j++;
         }
 
@@ -237,10 +235,7 @@ public class TableRegisterStand implements TableRegister {
 
     @Override
     public String[] getCharms(){
-        String[] charms = db.get().users.data.stream().map(user -> {
-            return user.charm;
-        }).toArray(String[]::new);
-        return charms;
+        return db.get().users.data.stream().map(user -> user.charm).toArray(String[]::new);
     }
 
 }
