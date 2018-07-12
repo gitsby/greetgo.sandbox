@@ -18,6 +18,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
       inMigration::sendAddresses,
       inMigration::sendPhones
     );
+    Thread.sleep(1000);
     System.out.println("FINISHED ALL TASKS------------------------");
   }
 

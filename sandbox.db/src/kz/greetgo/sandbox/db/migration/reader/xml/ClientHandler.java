@@ -13,6 +13,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,6 +44,11 @@ public class ClientHandler extends DefaultHandler {
   private List<PhoneSenderThread> phoneSenderThreads = new LinkedList<>();
   private List<AddressSenderThread> addressSenderThreads = new LinkedList<>();
 
+  private StringBuilder error = new StringBuilder();
+
+  private boolean mobileOccured = false;
+  private boolean regOccured = false;
+
   public ClientHandler(ClientProcessor processor, AddressProcessor addressProcessor, PhoneProcessor phoneProcessor) {
     this.processor = processor;
     this.addressProcessor = addressProcessor;
@@ -52,6 +59,10 @@ public class ClientHandler extends DefaultHandler {
   public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
     if (qName.charAt(0) == 'c' && qName.charAt(qName.length() - 1) == 't') {
       client = new ClientFromMigration();
+      client.error = new StringBuilder();
+      mobileOccured = false;
+      regOccured = false;
+      client.timestamp = new Timestamp(new Date().getTime());
       client.id = attributes.getValue(0);
     }
     if (client == null) {
@@ -76,6 +87,7 @@ public class ClientHandler extends DefaultHandler {
       client.charm = attributes.getValue(0);
     }
     if (qName.charAt(0) == 'm') {
+      mobileOccured = true;
       isMobilePhone = true;
     }
     if (qName.charAt(0) == 'w') {
@@ -86,6 +98,9 @@ public class ClientHandler extends DefaultHandler {
     }
 
     if ((qName.charAt(0) == 'f' || qName.charAt(0) == 'r')) {
+      if (qName.charAt(0) == 'r') {
+        regOccured = true;
+      }
       AddressFromMigration address = new AddressFromMigration();
       address.street = attributes.getValue("street");
       address.house = attributes.getValue("house");
@@ -133,6 +148,12 @@ public class ClientHandler extends DefaultHandler {
     if (client != null) {
       if (qName.equals("client")) {
         clients.add(client);
+        if (!mobileOccured) {
+          client.error.append("No mobile phone;");
+        }
+        if (!regOccured) {
+          client.error.append("No reg address;");
+        }
         if (clients.size() < clientBatchSize) {
           return;
         }

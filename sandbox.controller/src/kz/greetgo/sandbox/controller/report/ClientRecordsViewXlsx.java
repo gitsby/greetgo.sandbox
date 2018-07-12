@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.sandbox.controller.model.ClientRecordRow;
 import kz.greetgo.util.RND;
-import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -17,8 +16,6 @@ import java.util.Date;
 import java.util.Random;
 
 public class ClientRecordsViewXlsx implements ClientRecordsReportView {
-
-  Logger logger = Logger.getLogger("callback");
 
   OutputStream outputStream;
   int rowNum = 0;
@@ -80,7 +77,6 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
       date.setCellValue("Date of report: " + currentDate.toString());
       workbook.write(outputStream);
     } catch (IOException e) {
-      logger.debug(e.getMessage());
     }
   }
 

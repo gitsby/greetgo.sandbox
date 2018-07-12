@@ -43,6 +43,10 @@ public class InMigration {
     return false;
   }
 
+  public void startUpdate() throws SQLException {
+    inMigrationWorker.updater();
+  }
+
   public void sendClient(List<ClientFromMigration> client) throws SQLException {
     inMigrationWorker.sendClient(client);
   }
@@ -52,7 +56,6 @@ public class InMigration {
   }
 
   public void sendAddresses(List<AddressFromMigration> addresses) throws SQLException {
-    System.out.println("SENDING ADDRESS");
     inMigrationWorker.sendAddresses(addresses);
   }
 
