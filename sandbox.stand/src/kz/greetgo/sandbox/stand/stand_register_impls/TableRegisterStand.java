@@ -1,12 +1,25 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
+import com.itextpdf.text.pdf.codec.Base64;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
+import org.apache.jasper.tagplugins.jstl.core.Out;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -14,6 +27,8 @@ import java.util.stream.Collectors;
 public class TableRegisterStand implements TableRegister {
 
     public BeanGetter<StandJsonDb> db;
+    public BeanGetter<AuthRegister> authRegister;
+    public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
 
     public enum SortType{
         FULLNAME,
@@ -40,9 +55,10 @@ public class TableRegisterStand implements TableRegister {
             filterText="";
         }
         TableToSend queriedTable  = new TableToSend();
-        db.get().filter.filterText=filterText;
-        db.get().filter.filterType=FilterType.valueOf(filterType.toUpperCase());
-        db.get().tableCreate();
+        Filter filter = new Filter();
+        filter.filterText=filterText;
+        filter.filterType=FilterType.valueOf(filterType.toUpperCase());
+        db.get().tableCreate(filter);
 
         queriedTable.table=db.get().table.table.stream().sorted(((o1, o2) -> {
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
@@ -63,13 +79,13 @@ public class TableRegisterStand implements TableRegister {
                     return "DESC".equals(sortDirection.toUpperCase())?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        queriedTable.size=tableSize();
+        queriedTable.size=getTableSize();
         return queriedTable;
     }
 
-    public int tableSize(){
+    public int getTableSize(){
         try {
-            return db.get().users.data.size();
+            return db.get().table.table.size();
         } catch (NullPointerException e) {
             e.printStackTrace();
             return 0;
@@ -115,10 +131,6 @@ public class TableRegisterStand implements TableRegister {
     }
 
 
-    @Override
-    public String[] getCharms(){
-        return null;
-    }
 
     private Boolean checkForValidity(User user){
         if (    user.name==null || user.name.isEmpty() ||
@@ -165,6 +177,65 @@ public class TableRegisterStand implements TableRegister {
         return "User was successfully deleted";
     }
 
+    @Override
+    public String makeReport(String sortDirection, String sortType, String filterType,
+                             String filterText,String user, String reportType) throws Exception{
+        ReportTableView reportTableView;
+        OutputStream out;
+        Date date = new Date();
+        user = authRegister.get().getUserInfo(user).accountName;
+        String filename =user+"_"+date.getTime();
+        if(reportType.equals("PDF")){
+            filename+="."+reportType;
+            out = new FileOutputStream(new File(reportsPath+filename));
+            reportTableView = new ReportTableViewPdf(out);
+        }else if(reportType.equals("XLSX")){
+            filename+="."+reportType;
+            out = new FileOutputStream(new File(reportsPath+filename));
+            reportTableView = new ReportTableViewXlsx(out);
+        }else {
+            return "-1";
+        }
 
+        TableToSend tableToSend;
+
+        reportTableView.start(user,date);
+        getTableData(0,0, sortDirection,sortType, filterType, filterText);
+        tableToSend=getTableData(0,getTableSize(), sortDirection,sortType, filterType, filterText);
+        int j=1;
+        for (TableModel tableModel:tableToSend.table) {
+            System.out.println(j+" "+tableModel.toString());
+            reportTableView.append(tableModel,j);
+            j++;
+        }
+
+        reportTableView.finish();
+        return filename;
+    }
+
+    @Override
+    public void downloadReport(String filename, BinResponse response)
+            throws Exception{
+        if(!(new File(reportsPath+filename)).exists()){
+            return;
+        }
+        String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
+        response.setContentType("application/octet-stream");
+        response.setFilename(urlEncodedFileName);
+        OutputStream outputStream =response.out();
+        FileInputStream fileInputStream = (new FileInputStream(new File(reportsPath + filename)));
+        byte[] buffer = new byte[4096];
+        int len = 0;
+        while((len=fileInputStream.read(buffer))>=0){
+            outputStream.write(buffer,0,len);
+        }
+        fileInputStream.close();
+        response.flushBuffers();
+    }
+
+    @Override
+    public String[] getCharms(){
+        return db.get().users.data.stream().map(user -> user.charm).toArray(String[]::new);
+    }
 
 }

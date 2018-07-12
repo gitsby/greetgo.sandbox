@@ -1,6 +1,5 @@
 import {CollectionViewer, DataSource} from "@angular/cdk/collections";
 import {TableModel} from "../../../models/TableModel";
-import {TableService} from "../../../services/TableService";
 import {BehaviorSubject, Observable, of, pipe} from "rxjs/";
 import {catchError, finalize, map} from "rxjs/operators";
 import {MatPaginator, MatSort} from "@angular/material";

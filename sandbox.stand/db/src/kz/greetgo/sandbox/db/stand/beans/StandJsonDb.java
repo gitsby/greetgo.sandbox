@@ -24,7 +24,7 @@ public class StandJsonDb implements HasAfterInject{
     public int lastId = 0;
     public Accounts accounts = new Accounts();
     public TableToSend table = new TableToSend();
-    public Filter filter = new Filter();
+
 
     public  Gson gson  = new Gson();
 
@@ -45,10 +45,13 @@ public class StandJsonDb implements HasAfterInject{
         users = gson.fromJson(bufferedReader, ArrayUsers.class);
         bufferedReader = new BufferedReader(new FileReader(accountsPath));
         accounts = gson.fromJson(bufferedReader,Accounts.class);
-        tableCreate();
+        Filter filter = new Filter();
+        filter.filterType=FilterType.NAME;
+        filter.filterText="";
+        tableCreate(filter);
     }
 
-    public void tableCreate(){
+    public void tableCreate(Filter filter){
 
         String filterText = "[\\s\\S]*";
         FilterType filterType = FilterType.NAME;
@@ -113,7 +116,6 @@ public class StandJsonDb implements HasAfterInject{
             fw = new FileWriter(usersPath);
             bw = new BufferedWriter(fw);
             bw.write(jsonText);
-            tableCreate();
         }catch (IOException e){
             e.printStackTrace();
         } finally {

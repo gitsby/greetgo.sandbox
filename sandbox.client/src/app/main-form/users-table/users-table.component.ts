@@ -5,7 +5,6 @@ import { HttpService} from "../../../services/HttpService";
 import {tap} from "rxjs/operators";
 import {TableModel} from "../../../models/TableModel";
 import {User} from "../../../models/User";
-import {TableService} from "../../../services/TableService";
 import {forEach} from "@angular/router/src/utils/collection";
 import {merge, Observable} from "rxjs/";
 import {FormControl} from "@angular/forms";
@@ -129,6 +128,27 @@ export class UsersTableComponent implements OnInit {
   loadTablePage() {
     this.dataSource.loadTable();
   }
+
+
+  getReport(reportType:string){
+    let filename;
+    this.httpService.post("/table/make-report", {
+      'filterType':this.filterType.value,
+      'filterText':this.filterText.value,
+      'sortType':this.sort.active,
+      'sortDirection':this.sort.direction,
+      'reportType':reportType}).subscribe(
+      response => {
+        filename=response.json();
+        let toPrint = (this.httpService.download("/table/download-report", {"filename":filename}).toString());
+        console.log(toPrint);
+        window.open(toPrint, "_blank");
+      }
+    );
+  }
+
+
+
 
 
 

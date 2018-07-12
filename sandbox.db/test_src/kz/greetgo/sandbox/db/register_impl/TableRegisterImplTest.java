@@ -11,6 +11,7 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -384,6 +385,53 @@ public class TableRegisterImplTest extends ParentTestNg{
             }
         }
 
+    }
+
+
+
+    private static class TestView implements ReportTableView {
+
+        String contractNumber;
+
+        Date contractDate;
+
+        @Override
+
+        public void start(String user, Date reportDate)throws Exception{
+            this.contractNumber = contractNumber;
+            this.contractDate = contractDate;
+
+        };
+        @Override
+        public void append(TableModel row,int index)throws Exception{
+            rowList.add(row);
+        };
+
+
+        @Override
+        public void finish()throws Exception{
+
+        };
+
+
+
+        public final List<TableModel> rowList = Lists.newArrayList();
+
+        public String userName;
+    }
+
+    @Test
+    public void makeReportTest() throws Exception{
+        TestView view = new TestView();
+        TableModel tableModel = new TableModel();
+        tableModel.id=-1;
+        tableModel.totalBalance=10;
+        tableModel.minBalance=1;
+        tableModel.age=9;
+        tableModel.maxBalance=112;
+        tableModel.charm="badboi";
+        tableRegister.get().reportTest(tableModel,0,view);
+        assertThat(view.rowList.get(0).equals(tableModel));
     }
 
 }

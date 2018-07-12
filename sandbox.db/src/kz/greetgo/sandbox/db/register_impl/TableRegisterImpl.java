@@ -4,6 +4,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import com.sun.istack.internal.NotNull;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
@@ -12,8 +13,14 @@ import kz.greetgo.sandbox.controller.model.dbmodels.DbClientPhone;
 import kz.greetgo.sandbox.controller.register.TableRegister;
 import kz.greetgo.sandbox.db.dao.TableDao;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 // TODO: war не собирается, исправь ошибку.
 // TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
@@ -23,6 +30,8 @@ public class TableRegisterImpl implements TableRegister{
   public BeanGetter<TableDao> tableDao;
 
   public DbModelConverter dbModelConverter = new DbModelConverter();
+
+  private String reportsPath = "D:/greetgonstuff/greetgo.sandbox/reports/";
 
   @Override
   public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
@@ -64,7 +73,7 @@ public class TableRegisterImpl implements TableRegister{
         tableDao.get().getTotalBalanceAsc(skipNumber, limit, filterType, filterText);
     }
 
-    tableToSend.size=tableDao.get().getTableSize();
+    tableToSend.size=tableDao.get().getTableSize(filterType,filterText);
     return tableToSend;
   }
 
@@ -230,6 +239,87 @@ public class TableRegisterImpl implements TableRegister{
     return "1";
   }
 
+  int getTableSize(String filterType, String filterText){
+    int size = 0;
+      size=tableDao.get().getTableSize(filterType,filterText);
+    return size;
+  }
+
+  @Override
+  public String makeReport(String sortDirection, String sortType, String filterType,
+                           String filterText,String user, String reportType) throws Exception{
+
+      int size = getTableSize(filterType,filterText);
+      ReportTableView reportTableView;
+      OutputStream out;
+      Date date = new Date();
+      String filename =user+"_"+date.getTime();
+      if(reportType.equals("PDF")){
+        filename+="."+reportType;
+        out = new FileOutputStream(new File(reportsPath+filename));
+        reportTableView = new ReportTableViewPdf(out);
+      }else if(reportType.equals("XLSX")){
+        filename+="."+reportType;
+        out = new FileOutputStream(new File(reportsPath+filename));
+        reportTableView = new ReportTableViewXlsx(out);
+      }else {
+        return "-1";
+      }
+      TableToSend tableToSend;
+
+      reportTableView.start(user,date);
+      for (int i = 0; i < size-size%4; i=i+4) {
+        tableToSend=getTableData(i,4, sortDirection,sortType, filterType, filterText);
+        int j=0;
+        for (TableModel tableModel:tableToSend.table) {
+          reportTableView.append(tableModel,i+j);
+          j++;
+        }
+      }
+      tableToSend=getTableData(size-size%4,4,sortDirection,sortType,filterType,filterText);
+      int j=0;
+      for (TableModel tableModel:tableToSend.table) {
+        reportTableView.append(tableModel,j+size);
+        j++;
+    }
+
+    reportTableView.finish();
+    return filename;
+  }
+
+  @Override
+  public void downloadReport(String filename, BinResponse response)          throws Exception{
+      if(!(new File(reportsPath+filename)).exists()){
+        return;
+      }
+      String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
+      response.setContentType("application/octet-stream");
+      response.setFilename(urlEncodedFileName);
+      OutputStream outputStream =response.out();
+      FileInputStream fileInputStream = (new FileInputStream(new File(reportsPath + filename)));
+      byte[] buffer = new byte[4096];
+      int len = 0;
+      while((len=fileInputStream.read(buffer))>=0){
+        outputStream.write(buffer,0,len);
+      }
+      fileInputStream.close();
+      response.flushBuffers();
+  }
+
+
+
+  @Override
+    public void reportTest(TableModel tableModel, int i, ReportTableView view) throws Exception {
+      view.start("user", (new Date()));
+      view.append(tableModel, i);
+      view.finish();
+    }
+
+    @Override
+  public String[] getCharms(){
+    String[] charms = tableDao.get().getCharms();
+    return charms;
+  }
 }
 
 

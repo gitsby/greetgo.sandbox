@@ -4,10 +4,10 @@ import java.util.Date;
 
 public interface ReportTableView {
 
-    void start(String user, Date reportDate);
+    void start(String user, Date reportDate)throws Exception;
 
-    void append(TableModel tableModel,int index);
+    void append(TableModel tableModel,int index)throws Exception;
 
-    void finish();
+    void finish()throws Exception;
 
 }
