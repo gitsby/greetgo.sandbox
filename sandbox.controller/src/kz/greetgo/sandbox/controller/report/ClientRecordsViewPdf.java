@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
 
-  Logger logger;
+  Logger logger = Logger.getLogger("callback");
 
   OutputStream outputStream;
   PdfPTable table = new PdfPTable(9);

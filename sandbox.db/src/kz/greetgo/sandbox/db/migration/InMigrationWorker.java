@@ -31,7 +31,7 @@ public class InMigrationWorker extends SqlWorker {
       "          gender varchar(10), \n" +
       "          birth_date date, \n" +
       "          charm varchar(15), \n" +
-      "          error text)");
+      "          error text, client_val_id int)");
 
     exec("create table temp_phone(" +
       "client_id varchar(40)," +
@@ -145,6 +145,7 @@ public class InMigrationWorker extends SqlWorker {
         connection.commit();
       }
     }
+    exec(builder.toString(), params.toArray());
     connection.commit();
   }
 
@@ -165,6 +166,8 @@ public class InMigrationWorker extends SqlWorker {
         connection.commit();
       }
     }
+
+    exec(builder.toString(), params.toArray());
     connection.commit();
   }
 }

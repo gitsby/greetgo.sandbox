@@ -24,7 +24,7 @@ public class InMigration {
   InMigrationWorker inMigrationWorker;
   Connection connection;
 
-  Logger logger;
+  Logger logger = Logger.getLogger("callback");
 
   public boolean execute() throws Exception {
     System.out.println("---------Starting Connection------------");

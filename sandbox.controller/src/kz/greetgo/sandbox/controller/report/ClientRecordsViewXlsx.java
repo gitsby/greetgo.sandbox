@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class ClientRecordsViewXlsx implements ClientRecordsReportView {
 
-  Logger logger;
+  Logger logger = Logger.getLogger("callback");
 
   OutputStream outputStream;
   int rowNum = 0;
