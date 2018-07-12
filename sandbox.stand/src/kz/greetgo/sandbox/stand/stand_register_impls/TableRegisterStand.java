@@ -238,4 +238,8 @@ public class TableRegisterStand implements TableRegister {
         return db.get().users.data.stream().map(user -> user.charm).toArray(String[]::new);
     }
 
+    @Override
+    public void reportTest(TableModel tableModel, int index, ReportTableView view){
+        return;
+    }
 }

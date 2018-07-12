@@ -27,103 +27,99 @@ export class MainFormComponent implements OnDestroy{
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
   mockRequest: string | null = null;
-  userIsLoading: boolean = false;
+  // userIsLoading: boolean = false;
   selectedUserID: string = '-1';
-  selectedUser: User = this.generateNewUser();
-  isThereData: boolean = true;
+  // selectedUser: User = this.generateNewUser();
+  // isThereData: boolean = true;
   typeOfDialogCall: string | null = null;
   userDialogRef: MatDialogRef<UserDialogComponent>;
-  http: Http;
+  // http: Http;
   @ViewChild(UsersTableComponent) private usersTableComponent: UsersTableComponent;
 
-  constructor(private httpService: HttpService,
-              private dialog: MatDialog) {}
+  constructor(private httpService: HttpService, private dialog: MatDialog) {}
 
   selectedUserIDChange(changedUser) {
-    this.isThereData = true;
+    // this.isThereData = true;
     this.selectedUserID = changedUser;
   }
 
-  openDialog(titleType: string) {
+  openDialog(id:string = null) {
 
-    let clearlyOpenDialog=(user) => {
-      console.log(user);
       this.userDialogRef = this.dialog.open(UserDialogComponent, {
         hasBackdrop: true,
         minWidth: 400,
+        disableClose: true,
         data: {
-          // TODO: должен передаваться только ID либо null (При добавлении нового клиента)
-          user: user,
-          titleType: titleType
+          // TODO: должен передаваться только ID либо null (При добавлении нового клиента) /
+          // DONE
+          id:id
         }
       });
-      this.userDialogRef.afterClosed().subscribe((user)=> {
-        console.log(user);
-        if(user===undefined||user===null||user.id==='-1'){
 
-          if (titleType === 'Update') {
-            this.usersTableComponent.updateOneRow(user);
-
-            this.selectedUserID= user.id;
-          }else
+      this.userDialogRef.afterClosed().subscribe((data:object)=> {
+        console.log(typeof data);
+        console.log(data);
+        console.log(data["user"]);
+        if (data["state"]===true) {
+          let user = data["user"];
+          if (id === null) {
+            this.selectedUserID = user.id;
             this.usersTableComponent.addOneRow(user);
-
+          } else {
+            this.usersTableComponent.updateOneRow(user);
+          }
         }
-      })};
 
-      if(titleType==='Update') {
-        this.getSelectedUser(clearlyOpenDialog).then(()=>this.userIsLoading=false);
-      }else{
-        clearlyOpenDialog(this.generateNewUser());
-      }
+      });
+
     }
 
 
   deleteButtonClicked(): void {
-    this.userIsLoading=true;
+    // this.userIsLoading=true;
     this.httpService.post("/table/delete-user", {"userID": this.selectedUserID}).toPromise().then(res => {
-      this.userIsLoading=false;
+      // this.userIsLoading=false;
       this.usersTableComponent.loadTablePage();
     });
   }
 
   updateButtonClicked(): void {
-    this.userIsLoading=true;
-    this.openDialog("Update");
+    // this.userIsLoading=true;
+    this.openDialog(this.selectedUserID);
   }
 
   createButtonClicked(): void {
-    this.openDialog("Create");
+    this.openDialog();
   }
 
   // TODO: по наименованию не понятно, что этот метод делает на самом деле.
   // Кажется, что он должен вывести мне только пользователя и всё.
   // TODO: назови правильно.
-  getSelectedUser(callback) {
-    return (this.httpService.get('/table/get-exact-user', {'userID': this.selectedUserID}).toPromise().then(
-      res => {
-        this.selectedUser = User.copy(res.json());
-        this.isThereData = false;
-        callback(this.selectedUser);
-        this.userIsLoading=false;
-      }
-    ));
-  }
+  // getSelectedUser(callback) {
+  //   return (this.httpService.get('/table/get-exact-user', {'userID': this.selectedUserID}).toPromise().then(
+  //     res => {
+  //       this.selectedUser = User.copy(res.json());
+  //       // this.isThereData = false;
+  //       callback(this.selectedUser);
+  //       this.userIsLoading=false;
+  //     }
+  //   ));
+  // }
 
 
-  generateNewUser(): User {
-    let user = new User();
-    user.phones = [new Phone('', PhoneType.MOBILE)];
-    user.name = "";
-    user.surname = "";
-    user.patronymic = "";
-    user.charm = CharmType.BOI;
-    user.birthDate = 0;
-    user.factualAddress = new Address();
-    user.registeredAddress = new Address();
-    user.id = '-1';
-    return user
-  }
+  // generateNewUser(): User {
+  //   let user = new User();
+  //   user.phones = [new Phone('', PhoneType.MOBILE)];
+  //   user.name = "";
+  //   user.surname = "";
+  //   user.patronymic = "";
+  //   user.charm = CharmType.BOI;
+  //   user.birthDate = 0;
+  //   user.factualAddress = new Address();
+  //   user.registeredAddress = new Address();
+  //   user.id = '-1';
+  //   return user
+  // }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
