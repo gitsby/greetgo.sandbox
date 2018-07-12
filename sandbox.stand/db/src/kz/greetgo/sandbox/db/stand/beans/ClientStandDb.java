@@ -4,7 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
@@ -78,7 +78,7 @@ public class ClientStandDb implements HasAfterInject {
         ID = clientRecordStorage.size();
     }
 
-    public List<ClientRecordDot> getClientRecordStorage(Options options) {
+    public List<ClientRecordDot> getClientRecordStorage(RequestOptions options) {
         List<ClientRecordDot> returned = new ArrayList<>();
         out = new ArrayList<>();
 
@@ -141,6 +141,25 @@ public class ClientStandDb implements HasAfterInject {
             }
         }
         return returned;
+    }
+
+
+    public List<ClientRecordDot> getClientRecordStorage(String filter) {
+        out = new ArrayList<>();
+
+        System.out.println(filter);
+
+        if (filter != null && !filter.isEmpty()) {
+            for (ClientRecordDot aList : clientRecordStorage) {
+                String name = aList.name.replace(" ", "").toLowerCase();
+                if (name.matches("(?i).*" + filter.replace(" ", "")
+                        .toLowerCase() + ".*"))
+                    out.add(aList);
+            }
+        } else
+            out = clientRecordStorage;
+
+        return out;
     }
 
     public void deleteClientInfo(int id) {

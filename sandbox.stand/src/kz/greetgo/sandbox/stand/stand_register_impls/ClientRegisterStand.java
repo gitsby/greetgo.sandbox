@@ -18,8 +18,7 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public ClientRecordInfo getClientRecords(Options options) {
-        ClientRecordInfo wrapper = new ClientRecordInfo();
+    public List<ClientRecord> getClientList(RequestOptions options) {
         List<ClientRecord> out = new ArrayList<>();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
             ClientRecord clientRecord = new ClientRecord();
@@ -32,9 +31,12 @@ public class ClientRegisterStand implements ClientRegister {
             clientRecord.min = dot.min;
             out.add(clientRecord);
         }
-        wrapper.total_count = db.get().out.size();
-        wrapper.items = out;
-        return wrapper;
+        return out;
+    }
+
+    @Override
+    public int getClientListCount(String filter) {
+        return db.get().getClientRecordStorage(filter).size();
     }
 
     @Override
@@ -43,7 +45,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public ClientRecord addNewClient(ClientDetails details) {
+    public ClientRecord addClient(ClientDetails details) {
         ClientRecord clientRecord = new ClientRecord();
         ClientRecordDot dot = db.get().addNewClientRecord(details);
         clientRecord.id = dot.id;
@@ -71,7 +73,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getClientById(int clientId) {
+    public ClientDetails getClientDetails(int clientId) {
         ClientDetails clientDetails = new ClientDetails();
         ClientDetailsDot dot = db.get().getClientDetailById(clientId);
         clientDetails.id = dot.id;
@@ -113,7 +115,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options,
+    public void renderClientList(RequestOptions options,
                                  ClientRecordsReportView view,
                                  String username, String link) {
         view.start();

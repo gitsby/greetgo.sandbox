@@ -3,12 +3,10 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,21 +16,19 @@ import java.util.List;
 
 import static kz.greetgo.sandbox.db.util.ClientHelperUtil.calculateAge;
 
-public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInfo> {
+public class ClientRecordsCallback implements ConnectionCallback<List<ClientRecord>> {
 
     public static BeanGetter<ClientDao> clientDao;
-    private Options options;
+    private RequestOptions options;
 
-    public ClientRecordsCallback(Options options, BeanGetter<ClientDao> clientDao) {
+    public ClientRecordsCallback(RequestOptions options, BeanGetter<ClientDao> clientDao) {
         this.options = options;
         ClientRecordsCallback.clientDao = clientDao;
     }
 
     @Override
-    public ClientRecordInfo doInConnection(Connection connection) throws Exception {
-        ClientRecordInfo clientRecordInfo = new ClientRecordInfo();
+    public List<ClientRecord> doInConnection(Connection connection) throws Exception {
         List<ClientRecord> clientRecords = new ArrayList<>();
-        clientRecordInfo.items = clientRecords;
 
         options.filter = options.filter != null ? options.filter : "";
         String sql = createSqlForGetClientRecords(options);
@@ -44,24 +40,19 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
             ps.setString(2, "%" + options.filter + "%");
             ps.setString(3, "%" + options.filter + "%");
 
-
-            //TODO переделать на примитивный тип int. Не будет такого кейса, когда BigDecimal будет нужен, а он в свою очередь работает медленней и зибрает лишнюю память.
             if (options.page != null && options.size != null) {
-                ps.setBigDecimal(4, new BigDecimal(options.size));
-                ps.setBigDecimal(5, new BigDecimal(options.page)
-                        .multiply(new BigDecimal(options.size)));
+                ps.setInt(4, Integer.parseInt(options.size));
+                ps.setInt(5, Integer.parseInt(options.page) * Integer.parseInt(options.size));
             }
             // END set params to PreparedStatement
 
-            System.out.println(ps);
+            //System.out.println(ps);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     clientRecords.add(extractClientRecord(rs));
-                clientRecordInfo.items = clientRecords;
-                clientRecordInfo.total_count = clientDao.get().getClientRecordsCount(options.filter);
             }
         }
-        return clientRecordInfo;
+        return clientRecords;
     }
 
     static ClientRecord extractClientRecord(ResultSet rs) throws SQLException {
@@ -76,14 +67,15 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
         return clientRecord;
     }
 
-    static String createSqlForGetClientRecords(Options options) {
+    static String createSqlForGetClientRecords(RequestOptions options) {
         StringBuilder sb = new StringBuilder();
 
+        //language=PostgreSQL
         sb.append("WITH info (id, iname, surname, patronymic, gender, charm, birth_date) ");
         sb.append("AS (SELECT id, name as iname, surname, patronymic, gender, charm, birth_date ");
         sb.append("FROM client WHERE actual = TRUE AND (name LIKE ? OR surname LIKE ? OR patronymic LIKE ?)) ");
 
-        sb.append("SELECT info.id, concat_ws(' ', info.iname, info.surname, info.patronymic) AS name, ");
+        sb.append("SELECT info.id, concat_ws(' ', info.surname, info.iname, info.patronymic) AS name, ");
         sb.append("info.gender, info.charm, info.birth_date AS age, ");
 
         sb.append("CASE WHEN (SELECT min(client_account.money) FROM client_account ");

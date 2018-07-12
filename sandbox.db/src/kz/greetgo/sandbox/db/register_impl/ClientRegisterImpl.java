@@ -25,8 +25,13 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<JdbcSandbox> jdbc;
 
     @Override
-    public ClientRecordInfo getClientRecords(Options options) {
+    public List<ClientRecord> getClientList(RequestOptions options) {
         return jdbc.get().execute(new ClientRecordsCallback(options, clientDao));
+    }
+
+    @Override
+    public int getClientListCount(String filter) {
+        return clientDao.get().getClientRecordsCount("%" + filter + "%");
     }
 
     @Override
@@ -35,7 +40,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientRecord addNewClient(ClientDetails details) {
+    public ClientRecord addClient(ClientDetails details) {
         if (!isClientDetailsValid(details, true))
             return null;
         Client client = new Client();
@@ -49,13 +54,13 @@ public class ClientRegisterImpl implements ClientRegister {
 
         ClientAddr clientAddr = new ClientAddr();
         clientAddr.client = id;
-        clientAddr.type = ClientAddrType.REG;
+        clientAddr.type = AddrType.REG;
         clientAddr.street = details.addrRegStreet;
         clientAddr.house = details.addrRegHome;
         clientAddr.flat = details.addrRegFlat;
         clientDao.get().insert_client_addr(clientAddr);
         if (details.addrFactStreet != null && details.addrFactHome != null) {
-            clientAddr.type = ClientAddrType.FACT;
+            clientAddr.type = AddrType.FACT;
             clientAddr.street = details.addrFactStreet;
             clientAddr.house = details.addrFactHome;
             clientAddr.flat = details.addrFactFlat;
@@ -87,7 +92,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public ClientRecord editClient(ClientDetails details) {
-        if (!isClientDetailsValid(details, false)) //
+        if (!isClientDetailsValid(details, false))
             return null;
         Client client = new Client();
         client.id = details.id;
@@ -101,25 +106,25 @@ public class ClientRegisterImpl implements ClientRegister {
 
         ClientAddr clientAddr = new ClientAddr();
         clientAddr.client = details.id;
-        clientAddr.type = ClientAddrType.REG;
+        clientAddr.type = AddrType.REG;
         clientAddr.street = details.addrRegStreet;
         clientAddr.house = details.addrRegHome;
         clientAddr.flat = details.addrRegFlat;
         clientDao.get().edit_client_addr(clientAddr);
         if (details.addrFactStreet != null && details.addrFactHome != null) {
-            clientAddr.type = ClientAddrType.FACT;
+            clientAddr.type = AddrType.FACT;
             clientAddr.street = details.addrFactStreet;
             clientAddr.house = details.addrFactHome;
             clientAddr.flat = details.addrFactFlat;
             clientDao.get().edit_client_addr(clientAddr);
         }
-        // Stream<ClientPhone> stream = Arrays.stream(details.phones); //
+        // Stream<ClientPhone> stream = Arrays.stream(details.phones);
         for (int i = 0; i < details.phones.length; i++) {
             if (details.phones[i] != null) {
                 ClientPhone clientPhone = new ClientPhone();
                 clientPhone.number = details.phones[i].number;
                 clientPhone.client = details.id;
-                clientPhone.type = details.phones[i].type; //
+                clientPhone.type = details.phones[i].type;
                 clientDao.get().edit_client_phone(clientPhone);
             }
         }
@@ -142,7 +147,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getClientById(int clientId) {
+    public ClientDetails getClientDetails(int clientId) {
         ClientDetails clientDetails = new ClientDetails();
         Client client = clientDao.get().getClientByID(clientId);
         List<ClientAddr> clientAddrs = clientDao.get().getClientAddrsByID(clientId);
@@ -158,7 +163,7 @@ public class ClientRegisterImpl implements ClientRegister {
         clientDetails.phones = clientPhones.toArray(new ClientPhone[clientPhones.size()]);
 
         for (ClientAddr clientAddr : clientAddrs) {
-            if (clientAddr.type == ClientAddrType.REG) {
+            if (clientAddr.type == AddrType.REG) {
                 clientDetails.addrRegStreet = clientAddr.street;
                 clientDetails.addrRegHome = clientAddr.house;
                 clientDetails.addrRegFlat = clientAddr.flat;
@@ -174,7 +179,7 @@ public class ClientRegisterImpl implements ClientRegister {
     @Override
     public List<Charm> getCharms() {
         List<Charm> list = new ArrayList<>();
-        final String sql = "select * from charm";
+        final String sql = "SELECT * FROM charm";
         jdbc.get().execute(connection -> {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 try (ResultSet rs = ps.executeQuery()) {
@@ -194,7 +199,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options,
+    public void renderClientList(RequestOptions options,
                                  ClientRecordsReportView view,
                                  String username, String link) {
         view.start();

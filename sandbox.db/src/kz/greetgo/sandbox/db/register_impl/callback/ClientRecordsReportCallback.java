@@ -2,11 +2,10 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,10 +16,10 @@ import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback
 public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
 
     public BeanGetter<ClientDao> clientDao;
-    private Options options;
+    private RequestOptions options;
     private ClientRecordsReportView view;
 
-    public ClientRecordsReportCallback(Options options, BeanGetter<ClientDao> clientDao,
+    public ClientRecordsReportCallback(RequestOptions options, BeanGetter<ClientDao> clientDao,
                                        ClientRecordsReportView view) {
         this.options = options;
         this.clientDao = clientDao;
@@ -39,13 +38,12 @@ public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
             ps.setString(3, "%" + options.filter + "%");
 
             if (options.page != null && options.size != null) {
-                ps.setBigDecimal(4, new BigDecimal(options.size));
-                ps.setBigDecimal(5, new BigDecimal(options.page)
-                        .multiply(new BigDecimal(options.size)));
+                ps.setInt(4, Integer.parseInt(options.size));
+                ps.setInt(5, Integer.parseInt(options.page) * Integer.parseInt(options.size));
             }
             // END set params to PreparedStatement
 
-            System.out.println(ps);
+            //System.out.println(ps);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     view.append(extractClientRecord(rs));
