@@ -1,7 +1,7 @@
 <mat-dialog-content *ngIf="gettingOrSendingDataToServer"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
 <div *ngIf="doWeHaveDataOrNot">
 <form [formGroup]="form" (ngSubmit)="submit(form)">
-  <h1 mat-dialog-title>{{this.data.id==='-1'?"Create":"Update"}} user</h1>
+  <h1 mat-dialog-title>{{this.data.id===null?"Create":"Update"}} client</h1>
   <mat-dialog-content>
   <mat-dialog-content>
     <mat-form-field>

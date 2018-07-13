@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.model.dbmodels;
 
 import java.sql.Timestamp;
 
-public class DbTableModel {
+public class DbClientRecords {
     public  int id ;
     public String fullName;
     public Timestamp age ;

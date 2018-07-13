@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
 
-import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 
@@ -13,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 
-public class ReportTableViewXlsx implements ReportTableView {
+public class ReportClientRecordsViewXlsx implements ReportClientRecordsView {
 
     private final OutputStream out;
     private Xlsx xlsx;
@@ -21,7 +20,7 @@ public class ReportTableViewXlsx implements ReportTableView {
     private String user;
 
 
-    public ReportTableViewXlsx(OutputStream out){
+    public ReportClientRecordsViewXlsx(OutputStream out){
         this.out=out;
     }
 
@@ -56,15 +55,15 @@ public class ReportTableViewXlsx implements ReportTableView {
 
 
     @Override
-    public void append(TableModel tableModel, int index)throws Exception{
+    public void append(ClientRecord clientRecord, int index)throws Exception{
         sheet.row().start();
         sheet.cellInt(1,index);
-        sheet.cellStr(2,tableModel.fullName);
-        sheet.cellInt(3,(int) ((Instant.now().toEpochMilli()-tableModel.age)/(315360000))/100);
-        sheet.cellStr(4,tableModel.charm);
-        sheet.cellDouble(5,tableModel.totalBalance);
-        sheet.cellDouble(6,tableModel.maxBalance);
-        sheet.cellDouble(7,tableModel.minBalance);
+        sheet.cellStr(2, clientRecord.fullName);
+        sheet.cellInt(3,(int) ((Instant.now().toEpochMilli()- clientRecord.age)/(315360000))/100);
+        sheet.cellStr(4, clientRecord.charm);
+        sheet.cellDouble(5, clientRecord.totalBalance);
+        sheet.cellDouble(6, clientRecord.maxBalance);
+        sheet.cellDouble(7, clientRecord.minBalance);
         sheet.row().finish();
     }
 
@@ -83,17 +82,17 @@ public class ReportTableViewXlsx implements ReportTableView {
 
     public static void main(String[] args) throws Exception{
         OutputStream outf = new FileOutputStream(new File("D:/greetgonstuff/greetgo.sandbox/reports/test.xlsx"));
-        ReportTableViewXlsx x = new ReportTableViewXlsx(outf);
+        ReportClientRecordsViewXlsx x = new ReportClientRecordsViewXlsx(outf);
         x.start("badboi", new Date());
         for (int i = 0; i <5 ; i++) {
-            TableModel tableModel=new TableModel();
-            tableModel.fullName="asd";
-            tableModel.charm="asd";
-            tableModel.age=2140000000;
-            tableModel.totalBalance=228;
-            tableModel.minBalance=228;
-            tableModel.maxBalance=228;
-            x.append(tableModel,i);
+            ClientRecord clientRecord =new ClientRecord();
+            clientRecord.fullName="asd";
+            clientRecord.charm="asd";
+            clientRecord.age=2140000000;
+            clientRecord.totalBalance=228;
+            clientRecord.minBalance=228;
+            clientRecord.maxBalance=228;
+            x.append(clientRecord,i);
         }
         x.finish();
     }

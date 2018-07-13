@@ -11,10 +11,10 @@ import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
-import kz.greetgo.sandbox.db.errors.RedPoliceResponse;
-import kz.greetgo.sandbox.db.in_service.model.CheckPoliceResponse;
-import kz.greetgo.sandbox.db.in_service.model.PoliceStatus;
-import kz.greetgo.sandbox.db.test.beans.PoliceCheckServiceForTests;
+//import kz.greetgo.sandbox.db.errors.RedPoliceResponse;
+//import kz.greetgo.sandbox.db.in_service.model.CheckPoliceResponse;
+//import kz.greetgo.sandbox.db.in_service.model.PoliceStatus;
+//import kz.greetgo.sandbox.db.test.beans.PoliceCheckServiceForTests;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -37,12 +37,12 @@ public class AuthRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<AuthTestDao> authTestDao;
 
-  public BeanGetter<PoliceCheckServiceForTests> policeCheckService;
-
-  @BeforeMethod
-  public void cleanPoliceCheckService() throws Exception {
-    policeCheckService.get().clean();
-  }
+//  public BeanGetter<PoliceCheckServiceForTests> policeCheckService;
+//
+//  @BeforeMethod
+//  public void cleanPoliceCheckService() throws Exception {
+//    policeCheckService.get().clean();
+//  }
 
   @DataProvider
   public Object[][] saveParam_DP() {
@@ -397,7 +397,7 @@ public class AuthRegisterImplTest extends ParentTestNg {
     authTestDao.get().updatePersonField(id, "name", name);
     authTestDao.get().updatePersonField(id, "patronymic", patronymic);
 
-    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
+//    policeCheckService.get().checkNaturalPerson_out.add(new CheckPoliceResponse(PoliceStatus.GREEN));
 
     //
     //

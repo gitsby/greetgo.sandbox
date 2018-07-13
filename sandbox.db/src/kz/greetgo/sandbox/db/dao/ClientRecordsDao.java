@@ -7,7 +7,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import java.util.ArrayList;
 
 
-public interface TableDao {
+public interface ClientRecordsDao {
 
     @Delete("delete from client")
     void deleteClients();
@@ -25,25 +25,6 @@ public interface TableDao {
     void deletePhones();
 
 
-//    @Delete("delete from client" +
-//            "where id=#{id}")
-//    void deleteClient(@Param("id") int id);
-//
-//    @Delete("delete from client_phone" +
-//            "where client=#{id}")
-//    void deletePhone(@Param("id") int id);
-//
-//    @Delete("delete from client_addr" +
-//            "where client=#{id}")
-//    void deleteAddress(@Param("id") int id);
-//
-//    @Delete("delete from client_account" +
-//            "where client=#{id}")
-//    void deleteAccount(@Param("id") int id);
-
-
-
-
     @Update("alter sequence charm_id_seq restart with 1")
     void charmSerialToStart();
 
@@ -53,7 +34,7 @@ public interface TableDao {
     @Update("alter sequence client_account_id_seq restart with 1")
     void clientAccountSerialToStart();
 
-    @Select("select client.id, client.surname, client.charm, client.name, client.patronymic,client.birthDate,client.gender, client.validity from client where id = #{userID}")
+    @Select("select client.id, client.surname, client.charm, client.name, client.patronymic,client.birthDate,client.gender, client.validity from client where id = #{clientId}")
     @Results({
             @Result(property = "id",column = "client.id"),
             @Result(property = "surname",column = "client.surname"),
@@ -64,16 +45,14 @@ public interface TableDao {
             @Result(property = "gender",column = "client.gender"),
             @Result(property = "validity", column = "client.validity")
     })
-    DbClient getExactClient(@Param("userID") int userID);
+    DbClient getExactClient(@Param("clientId") int clientId);
 
-//    @Select("select function(#{},#{},#{},#{},#{},#{})")
-//    String getTableWithFilters(@Param("") short smth);
 
     @Select("select last_value from client_id_seq")
-    Integer getLastClientID();
+    Integer getLastClientId();
 
     @Select("select count(id) from filtered_names(#{filterType},(#{filterText})")
-    Integer getTableSize(@Param("filterType") String filterType,
+    Integer getClientRecordsSize(@Param("filterType") String filterType,
                             @Param("filterText") String filterText);
 
     @Select("select charm.id from charm where charm.name=#{charm}")
@@ -83,11 +62,11 @@ public interface TableDao {
     @Select("select case when count(client.id) >= 1 then" +
             "cast( 1 as BIT) else cast( 0 as BIT)" +
             "end as checkForExistence from client" +
-            "where client.id = #{userID} and client.validity=1")
-    Boolean checkForExistence(@Param("userID") int userID);
+            "where client.id = #{clientId} and client.validity=1")
+    Boolean checkForExistence(@Param("clientId") int clientId);
 
-    @Select("select count(1) from client where id=#{userID} and validity=true")
-    Integer countClientsWithUserID(@Param("userID") int userID);
+    @Select("select count(1) from client where id=#{clientId} and validity=true")
+    Integer countClientsWithClientId(@Param("clientId") int clientId);
 
     @Select("select charm.id, charm.name, charm.description, charm.energy " +
             "from charm where charm.id=#{charmID}")
@@ -99,7 +78,7 @@ public interface TableDao {
             })
     DbCharm getCharm(@Param("charmID") int charmID);
 
-    @Select("select client_phone.client, client_phone.number, client_phone.type, client_phone.validity from client_phone where client_phone.client=#{userID} and client_phone.validity=true")
+    @Select("select client_phone.client, client_phone.number, client_phone.type, client_phone.validity from client_phone where client_phone.client=#{clientId} and client_phone.validity=true")
     @Results({
             @Result(property = "client",column = "client_phone.client"),
             @Result(property = "number", column = "client_phone.number"),
@@ -107,10 +86,10 @@ public interface TableDao {
             @Result(property = "validity", column = "client_phone.validity")
 
     })
-    DbClientPhone[] getPhones(@Param("userID") int userID);
+    DbClientPhone[] getPhones(@Param("clientId") int clientId);
 
     @Select("select client_addr.client, client_addr.type,client_addr.street, client_addr.house, client_addr.flat  from" +
-            " client_addr where client=#{userID} and type=#{type}")
+            " client_addr where client=#{clientId} and type=#{type}")
     @Results({
             @Result(property = "client", column = "client"),
             @Result(property = "type",column = "type"),
@@ -118,7 +97,7 @@ public interface TableDao {
             @Result(property = "house", column = "house"),
             @Result(property = "flat", column = "flat"),
     })
-    DbClientAddress getClientAddress(@Param("userID") int userID,@Param("type") String type);
+    DbClientAddress getClientAddress(@Param("clientId") int clientId,@Param("type") String type);
 
     @Insert("insert into client(name,surname,patronymic,gender,charm,validity,birthDate) values(" +
             "#{name},#{surname},#{patronymic},#{gender},#{charm},"+
@@ -177,18 +156,18 @@ public interface TableDao {
 
     @Update("update client set " +
             "validity=false " +
-            "where id=#{userID}")
-    void deleteClient(@Param("userID") int userID);
+            "where id=#{clientId}")
+    void deleteClient(@Param("clientId") int clientId);
 
     @Update("update client_phone set " +
             "validity=false " +
-            "where client=#{userID}")
-    void deletePhone(@Param("userID") int userID);
+            "where client=#{clientId}")
+    void deletePhone(@Param("clientId") int clientId);
 
     @Update("update client_account set " +
             "validity=false " +
-            "where client=#{userID}")
-    void deleteAccount(@Param("userID") int userID);
+            "where client=#{clientId}")
+    void deleteAccount(@Param("clientId") int clientId);
 
 
     @Update("update client_account set " +
@@ -198,8 +177,8 @@ public interface TableDao {
 
 
     @Select("select id from client_account "+
-            "where client=#{userID}")
-    Integer[] getAccount(@Param("userID") int userID);
+            "where client=#{clientId}")
+    Integer[] getAccount(@Param("clientId") int clientId);
 
     @Select("select processed.id, " +
             "processed.fullName, " +
@@ -214,7 +193,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getFullNameDesc(
+    ArrayList<ClientRecord> getFullNameDesc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -233,7 +212,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getFullNameAsc(
+    ArrayList<ClientRecord> getFullNameAsc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -253,7 +232,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getMaxBalanceDesc(
+    ArrayList<ClientRecord> getMaxBalanceDesc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -273,7 +252,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getMaxBalanceAsc(
+    ArrayList<ClientRecord> getMaxBalanceAsc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -293,7 +272,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getMinBalanceAsc(
+    ArrayList<ClientRecord> getMinBalanceAsc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -313,7 +292,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getMinBalanceDesc(
+    ArrayList<ClientRecord> getMinBalanceDesc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -333,7 +312,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getTotalBalanceAsc(
+    ArrayList<ClientRecord> getTotalBalanceAsc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -353,7 +332,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getTotalBalanceDesc(
+    ArrayList<ClientRecord> getTotalBalanceDesc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -373,7 +352,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getAgeAsc(
+    ArrayList<ClientRecord> getAgeAsc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,
@@ -392,7 +371,7 @@ public interface TableDao {
             "#{filter_type}, " +
             "#{filter_text})" +
             "as processed")
-    ArrayList<TableModel> getAgeDesc(
+    ArrayList<ClientRecord> getAgeDesc(
             @Param("skip_number") Integer skipNumber,
             @Param("limit_number") Integer limitNumber,
             @Param("filter_type") String filterType,

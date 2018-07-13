@@ -12,18 +12,16 @@ import java.io.*;
 //import java.nio.charset.StandardCharsets;
 //import java.nio.file.Files;
 //import java.nio.file.Paths;
-import java.util.ArrayList;
 //import java.util.HashMap;
 import java.util.Comparator;
-import java.util.List;
 
 @Bean
 public class StandJsonDb implements HasAfterInject{
 
-    public ArrayUsers users = new ArrayUsers();
+    public ArrayСlients clients = new ArrayСlients();
     public int lastId = 0;
     public Accounts accounts = new Accounts();
-    public TableToSend table = new TableToSend();
+    public ClientRecordsToSend clientRecordsToSend = new ClientRecordsToSend();
 
 
     public  Gson gson  = new Gson();
@@ -36,22 +34,22 @@ public class StandJsonDb implements HasAfterInject{
     // TODO: + change the source package. Directory "beans" is for beans only.
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
-    public String usersPath="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
+    public String clientsPath="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
     public String accountsPath = "D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandAccountsDb.json";
 
     @Override
     public void afterInject() throws Exception {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(usersPath));
-        users = gson.fromJson(bufferedReader, ArrayUsers.class);
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(clientsPath));
+        clients = gson.fromJson(bufferedReader, ArrayСlients.class);
         bufferedReader = new BufferedReader(new FileReader(accountsPath));
         accounts = gson.fromJson(bufferedReader,Accounts.class);
         Filter filter = new Filter();
         filter.filterType=FilterType.NAME;
         filter.filterText="";
-        tableCreate(filter);
+        clientRecordsCreate(filter);
     }
 
-    public void tableCreate(Filter filter){
+    public void clientRecordsCreate(Filter filter){
 
         String filterText = "[\\s\\S]*";
         FilterType filterType = FilterType.NAME;
@@ -68,11 +66,16 @@ public class StandJsonDb implements HasAfterInject{
             filterType = filter.filterType;
         }
 
-        table.table.clear();
+        clientRecordsToSend.table.clear();
 
-        for(int i=0; i<users.data.size(); i++){
-            if(users.data.get(i).id>lastId){
-                lastId=users.data.get(i).id;
+        for(int i=0; i<clients.data.size(); i++){
+            System.out.println(clients.data.get(i).id);
+            if (clients.data.get(i).name.equals("testboi")){
+                System.out.println(clients.data.get(i));
+            }
+            if(clients.data.get(i).id>lastId){
+                lastId=clients.data.get(i).id;
+
             }
             if(wasEmpty){
                 add(i);
@@ -80,13 +83,13 @@ public class StandJsonDb implements HasAfterInject{
              switch (filterType){
 
                 case NAME:
-                    if(filterText.matches(users.data.get(i).name)){ add(i); }
+                    if(filterText.matches(clients.data.get(i).name)){ add(i); }
                     break;
                 case SURNAME:
-                    if(filterText.matches(users.data.get(i).surname)){ add(i); }
+                    if(filterText.matches(clients.data.get(i).surname)){ add(i); }
                     break;
                 case PATRONYMIC:
-                    if(filterText.matches(users.data.get(i).patronymic)){ add(i); }
+                    if(filterText.matches(clients.data.get(i).patronymic)){ add(i); }
                     break;
                 default:
                     add(i);
@@ -96,15 +99,15 @@ public class StandJsonDb implements HasAfterInject{
     }
 
     private void add(int i){
-        TableModel tableModel = new TableModel();
-        tableModel.fullName= users.data.get(i).surname + " " + users.data.get(i).name + " " + users.data.get(i).patronymic;
-        tableModel.id = users.data.get(i).id;
-        tableModel.charm = users.data.get(i).charm;
-        tableModel.age = users.data.get(i).birthDate;
-        tableModel.minBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-        tableModel.maxBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
-        tableModel.totalBalance=accounts.data.stream().filter((account) -> tableModel.id==account.userID).mapToDouble(Account::getMoneyNumber).reduce((s1,s2)->(s1+s2)).orElse(0);
-        table.table.add(tableModel);
+        ClientRecord clientRecord = new ClientRecord();
+        clientRecord.fullName= clients.data.get(i).surname + " " + clients.data.get(i).name + " " + clients.data.get(i).patronymic;
+        clientRecord.id = clients.data.get(i).id;
+        clientRecord.charm = clients.data.get(i).charm;
+        clientRecord.age = clients.data.get(i).birthDate;
+        clientRecord.minBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+        clientRecord.maxBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
+        clientRecord.totalBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).mapToDouble(Account::getMoneyNumber).reduce((s1, s2)->(s1+s2)).orElse(0);
+        clientRecordsToSend.table.add(clientRecord);
     }
 
     public void updateDB() {
@@ -112,8 +115,8 @@ public class StandJsonDb implements HasAfterInject{
         FileWriter fw = null;
 
         try {
-            String jsonText= gson.toJson(users);
-            fw = new FileWriter(usersPath);
+            String jsonText= gson.toJson(clients);
+            fw = new FileWriter(clientsPath);
             bw = new BufferedWriter(fw);
             bw.write(jsonText);
         }catch (IOException e){

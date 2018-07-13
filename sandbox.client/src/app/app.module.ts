@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { AppComponent } from './app.component';
 import { LoginComponent } from "./input/login.component";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { UsersTableComponent } from './main-form/users-table/users-table.component';
+import { ClientRecordsComponent } from './main-form/client-records/client-records.component';
 import { MainFormComponent } from "./main-form/main-form.component";
 import {
   MatTableModule, MatInputModule,
@@ -15,7 +15,7 @@ import {
 } from '@angular/material';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { HttpService } from "../services/HttpService";
-import { UserDialogComponent } from './main-form/user-dialog/user-dialog.component';
+import { ClientDialogComponent } from './main-form/client-dialog/client-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {MatSelectModule} from '@angular/material/select';
 // import { ControlsComponent } from './main-form/controls/controls.component';
@@ -23,10 +23,10 @@ import {MatSelectModule} from '@angular/material/select';
 @NgModule({
   declarations: [
     AppComponent,
-    UsersTableComponent,
+    ClientRecordsComponent,
     LoginComponent,
     MainFormComponent,
-    UserDialogComponent
+    ClientDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -53,7 +53,7 @@ import {MatSelectModule} from '@angular/material/select';
   ],
   providers: [HttpService],
   bootstrap: [AppComponent],
-  entryComponents: [UserDialogComponent]
+  entryComponents: [ClientDialogComponent]
 })
 export class AppModule { }
 

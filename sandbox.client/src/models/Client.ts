@@ -6,8 +6,8 @@ import {GenderType} from "./GenderType";
 
 
 
-export class User {
-    public id: string;
+export class Client {
+    public id: number;
     public surname: string ;
     public name: string;
     public patronymic: string | null;
@@ -18,7 +18,7 @@ export class User {
     public registeredAddress: Address;
     public genderType: GenderType;
 
-    public assign(o: any): User{
+    public assign(o: any): Client{
         this.id = o.id;
         this.surname = o.surname;
         this.name = o.name;
@@ -32,8 +32,8 @@ export class User {
         return this;
     }
 
-    public static copy(a: any): User{
-        let ret = new User();
+    public static copy(a: any): Client{
+        let ret = new Client();
         ret.assign(a);
         return ret;
     }

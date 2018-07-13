@@ -1,7 +1,7 @@
 import {CharmType} from "./CharmType";
 
-export class TableModel{
-    public id:string;
+export class ClientRecord{
+    public id:number;
     public fullName:string;
     public charm:CharmType|null;
     public age:number;
@@ -9,7 +9,7 @@ export class TableModel{
     public maxBalance:number;
     public minBalance:number;
 
-    public assign(o: any): TableModel{
+    public assign(o: any): ClientRecord{
       this.id = o.id;
       this.fullName = o.fullName;
       this.charm = o.charm;
@@ -20,8 +20,8 @@ export class TableModel{
       return this;
     }
 
-    public static copy(a: any): TableModel{
-      let ret = new TableModel();
+    public static copy(a: any): ClientRecord{
+      let ret = new ClientRecord();
       ret.assign(a);
       return ret;
     }

@@ -1,30 +1,25 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
-import com.itextpdf.text.pdf.codec.Base64;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
-import kz.greetgo.sandbox.controller.register.TableRegister;
+import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
-import org.apache.jasper.tagplugins.jstl.core.Out;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Bean
-public class TableRegisterStand implements TableRegister {
+public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     public BeanGetter<StandJsonDb> db;
     public BeanGetter<AuthRegister> authRegister;
@@ -42,25 +37,25 @@ public class TableRegisterStand implements TableRegister {
 
 
     @Override
-    public TableToSend getTableData(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+    public ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText){
         System.out.println(skipNumber+" \n"+
                            limit+" \n"+
                             sortDirection+" \n"+
                             filterType+" \n"+
                             filterText);
-        if(skipNumber==null){
-            skipNumber=0;
-        }
+//        if(skipNumber==null){
+//            skipNumber=0;
+//        }
         if(filterText==null){
             filterText="";
         }
-        TableToSend queriedTable  = new TableToSend();
+        ClientRecordsToSend queriedClientRecords  = new ClientRecordsToSend();
         Filter filter = new Filter();
         filter.filterText=filterText;
         filter.filterType=FilterType.valueOf(filterType.toUpperCase());
-        db.get().tableCreate(filter);
+        db.get().clientRecordsCreate(filter);
 
-        queriedTable.table=db.get().table.table.stream().sorted(((o1, o2) -> {
+        queriedClientRecords.table=db.get().clientRecordsToSend.table.stream().sorted(((o1, o2) -> {
             SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
             switch (enumSortType) {
                 case FULLNAME:
@@ -79,13 +74,13 @@ public class TableRegisterStand implements TableRegister {
                     return "DESC".equals(sortDirection.toUpperCase())?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
             }
         })).skip(skipNumber).limit(limit).collect(Collectors.toCollection(ArrayList::new));
-        queriedTable.size=getTableSize();
-        return queriedTable;
+        queriedClientRecords.size=getTableSize();
+        return queriedClientRecords;
     }
 
     public int getTableSize(){
         try {
-            return db.get().table.table.size();
+            return db.get().clientRecordsToSend.table.size();
         } catch (NullPointerException e) {
             e.printStackTrace();
             return 0;
@@ -103,49 +98,50 @@ public class TableRegisterStand implements TableRegister {
 
 
     @Override
-    public User getExactUser(Integer userID){
+    public Client getExactClient(Integer clientId){
         try {
-            return db.get().users.data.stream().filter((user) -> Objects.equals(userID, user.id)).findFirst().get();
+            return db.get().clients.data.stream().filter((client) -> Objects.equals(clientId, client.id)).findFirst().get();
         } catch (Exception e){
             e.printStackTrace();
-            return new User();
+            return new Client();
         }
     }
 
 
     @Override
-    public Integer createUser(User user){
-        if(!checkForValidity(user)){
+    public Integer createClient(Client client){
+        if(!checkForValidity(client)){
             return -1;
         }
-        user.id = db.get().lastId+1;
-        db.get().users.data.add(user);
+        client.id = db.get().lastId+1;
+        db.get().clients.data.add(client);
         Account account = new Account();
         account.registeredAt = System.currentTimeMillis();
         account.id = db.get().accounts.data.size();
-        account.userID = user.id;
+        account.clientId = client.id;
         account.moneyNumber=0;
         db.get().accounts.data.add(account);
         db.get().updateDB();
+        db.get().lastId=db.get().lastId+1;
         return getLastId();
     }
 
 
 
-    private Boolean checkForValidity(User user){
-        if (    user.name==null || user.name.isEmpty() ||
-                user.surname==null || user.surname.isEmpty() ||
-                user.charm==null || user.genderType==null ||
-                user.phones==null || user.registeredAddress==null ||
-                user.birthDate==null ||
-                user.registeredAddress.street == null || user.registeredAddress.street.isEmpty() ||
-                user.registeredAddress.flat == null || user.registeredAddress.flat.isEmpty() ||
-                user.registeredAddress.house == null || user.registeredAddress.house.isEmpty() ){
+    private Boolean checkForValidity(Client client){
+        if (    client.name==null || client.name.isEmpty() ||
+                client.surname==null || client.surname.isEmpty() ||
+                client.charm==null || client.genderType==null ||
+                client.phones==null || client.registeredAddress==null ||
+                client.birthDate==null ||
+                client.registeredAddress.street == null || client.registeredAddress.street.isEmpty() ||
+                client.registeredAddress.flat == null || client.registeredAddress.flat.isEmpty() ||
+                client.registeredAddress.house == null || client.registeredAddress.house.isEmpty() ){
             return false;
         }
         boolean va=true;
         boolean mob=false;
-        for(Phone phone: user.phones){
+        for(Phone phone: client.phones){
             if(phone.number.matches("^(\\d{11})?$")){
 
                 va=va&&true;
@@ -160,56 +156,56 @@ public class TableRegisterStand implements TableRegister {
     }
 
     @Override
-    public String changeUser(User user){
-        if (!checkForValidity(user)){
-            return "User is not valid!";
+    public String changeClient(Client client){
+        if (!checkForValidity(client)){
+            return "Client is not valid!";
         }
-        db.get().users.data.removeIf(user1 -> user.id.equals(user1.id));
-        db.get().users.data.add(user);
+        db.get().clients.data.removeIf(client1 -> client.id.equals(client1.id));
+        db.get().clients.data.add(client);
         db.get().updateDB();
-        return "User was successfully updated";
+        return "Client was successfully updated";
     }
 
     @Override
-    public String deleteUser(Integer userID){
-        db.get().users.data.removeIf(user -> userID.equals(user.id));
+    public String deleteClient(Integer clientId){
+        db.get().clients.data.removeIf(client -> clientId.equals(client.id));
         db.get().updateDB();
-        return "User was successfully deleted";
+        return "Client was successfully deleted";
     }
 
     @Override
     public String makeReport(String sortDirection, String sortType, String filterType,
-                             String filterText,String user, String reportType) throws Exception{
-        ReportTableView reportTableView;
+                             String filterText,String client, String reportType) throws Exception{
+        ReportClientRecordsView reportClientRecordsView;
         OutputStream out;
         Date date = new Date();
-        user = authRegister.get().getUserInfo(user).accountName;
-        String filename =user+"_"+date.getTime();
+        client = authRegister.get().getUserInfo(client).accountName;
+        String filename =client+"_"+date.getTime();
         if(reportType.equals("PDF")){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
-            reportTableView = new ReportTableViewPdf(out);
+            reportClientRecordsView = new ReportClientRecordsViewPdf(out);
         }else if(reportType.equals("XLSX")){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
-            reportTableView = new ReportTableViewXlsx(out);
+            reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
         }else {
             return "-1";
         }
 
-        TableToSend tableToSend;
+        ClientRecordsToSend clientRecordsToSend;
 
-        reportTableView.start(user,date);
-        getTableData(0,0, sortDirection,sortType, filterType, filterText);
-        tableToSend=getTableData(0,getTableSize(), sortDirection,sortType, filterType, filterText);
+        reportClientRecordsView.start(client,date);
+        getClientRecords(0,0, sortDirection,sortType, filterType, filterText);
+        clientRecordsToSend =getClientRecords(0,getTableSize(), sortDirection,sortType, filterType, filterText);
         int j=1;
-        for (TableModel tableModel:tableToSend.table) {
-            System.out.println(j+" "+tableModel.toString());
-            reportTableView.append(tableModel,j);
+        for (ClientRecord clientRecord : clientRecordsToSend.table) {
+            System.out.println(j+" "+ clientRecord.toString());
+            reportClientRecordsView.append(clientRecord,j);
             j++;
         }
 
-        reportTableView.finish();
+        reportClientRecordsView.finish();
         return filename;
     }
 
@@ -235,11 +231,11 @@ public class TableRegisterStand implements TableRegister {
 
     @Override
     public String[] getCharms(){
-        return db.get().users.data.stream().map(user -> user.charm).toArray(String[]::new);
+        return db.get().clients.data.stream().map(client -> client.charm).toArray(String[]::new);
     }
 
     @Override
-    public void reportTest(TableModel tableModel, int index, ReportTableView view){
+    public void reportTest(ClientRecord clientRecord, int index, ReportClientRecordsView view){
         return;
     }
 }

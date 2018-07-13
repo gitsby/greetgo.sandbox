@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.dbmodels.*;
-import kz.greetgo.sandbox.controller.register.TableRegister;
-import kz.greetgo.sandbox.db.dao.TableDao;
-import kz.greetgo.sandbox.db.test.dao.TableTestDao;
+import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
+import kz.greetgo.sandbox.db.dao.ClientRecordsDao;
+import kz.greetgo.sandbox.db.test.dao.ClientRecordsTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 
@@ -20,93 +20,93 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.testng.Assert.assertEquals;
 
 
-public class TableRegisterImplTest extends ParentTestNg{
-    public BeanGetter<TableRegister> tableRegister;
-    public BeanGetter<TableTestDao> tableTestDao;
-    public BeanGetter<TableDao> tableDao;
+public class ClientRecordsRegisterImplTest extends ParentTestNg{
+    public BeanGetter<ClientRecordsRegister> tableRegister;
+    public BeanGetter<ClientRecordsTestDao> tableTestDao;
+    public BeanGetter<ClientRecordsDao> tableDao;
 
     TestDataGenerator testDataGenerator = new TestDataGenerator();
     DbModelConverter dbModelConverter = new DbModelConverter();
 
     @Test
-    public void insertUserX10Test(){
+    public void insertClientX10Test(){
         deleteAllData();
-        User[] sentUsers = new User[10];
-        User[] gotUsers = new User[10];
+        Client[] sentClients = new Client[10];
+        Client[] gotClients = new Client[10];
 
         for(int i=0; i<10; i++) {
-            sentUsers[i]=testDataGenerator.generateUser();
-            int id = tableRegister.get().createUser(sentUsers[i]);
-            sentUsers[i].id=id;
-            gotUsers[i]=tableRegister.get().getExactUser(id);
+            sentClients[i]=testDataGenerator.generateClient();
+            int id = tableRegister.get().createClient(sentClients[i]);
+            sentClients[i].id=id;
+            gotClients[i]=tableRegister.get().getExactClient(id);
         }
 
         for(int i=0; i<10; i++){
-            assertThat(sentUsers[i].equals(gotUsers[i]));
+            assertThat(sentClients[i].equals(gotClients[i]));
         }
     }
 
     @Test
-    public void insertUsersWithNullParsTest(){
+    public void insertClientsWithNullParsTest(){
         deleteAllData();
         String[] move  = {"name","surname","gender","charm","registeredAddress","birthDate"};
         for(String option: move) {
-            User user = testDataGenerator.generateUser();
+            Client client = testDataGenerator.generateClient();
             if(option.equals("name")){
-                user.name=null;
+                client.name=null;
             } else if(option.equals("surname")){
-                user.surname=null;
+                client.surname=null;
             } else if(option.equals("gender")){
-                user.genderType = null;
+                client.genderType = null;
             } else if(option.equals("charm")){
-                user.charm = null;
+                client.charm = null;
             } else if(option.equals("registeredAddress")){
-                user.registeredAddress = null;
+                client.registeredAddress = null;
             } else if(option.equals("birthDate")){
-                user.birthDate = null;
+                client.birthDate = null;
             }
-            Integer id = tableRegister.get().createUser(user);
+            Integer id = tableRegister.get().createClient(client);
             assertThat(id==-1);
         }
         for(String option: move) {
-            User user=testDataGenerator.generateUser();
+            Client client =testDataGenerator.generateClient();
             if(option.equals("name")){
-                user.name="";
+                client.name="";
             } else if(option.equals("surname")){
-                user.surname="";
+                client.surname="";
             } else if(option.equals("gender")){
-                user.genderType = null;
+                client.genderType = null;
             } else if(option.equals("charm")){
-                user.charm = "";
+                client.charm = "";
             } else if(option.equals("registeredAddress")){
-                user.registeredAddress.house = "";
-                user.registeredAddress.flat = "";
-                user.registeredAddress.street = "";
+                client.registeredAddress.house = "";
+                client.registeredAddress.flat = "";
+                client.registeredAddress.street = "";
             } else if(option.equals("birthDate")){
-                user.birthDate = null;
+                client.birthDate = null;
             }
-            Integer id = tableRegister.get().createUser(user);
+            Integer id = tableRegister.get().createClient(client);
             assertThat(id==-1);
         }
 
         String[] moveByType = {"NOMOBILE","LESSTHAN11","LETTERS"};
 
         for(String option:moveByType){
-            User user=testDataGenerator.generateUser();
+            Client client =testDataGenerator.generateClient();
             if(option.equals("NOMOBILE")){
-                for (int j = 0; j < user.phones.length ; j++) {
-                    if(user.phones[j].phoneType==PhoneType.MOBILE){
-                        user.phones[j].phoneType=PhoneType.WORK;
+                for (int j = 0; j < client.phones.length ; j++) {
+                    if(client.phones[j].phoneType==PhoneType.MOBILE){
+                        client.phones[j].phoneType=PhoneType.WORK;
                     }
                 }
             }
             if (option.equals("LESSTHAN11")){
-                user.phones[0].number="123456";
+                client.phones[0].number="123456";
             }
             if (option.equals("LETTERS")){
-                user.phones[0].number="asdsada";
+                client.phones[0].number="asdsada";
             }
-            Integer id = tableRegister.get().createUser(user);
+            Integer id = tableRegister.get().createClient(client);
             assertThat(id).isEqualTo(-1);
 
         }
@@ -119,67 +119,67 @@ public class TableRegisterImplTest extends ParentTestNg{
     public void getExactClientTest(){
         deleteAllData();
 
-        User user = testDataGenerator.generateUser();
+        Client client = testDataGenerator.generateClient();
 
-        DbCharm dbCharm = testDataGenerator.generateRandomCharm(user.charm);
+        DbCharm dbCharm = testDataGenerator.generateRandomCharm(client.charm);
         tableTestDao.get().insertCharm(dbCharm);
         dbCharm.id = tableTestDao.get().getCharmId(dbCharm.name);
 
-        DbClient dbClient = dbModelConverter.convertToDbClient(user,dbCharm.id);
+        DbClient dbClient = dbModelConverter.convertToDbClient(client,dbCharm.id);
         tableTestDao.get().insertClient(dbClient);
-        Integer userID=tableTestDao.get().getLastClientID();
-        user.id=userID;
-        DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(user);
-        DbClientAddress dbClientAddressFactual = dbModelConverter.convertToDbClientAddressFactual(user);
-        DbClientAddress dbClientAddressRegistered = dbModelConverter.convertToDbClientAddressRegistered(user);
+        Integer clientId=tableTestDao.get().getLastClientId();
+        client.id=clientId;
+        DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(client);
+        DbClientAddress dbClientAddressFactual = dbModelConverter.convertToDbClientAddressFactual(client);
+        DbClientAddress dbClientAddressRegistered = dbModelConverter.convertToDbClientAddressRegistered(client);
         tableTestDao.get().insertAddress(dbClientAddressFactual);
         tableTestDao.get().insertAddress(dbClientAddressRegistered);
         for (DbClientPhone dbClientPhone: dbClientPhones) {
             tableTestDao.get().insertPhone(dbClientPhone);
         }
-        User gotUser =tableRegister.get().getExactUser(userID);
-        assertThat(user.equals(gotUser));
+        Client gotClient =tableRegister.get().getExactClient(clientId);
+        assertThat(client.equals(gotClient));
     }
 
     @Test
     void getNullClientTest() {
         deleteAllData();
-        User gotUser =tableRegister.get().getExactUser(0);
-        User user = new User();
-        assertThat(user.equals(gotUser));
+        Client gotClient =tableRegister.get().getExactClient(0);
+        Client client = new Client();
+        assertThat(client.equals(gotClient));
     }
 
 
     @Test
-    void insertUserTest() {
+    void insertClientTest() {
         deleteAllData();
-        User user = testDataGenerator.generateUser();
-        user.id = tableRegister.get().createUser(user);
-        User gotUser = tableRegister.get().getExactUser(user.id);
-        assertThat(user.equals(gotUser));
+        Client client = testDataGenerator.generateClient();
+        client.id = tableRegister.get().createClient(client);
+        Client gotClient = tableRegister.get().getExactClient(client.id);
+        assertThat(client.equals(gotClient));
     }
 
     @Test
-    public void updateUserTest() throws Exception {
+    public void updateClientTest() throws Exception {
         deleteAllData();
-        User user = testDataGenerator.generateUser();
-        int userID = tableRegister.get().createUser(user);
-        user = testDataGenerator.generateUser();
-        user.id = userID;
-        tableRegister.get().changeUser(user);
+        Client client = testDataGenerator.generateClient();
+        int clientId = tableRegister.get().createClient(client);
+        client = testDataGenerator.generateClient();
+        client.id = clientId;
+        tableRegister.get().changeClient(client);
 
-        User gotUser = tableRegister.get().getExactUser(userID);
-        assertThat(gotUser.equals(user));
+        Client gotClient = tableRegister.get().getExactClient(clientId);
+        assertThat(gotClient.equals(client));
     }
 
     @Test
-    public void deleteUserTest() {
+    public void deleteClientTest() {
         deleteAllData();
-        User user = testDataGenerator.generateUser();
-        int userID = tableRegister.get().createUser(user);
-        tableRegister.get().deleteUser(userID);
-        user = tableRegister.get().getExactUser(userID);
-        assertThat(user.id==-1);
+        Client client = testDataGenerator.generateClient();
+        int clientId = tableRegister.get().createClient(client);
+        tableRegister.get().deleteClient(clientId);
+        client = tableRegister.get().getExactClient(clientId);
+        assertThat(client.id==-1);
     }
 
 
@@ -196,23 +196,23 @@ public class TableRegisterImplTest extends ParentTestNg{
 
 
     @Test
-    public void deleteNullUserTest() throws Exception {
+    public void deleteNullClientTest() throws Exception {
         deleteAllData();
-        String ans = tableRegister.get().deleteUser(1);
+        String ans = tableRegister.get().deleteClient(1);
         assertThat(("-1").equals(ans));
     }
 
 
 
     @Test
-    public void updateNullUser() throws Exception {
+    public void updateNullClient() throws Exception {
         deleteAllData();
-        int userID = 1;
-        User user = testDataGenerator.generateUser();
-        user.id=userID;
-        tableRegister.get().changeUser(user);
-        User updatedUser = tableRegister.get().getExactUser(userID);
-        assertThat(updatedUser.id==-1);
+        int clientId = 1;
+        Client client = testDataGenerator.generateClient();
+        client.id=clientId;
+        tableRegister.get().changeClient(client);
+        Client updatedClient = tableRegister.get().getExactClient(clientId);
+        assertThat(updatedClient.id==-1);
     }
 
     public void enterTheData() {
@@ -220,7 +220,7 @@ public class TableRegisterImplTest extends ParentTestNg{
         String namesJson = "{\"data\":[{\"surname\":\"Solovyov\",\"name\":\"Konstantin (Kostya)\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Trukhin\",\"name\":\"Pavel (Pasha)\",\"patronymic\":\"Victorovich\"},{\"surname\":\"Ryabtsev\",\"name\":\"Zhenka\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Siyasinov\",\"name\":\"Sergey (Seryozha)\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Siyankov\",\"name\":\"Yegor (Jora)\",\"patronymic\":\"Ruslanovich\"},{\"surname\":\"Yakimov\",\"name\":\"Artemiy\",\"patronymic\":\"Yakovich\"},{\"surname\":\"Steblev\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Yaroslavovich\"},{\"surname\":\"Shchegolyayev\",\"name\":\"Vladislav (Slava)\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Nardin\",\"name\":\"Sergei\",\"patronymic\":\"Igorevich\"},{\"surname\":\"Yumatov\",\"name\":\"Dionisiy\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Entsky\",\"name\":\"Maksim\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Susnin\",\"name\":\"Luchok\",\"patronymic\":\"Vladimirovich\"},{\"surname\":\"Yudachyov\",\"name\":\"Yevgeniy (Zhenya)\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Yermolovo\",\"name\":\"Ippolit\",\"patronymic\":\"Kirillovich\"},{\"surname\":\"Vanzin\",\"name\":\"Onufri\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Glukhov\",\"name\":\"Radoslav\",\"patronymic\":\"Alesnarovich\"},{\"surname\":\"Turov\",\"name\":\"Vasiliy (Vasya)\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Preobrazhensky\",\"name\":\"Slava\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Ipatyev\",\"name\":\"Alexei\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Kadnikov\",\"name\":\"Valentin (Valya)\",\"patronymic\":\"Pavlovich\"},{\"surname\":\"Kuzmich\",\"name\":\"Vyacheslav (Slava)\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Gulin\",\"name\":\"Ikovle\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Loginovsky\",\"name\":\"Isaak\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Barkov\",\"name\":\"Mili\",\"patronymic\":\"Andreevich\"},{\"surname\":\"Osin\",\"name\":\"Artem (Tyoma)\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Zuyev\",\"name\":\"Adam\",\"patronymic\":\"Leonidovich\"},{\"surname\":\"Uglitsky\",\"name\":\"Sergei\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Antipov\",\"name\":\"Valerian (Lera)\",\"patronymic\":\"Yermolayevich\"},{\"surname\":\"Petrov\",\"name\":\"Mili\",\"patronymic\":\"Dmitrievich\"},{\"surname\":\"Uralets\",\"name\":\"Miron\",\"patronymic\":\"Vsevolodovich\"},{\"surname\":\"Golovin\",\"name\":\"Artur\",\"patronymic\":\"Alesnarovich\"},{\"surname\":\"Shishov\",\"name\":\"Adam\",\"patronymic\":\"Konstantinovich\"},{\"surname\":\"Chudov\",\"name\":\"Nikolay (Kolya)\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Roshchin\",\"name\":\"Danya\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Chaadayev\",\"name\":\"Samuil\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Ryabkin\",\"name\":\"Timofei\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Osennykh\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Nikitovich\"},{\"surname\":\"Khanipov\",\"name\":\"Luka\",\"patronymic\":\"Yemelyanovich\"},{\"surname\":\"Manyakin\",\"name\":\"Demian\",\"patronymic\":\"Yevgenievich\"},{\"surname\":\"Leskov\",\"name\":\"Kusma (Kusya)\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Uglichinin\",\"name\":\"Kirill (Kirilka)\",\"patronymic\":\"Denisovich\"},{\"surname\":\"Markin\",\"name\":\"Josef\",\"patronymic\":\"Victorovich\"},{\"surname\":\"Valevach\",\"name\":\"Valeriy (Valera)\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Korablyov\",\"name\":\"Erik\",\"patronymic\":\"Denisovich\"},{\"surname\":\"Osolodkin\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Ilyich\"},{\"surname\":\"Koptsev\",\"name\":\"Sergei\",\"patronymic\":\"Vsevolodovich\"},{\"surname\":\"Lytkin\",\"name\":\"Lukyan\",\"patronymic\":\"Germanovich\"},{\"surname\":\"Tselner\",\"name\":\"Danya\",\"patronymic\":\"Tarasovich\"},{\"surname\":\"Lukin\",\"name\":\"Zigfrids\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Mishutin\",\"name\":\"Petr\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Yushakov\",\"name\":\"Pyotr (Petya)\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Uvarov\",\"name\":\"Zakhar (Zakharik)\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Volikov\",\"name\":\"Yakov (Yasha)\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Anrep\",\"name\":\"Jaromir\",\"patronymic\":\"Innokentievich\"},{\"surname\":\"Tredyakovsky\",\"name\":\"Oleg (Olezhka)\",\"patronymic\":\"Zakharovich\"},{\"surname\":\"Tychkin\",\"name\":\"Anton (Antosha)\",\"patronymic\":\"Vyacheslavovich\"},{\"surname\":\"Pavlov\",\"name\":\"Adam\",\"patronymic\":\"Valeryevich\"},{\"surname\":\"Buturovich\",\"name\":\"Larion (Larya)\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Khmelnov\",\"name\":\"Robert\",\"patronymic\":\"Yegorovich\"},{\"surname\":\"Penkin\",\"name\":\"Krasimir\",\"patronymic\":\"Anatolievich\"},{\"surname\":\"Shulgin\",\"name\":\"Filipp (Filya)\",\"patronymic\":\"Savelievich\"},{\"surname\":\"Votyakov\",\"name\":\"Isaak\",\"patronymic\":\"Makarovich\"},{\"surname\":\"Sabitov\",\"name\":\"Aleksandr (Sasha)\",\"patronymic\":\"Vitalievich\"},{\"surname\":\"Dresvyanin\",\"name\":\"Foma\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Vorontsov\",\"name\":\"Ippolit\",\"patronymic\":\"Mikhailovich\"},{\"surname\":\"Subotin\",\"name\":\"Ruslan (Rusya)\",\"patronymic\":\"Valentinovich\"},{\"surname\":\"Kasharin\",\"name\":\"Isaak\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Revyakin\",\"name\":\"Panteley\",\"patronymic\":\"Romanovich\"},{\"surname\":\"Kosaryov\",\"name\":\"Boris (Borya)\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Kravchuk\",\"name\":\"Radoslav\",\"patronymic\":\"Timurovich\"},{\"surname\":\"Muravyov\",\"name\":\"Ilya (Ilik)\",\"patronymic\":\"Petrovich\"},{\"surname\":\"Izyumov\",\"name\":\"Boleslaw\",\"patronymic\":\"Vladislavovich\"},{\"surname\":\"Dudko\",\"name\":\"Fridrik\",\"patronymic\":\"Vadimovich\"},{\"surname\":\"Yasenev\",\"name\":\"Jaromir\",\"patronymic\":\"Timofeyevich\"},{\"surname\":\"Lyovkin\",\"name\":\"Karl\",\"patronymic\":\"Romanovich\"},{\"surname\":\"Gorelov\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Savelievich\"},{\"surname\":\"Fomin\",\"name\":\"Robert\",\"patronymic\":\"Artemovich\"},{\"surname\":\"Romanov\",\"name\":\"Tsezar\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Ulyanin\",\"name\":\"Demian\",\"patronymic\":\"Filippovich\"},{\"surname\":\"Yazov\",\"name\":\"Lavro\",\"patronymic\":\"Rodionovich\"},{\"surname\":\"Ruchkin\",\"name\":\"Vissarion\",\"patronymic\":\"Dmitrievich\"},{\"surname\":\"Vyrypayev\",\"name\":\"Androniki\",\"patronymic\":\"Valeryevich\"},{\"surname\":\"Shirinov\",\"name\":\"Radoslav\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Guskov\",\"name\":\"Gotfrid\",\"patronymic\":\"Germanovich\"},{\"surname\":\"Legkodimov\",\"name\":\"Roman (Roma)\",\"patronymic\":\"Yanovich\"},{\"surname\":\"Mukhomorov\",\"name\":\"Anatoliy (Tolya)\",\"patronymic\":\"Sergeyevich\"},{\"surname\":\"Lapotnikov\",\"name\":\"Kvetoslav\",\"patronymic\":\"Vladimirovich\"},{\"surname\":\"Khantsev\",\"name\":\"Nikolay (Kolya)\",\"patronymic\":\"Mikhailovich\"},{\"surname\":\"Ilyushin\",\"name\":\"Lukyan\",\"patronymic\":\"Gennadiyevich\"},{\"surname\":\"Zolotov\",\"name\":\"Christov\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Ardankin\",\"name\":\"Alexei\",\"patronymic\":\"Andreevich\"},{\"surname\":\"Ivanov\",\"name\":\"Miron\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Marinkin\",\"name\":\"Gavrila\",\"patronymic\":\"Anatolievich\"},{\"surname\":\"Razin\",\"name\":\"Vyacheslav (Slava)\",\"patronymic\":\"Stanislavovich\"},{\"surname\":\"Krupnov\",\"name\":\"Fridrik\",\"patronymic\":\"Larionovich\"},{\"surname\":\"Yenotov\",\"name\":\"Vikentiy\",\"patronymic\":\"Valerianovich\"},{\"surname\":\"Astankov\",\"name\":\"Nil\",\"patronymic\":\"Olegovich\"},{\"surname\":\"Tsvilenev\",\"name\":\"Samuil\",\"patronymic\":\"Borisovich\"},{\"surname\":\"Sharshin\",\"name\":\"Denis (Deniska)\",\"patronymic\":\"Ivanovich\"},{\"surname\":\"Tsvetnov\",\"name\":\"Dionisiy\",\"patronymic\":\"Andreevich\"}]}";
         Gson gson = new Gson();
         Names names = gson.fromJson(namesJson,Names.class);
-        int[] userids = new int[100];
+        int[] clientids = new int[100];
         int[] accountids = new int[200];
         int[] mins = new int[100];
         int[] maxs = new int[100];
@@ -229,22 +229,22 @@ public class TableRegisterImplTest extends ParentTestNg{
             maxs[i]=1000+RND.plusInt(1000);
         }
         for (int i = 0; i < 100; i++) {
-            User user = testDataGenerator.generateUser();
-            user.name = names.data[i].name;
-            user.surname = names.data[i].surname;
-            user.patronymic= names.data[i].patronymic;
-            userids[i] = tableRegister.get().createUser(user);
-            Integer[] ids = tableDao.get().getAccount(userids[i]);
+            Client client = testDataGenerator.generateClient();
+            client.name = names.data[i].name;
+            client.surname = names.data[i].surname;
+            client.patronymic= names.data[i].patronymic;
+            clientids[i] = tableRegister.get().createClient(client);
+            Integer[] ids = tableDao.get().getAccount(clientids[i]);
             accountids[i*2]=ids[0];
             accountids[i*2+1]=ids[1];
 
             DbClientAccount dbClientAccount = new DbClientAccount();
             dbClientAccount.money = mins[i]+0.0f;
-            dbClientAccount.client = userids[i];
+            dbClientAccount.client = clientids[i];
             dbClientAccount.id = accountids[i*2];
             tableDao.get().updateAccount(dbClientAccount);
             dbClientAccount.money = maxs[i]+0.0f;
-            dbClientAccount.client = userids[i];
+            dbClientAccount.client = clientids[i];
             dbClientAccount.id = accountids[i*2+1];
             tableDao.get().updateAccount(dbClientAccount);
         }
@@ -272,7 +272,7 @@ public class TableRegisterImplTest extends ParentTestNg{
     void tableFunctionalityTest(){
         deleteAllData();
         enterTheData();
-        TableToSend myTable = tableRegister.get().getTableData(0,100,"ASC","FULLNAME","NAME","");
+        ClientRecordsToSend myTable = tableRegister.get().getClientRecords(0,100,"ASC","FULLNAME","NAME","");
 
         String[] sortDirections = {"ASC","DESC"};
         String[] sortTypes = {"FULLNAME","AGE","TOTALBALANCE","MINBALANCE","MAXBALANCE"};
@@ -286,8 +286,8 @@ public class TableRegisterImplTest extends ParentTestNg{
         for(String sortDirection: sortDirections){
             for(String sortType: sortTypes){
                 for(int i=0; i<ranges.length-1; i++){
-                    TableToSend gotTable = tableRegister.get().getTableData(ranges[i],ranges[i+1],sortDirection, sortType,"NAME","");
-                    TableToSend queriedLocally = new TableToSend();
+                    ClientRecordsToSend gotTable = tableRegister.get().getClientRecords(ranges[i],ranges[i+1],sortDirection, sortType,"NAME","");
+                    ClientRecordsToSend queriedLocally = new ClientRecordsToSend();
                     queriedLocally.table=myTable.table.stream().sorted(((o1, o2) -> {
                         SortType enumSortType = SortType.valueOf(sortType.toUpperCase());
                         switch (enumSortType) {
@@ -334,9 +334,9 @@ public class TableRegisterImplTest extends ParentTestNg{
 
 
         for (String filterName: filterNames){
-            TableToSend gotTable = tableRegister.get()
-                    .getTableData(0,100,"ASC","FULLNAME","NAME",filterName);
-            TableToSend queriedLocally = new TableToSend();
+            ClientRecordsToSend gotTable = tableRegister.get()
+                    .getClientRecords(0,100,"ASC","FULLNAME","NAME",filterName);
+            ClientRecordsToSend queriedLocally = new ClientRecordsToSend();
             queriedLocally.table = myTable.table.stream()
                     .filter(o1 -> filterName
                                     .toUpperCase().equals(o1.fullName.split(" ")[1].toUpperCase()))
@@ -351,9 +351,9 @@ public class TableRegisterImplTest extends ParentTestNg{
         }
 
         for (String filterPatronymic: filterPatronymics){
-            TableToSend gotTable = tableRegister.get()
-                    .getTableData(0,100,"ASC","FULLNAME","PATRONYMIC",filterPatronymic);
-            TableToSend queriedLocally = new TableToSend();
+            ClientRecordsToSend gotTable = tableRegister.get()
+                    .getClientRecords(0,100,"ASC","FULLNAME","PATRONYMIC",filterPatronymic);
+            ClientRecordsToSend queriedLocally = new ClientRecordsToSend();
 
             queriedLocally.table = myTable.table.stream()
                     .filter((o1) -> filterPatronymic.toUpperCase()
@@ -370,9 +370,9 @@ public class TableRegisterImplTest extends ParentTestNg{
         }
 
         for (String filterSurname: filterSurnames){
-            TableToSend gotTable = tableRegister.get()
-                    .getTableData(0,100,"ASC","FULLNAME","NAME",filterSurname);
-            TableToSend queriedLocally = new TableToSend();
+            ClientRecordsToSend gotTable = tableRegister.get()
+                    .getClientRecords(0,100,"ASC","FULLNAME","NAME",filterSurname);
+            ClientRecordsToSend queriedLocally = new ClientRecordsToSend();
             queriedLocally.table = myTable.table.stream()
                     .filter(o1 -> filterSurname
                             .matches(o1.fullName.split(" ")[0].toUpperCase()))
@@ -389,7 +389,7 @@ public class TableRegisterImplTest extends ParentTestNg{
 
 
 
-    private static class TestView implements ReportTableView {
+    private static class TestView implements ReportClientRecordsView {
 
         String contractNumber;
 
@@ -397,13 +397,13 @@ public class TableRegisterImplTest extends ParentTestNg{
 
         @Override
 
-        public void start(String user, Date reportDate)throws Exception{
+        public void start(String client, Date reportDate)throws Exception{
             this.contractNumber = contractNumber;
             this.contractDate = contractDate;
 
         };
         @Override
-        public void append(TableModel row,int index)throws Exception{
+        public void append(ClientRecord row, int index)throws Exception{
             rowList.add(row);
         };
 
@@ -415,23 +415,23 @@ public class TableRegisterImplTest extends ParentTestNg{
 
 
 
-        public final List<TableModel> rowList = Lists.newArrayList();
+        public final List<ClientRecord> rowList = Lists.newArrayList();
 
-        public String userName;
+        public String clientName;
     }
 
     @Test
     public void makeReportTest() throws Exception{
         TestView view = new TestView();
-        TableModel tableModel = new TableModel();
-        tableModel.id=-1;
-        tableModel.totalBalance=10;
-        tableModel.minBalance=1;
-        tableModel.age=9;
-        tableModel.maxBalance=112;
-        tableModel.charm="badboi";
-        tableRegister.get().reportTest(tableModel,0,view);
-        assertThat(view.rowList.get(0).equals(tableModel));
+        ClientRecord clientRecord = new ClientRecord();
+        clientRecord.id=-1;
+        clientRecord.totalBalance=10;
+        clientRecord.minBalance=1;
+        clientRecord.age=9;
+        clientRecord.maxBalance=112;
+        clientRecord.charm="badboi";
+        tableRegister.get().reportTest(clientRecord,0,view);
+        assertThat(view.rowList.get(0).equals(clientRecord));
     }
 
 }

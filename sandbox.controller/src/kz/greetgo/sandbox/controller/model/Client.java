@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.model;
 
 import java.util.Arrays;
 
-public class User {
+public class Client {
     public Integer id;
     public String surname;
     public String name;
@@ -18,7 +18,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Client{" +
                 "id=" + id +
                 ", surname='" + surname + '\'' +
                 ", name='" + name + '\'' +

@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -12,14 +11,14 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 
-public class ReportTableViewPdf implements ReportTableView {
+public class ReportClientRecordsViewPdf implements ReportClientRecordsView {
 
     private final OutputStream out;
     private String user;
     private Document document;
     private Date date;
 
-    public ReportTableViewPdf(OutputStream out){
+    public ReportClientRecordsViewPdf(OutputStream out){
         this.out=out;
     }
 
@@ -51,15 +50,15 @@ public class ReportTableViewPdf implements ReportTableView {
 
 
     @Override
-    public void append(TableModel tableModel, int index)throws Exception{
+    public void append(ClientRecord clientRecord, int index)throws Exception{
         PdfPTable row = new PdfPTable(7);
         row.addCell(index+"");
-        row.addCell(tableModel.fullName);
-        row.addCell(((Instant.now().toEpochMilli()-tableModel.age)/(315360000))/100 + "");
-        row.addCell(tableModel.charm);
-        row.addCell(tableModel.totalBalance + "");
-        row.addCell(tableModel.maxBalance + "");
-        row.addCell(tableModel.minBalance + "");
+        row.addCell(clientRecord.fullName);
+        row.addCell(((Instant.now().toEpochMilli()- clientRecord.age)/(315360000))/100 + "");
+        row.addCell(clientRecord.charm);
+        row.addCell(clientRecord.totalBalance + "");
+        row.addCell(clientRecord.maxBalance + "");
+        row.addCell(clientRecord.minBalance + "");
         document.add(row);
     }
 
@@ -73,17 +72,17 @@ public class ReportTableViewPdf implements ReportTableView {
 
     public static void main(String[] args) throws Exception{
         OutputStream outf = new FileOutputStream(new File("D:/greetgonstuff/greetgo.sandbox/reports/test.pdf"));
-        ReportTableViewPdf x = new ReportTableViewPdf(outf);
+        ReportClientRecordsViewPdf x = new ReportClientRecordsViewPdf(outf);
         x.start("badboi", new Date());
         for (int i = 0; i <5 ; i++) {
-            TableModel tableModel=new TableModel();
-            tableModel.fullName="asd";
-            tableModel.charm="asd";
-            tableModel.age=2140000000;
-            tableModel.totalBalance=228;
-            tableModel.minBalance=228;
-            tableModel.maxBalance=22;
-            x.append(tableModel,i);
+            ClientRecord clientRecord =new ClientRecord();
+            clientRecord.fullName="asd";
+            clientRecord.charm="asd";
+            clientRecord.age=2140000000;
+            clientRecord.totalBalance=228;
+            clientRecord.minBalance=228;
+            clientRecord.maxBalance=22;
+            x.append(clientRecord,i);
         }
         x.finish();
     }

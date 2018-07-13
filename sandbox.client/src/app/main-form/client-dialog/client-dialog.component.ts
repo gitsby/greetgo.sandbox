@@ -1,5 +1,5 @@
 import {Component, Input, OnInit, OnChanges, SimpleChanges, Inject, ViewChild} from '@angular/core';
-import { User } from "../../../models/User";
+import { Client } from "../../../models/Client";
 import { HttpService } from "../../../services/HttpService";
 import {CharmType} from "../../../models/CharmType";
 import {Address} from "../../../models/Address";
@@ -18,46 +18,46 @@ import {
 } from "@angular/forms";
 import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import {GenderType} from "../../../models/GenderType";
-import {UsersTableCustomDatasource} from "../users-table/users-table-custom-datasource";
-import {UsersTableComponent} from "../users-table/users-table.component";
+import {ClientRecordsCustomDatasource} from "../client-records/client-records-custom-datasource";
+import {ClientRecordsComponent} from "../client-records/client-records.component";
 
 @Component({
-  selector: 'app-user-dialog',
-  templateUrl: './user-dialog.component.html',
-  styleUrls: ['./user-dialog.component.css']
+  selector: 'app-client-dialog',
+  templateUrl: './client-dialog.component.html',
+  styleUrls: ['./client-dialog.component.css']
 })
-export class UserDialogComponent implements OnInit {
+export class ClientDialogComponent implements OnInit {
 
   form: FormGroup;
   charms = Object.keys(CharmType);
   phoneTypes = Object.keys(PhoneType);
   genderTypes = Object.keys(GenderType);
   gettingOrSendingDataToServer:boolean=true;
-  user:User;
+  client:Client;
   doWeHaveDataOrNot: boolean=false;
 
   constructor(
     private formBuilder: FormBuilder,
-    private dialogRef: MatDialogRef<UserDialogComponent>,
+    private dialogRef: MatDialogRef<ClientDialogComponent>,
     private httpService: HttpService,
     @Inject(MAT_DIALOG_DATA) private data,
     private picker: MatDatepickerModule,
   ) {}
 
-  createForm(user:User){
+  createForm(client:Client){
     console.log("\nGONNNNA CREAATTE YOUUUR FUUURRRMM\n");
     this.gettingOrSendingDataToServer=false;
     this.doWeHaveDataOrNot=true;
-    const id = user.id;
-    const name = user.name;
-    const surname = user.surname;
-    const patronymic = user.patronymic;
-    const charm = user.charm;
-    const birthDate = new Date(user.birthDate);
-    let phones = user.phones;
-    const factualAddress = user.factualAddress;
-    const registeredAddress = user.registeredAddress;
-    const genderType = user.genderType;
+    const id = client.id;
+    const name = client.name;
+    const surname = client.surname;
+    const patronymic = client.patronymic;
+    const charm = client.charm;
+    const birthDate = new Date(client.birthDate);
+    let phones = client.phones;
+    const factualAddress = client.factualAddress;
+    const registeredAddress = client.registeredAddress;
+    const genderType = client.genderType;
     this.form = this.formBuilder.group({
       id: id,
       name: [name, Validators.required],
@@ -76,7 +76,7 @@ export class UserDialogComponent implements OnInit {
         house: factualAddress.house,
         flat: factualAddress.flat,
       }),
-      phones: this.formBuilder.array(phones.map((userPhone) => this.phoneGroup(userPhone.number, userPhone.phoneType))),
+      phones: this.formBuilder.array(phones.map((clientPhone) => this.phoneGroup(clientPhone.number, clientPhone.phoneType))),
     });
     this.form.controls['phones'].setValidators(mobileExistenceValidator());
   };
@@ -84,7 +84,7 @@ export class UserDialogComponent implements OnInit {
   ngOnInit() {
     this.gettingOrSendingDataToServer=true;
     console.log("data id ngoninit" + this.data.id);
-    this.data.id===null?this.generateNewUser():this.getSelectedUser(this.data.id);
+    this.data.id===null?this.generateNewClient():this.getSelectedClientFromServer(this.data.id);
 
   }
 
@@ -112,24 +112,24 @@ export class UserDialogComponent implements OnInit {
   public submit() {
 
     this.gettingOrSendingDataToServer=true;
-    let user = User.copy(this.form.getRawValue());
-    user.birthDate = this.form.getRawValue().birthDate.getTime();
-    this.user=user;
+    let client = Client.copy(this.form.getRawValue());
+    client.birthDate = this.form.getRawValue().birthDate.getTime();
+    this.client=client;
     if (this.data.id !== null) {
-      this.httpService.post('/table/change-user', {
-        user: JSON.stringify(this.user),
+      this.httpService.post('/client-records/change-client', {
+        client: JSON.stringify(this.client),
       }).toPromise().then(
         () => {
           this.gettingOrSendingDataToServer = false;
-          console.log( "submit "+ user);
+          console.log( "submit "+ client);
           this.doWeHaveDataOrNot=false;
-          this.dialogRef.close({user:this.user,state:true});
+          this.dialogRef.close({client:this.client,state:true});
         }
       );
     }
     else{
-      this.httpService.post('/table/create-user', {
-        user: JSON.stringify(this.user),
+      this.httpService.post('/client-records/create-client', {
+        client: JSON.stringify(this.client),
       }).toPromise().then(
         (res) => {
           this.gettingOrSendingDataToServer=false;
@@ -137,40 +137,45 @@ export class UserDialogComponent implements OnInit {
 
           console.log(id);
           console.log(typeof id);
-          this.user.id=id.toString();
-          console.log(this.user.id);
+          this.client.id=id.toString();
+          console.log(this.client.id);
           this.doWeHaveDataOrNot=false;
-          this.dialogRef.close({user:this.user,state:true});
+          this.dialogRef.close({client:this.client,state:true});
         }
       );
     }
   }
-  getSelectedUser(id:string):void{
-    this.httpService.get('/table/get-exact-user', {'userID': id}).subscribe(res=>{
+
+  // TODO: по наименованию не понятно, что этот метод делает на самом деле.
+  // Кажется, что он должен вывести мне только пользователя и всё.
+  // TODO: назови правильно.
+
+  getSelectedClientFromServer(id:string):void{
+    this.httpService.get('/client-records/get-exact-client', {'clientId': id}).subscribe(res=>{
       console.log(res);
       this.doWeHaveDataOrNot=false;
-      this.createForm(User.copy(res.json()))});
+      this.createForm(Client.copy(res.json()))});
   }
 
 
-  generateNewUser():void{
-    let user = new User();
-    user.phones = [new Phone('', PhoneType.MOBILE)];
-    user.name = "";
-    user.surname = "";
-    user.patronymic = "";
-    user.charm = CharmType.BOI;
-    user.birthDate = 0;
-    user.factualAddress = new Address();
-    user.registeredAddress = new Address();
-    user.id = '-1';
-    this.createForm(user);
+  generateNewClient():void{
+    let client = new Client();
+    client.phones = [new Phone('', PhoneType.MOBILE)];
+    client.name = "";
+    client.surname = "";
+    client.patronymic = "";
+    client.charm = CharmType.BOI;
+    client.birthDate = 0;
+    client.factualAddress = new Address();
+    client.registeredAddress = new Address();
+    client.id = '-1';
+    this.createForm(client);
   }
 
 
   closeButton() {
     this.gettingOrSendingDataToServer=false;
-    this.dialogRef.close({user:null,state:false});
+    this.dialogRef.close({client:null,state:false});
   }
 }
 export function mobileExistenceValidator():ValidatorFn {

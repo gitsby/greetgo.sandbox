@@ -5,35 +5,33 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.register.TableRegister;
+import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+
 import static kz.greetgo.mvc.core.RequestMethod.*;
 
 // TODO: Все переменные и названия любых классох, директорий должны быть понятными !!!
 @Bean
 // TODO: маппинг сделать понятным. О каком table идёт речь и что он делает
-@Mapping("/table")
+@Mapping("/client-records")
 // TODO: контроль соответственно назвать так, чтобы было понятно
-public class TableController implements Controller{
+public class ClientRecordsController implements Controller{
 
 
     // TODO: переменную и класс регистра тоже переименуй
-    public BeanGetter<TableRegister> tableRegister;
-    private String userID;
+    public BeanGetter<ClientRecordsRegister> clientRecordsRegister;
+    private String clientId;
 
     @NoSecurity
     @ToJson
-    @Mapping("/get-table-data")
+    @Mapping("/get-client-records")
     // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Record для данного случая.
     // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
-    public TableToSend getTableData(@Par("skipNumber") Integer skipNumber, @Par("limit") Integer limit,
-                                    @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
-                                    @Par("filterType") String  filterType, @Par("filterText") String filterText) {
-        return tableRegister.get().getTableData(skipNumber,limit, sortDirection, sortType, filterType, filterText);
+    public ClientRecordsToSend getClientRecords(@Par("skipNumber") int skipNumber, @Par("limit") int limit,
+                                            @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
+                                            @Par("filterType") String  filterType, @Par("filterText") String filterText) {
+        return clientRecordsRegister.get().getClientRecords(skipNumber,limit, sortDirection, sortType, filterType, filterText);
     }
 
 
@@ -43,31 +41,31 @@ public class TableController implements Controller{
     // TODO: неверный вывод ответа для данного случая. Нельзя выдавать просто массив строк для характера.
     // TODO: и где реализация для RegisterImpl ?
     public String[] getCharms(){
-        return tableRegister.get().getCharms();
+        return clientRecordsRegister.get().getCharms();
     }
 
 
     @NoSecurity
     @ToJson
-    @Mapping("/get-exact-user")
+    @Mapping("/get-exact-client")
     // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Details для данного случая.
     // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
-    public User getExactUser(@Par("userID") Integer userID){
-        return tableRegister.get().getExactUser(userID);
+    public Client getExactClient(@Par("clientId") Integer clientId){
+        return clientRecordsRegister.get().getExactClient(clientId);
     }
 
 
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
-    @Mapping("/create-user")
+    @Mapping("/create-client")
     // TODO: Почему статус ошибки возвращаешь в виде integer?
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    // TODO: при добавлении надо возвращать UserRecord
+    // TODO: при добавлении надо возвращать ClientRecord
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
 
-    public Integer createUser(@Par("user") @Json User user) {
-        return tableRegister.get().createUser(user);
+    public Integer createClient(@Par("client") @Json Client client) {
+        return clientRecordsRegister.get().createClient(client);
     }
 
 
@@ -75,24 +73,24 @@ public class TableController implements Controller{
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
-    @Mapping("/change-user")
+    @Mapping("/change-client")
     // TODO: Почему статусы возвращаешь в виде строки?
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    // TODO: при редактирование надо возвращать UserRecord
+    // TODO: при редактирование надо возвращать ClientRecord
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
-    public String changeUser(@Par("user") @Json User user) {
-        return tableRegister.get().changeUser(user);
+    public String changeClient(@Par("client") @Json Client client) {
+        return clientRecordsRegister.get().changeClient(client);
     }
 
 
     @NoSecurity
     @ToJson
     @MethodFilter(POST)
-    @Mapping("/delete-user")
+    @Mapping("/delete-client")
     // TODO: Почему статусы возвращаешь в виде строки?
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    public String deleteUser(@Par("userID") Integer userID){
-        return tableRegister.get().deleteUser(userID);
+    public String deleteClient(@Par("clientId") Integer clientId){
+        return clientRecordsRegister.get().deleteClient(clientId);
     }
 
 
@@ -101,8 +99,8 @@ public class TableController implements Controller{
     @Mapping("/make-report")
     public String makeReport(@Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
                              @Par("filterType") String  filterType, @Par("filterText") String filterText,
-                             @ParSession("personId") String user, @Par("reportType") String reportType) throws Exception {
-        return tableRegister.get().makeReport(sortDirection,sortType, filterType, filterText, user, reportType);
+                             @ParSession("personId") String client, @Par("reportType") String reportType) throws Exception {
+        return clientRecordsRegister.get().makeReport(sortDirection,sortType, filterType, filterText, client, reportType);
     }
 
     @NoSecurity
@@ -111,7 +109,7 @@ public class TableController implements Controller{
                                BinResponse response)
                                    throws Exception {
         System.out.println(response.toString());
-        tableRegister.get().downloadReport(filename,response);
+        clientRecordsRegister.get().downloadReport(filename,response);
     }
 
 
