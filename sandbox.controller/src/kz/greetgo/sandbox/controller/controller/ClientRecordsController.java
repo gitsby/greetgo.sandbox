@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.interfaces.BinResponse;
+import kz.greetgo.sandbox.controller.errors.NoCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
@@ -12,14 +13,18 @@ import kz.greetgo.sandbox.controller.util.Controller;
 import static kz.greetgo.mvc.core.RequestMethod.*;
 
 // TODO: Все переменные и названия любых классох, директорий должны быть понятными !!!
+// DONE
 @Bean
 // TODO: маппинг сделать понятным. О каком table идёт речь и что он делает
+// DONE
 @Mapping("/client-records")
 // TODO: контроль соответственно назвать так, чтобы было понятно
+// DONE
 public class ClientRecordsController implements Controller{
 
 
     // TODO: переменную и класс регистра тоже переименуй
+    // DONE
     public BeanGetter<ClientRecordsRegister> clientRecordsRegister;
     private String clientId;
 
@@ -28,6 +33,7 @@ public class ClientRecordsController implements Controller{
     @Mapping("/get-client-records")
     // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Record для данного случая.
     // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
+    // DONE
     public ClientRecordsToSend getClientRecords(@Par("skipNumber") int skipNumber, @Par("limit") int limit,
                                             @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
                                             @Par("filterType") String  filterType, @Par("filterText") String filterText) {
@@ -40,18 +46,20 @@ public class ClientRecordsController implements Controller{
     @Mapping("/get-charms")
     // TODO: неверный вывод ответа для данного случая. Нельзя выдавать просто массив строк для характера.
     // TODO: и где реализация для RegisterImpl ?
-    public String[] getCharms(){
+    // DONE
+    public Charms getCharms(){
         return clientRecordsRegister.get().getCharms();
     }
 
 
     @NoSecurity
     @ToJson
-    @Mapping("/get-exact-client")
+    @Mapping("/get-client-details")
     // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Details для данного случая.
     // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
-    public Client getExactClient(@Par("clientId") Integer clientId){
-        return clientRecordsRegister.get().getExactClient(clientId);
+    // DONE
+    public Client getClientDetails(@Par("clientId") Integer clientId){
+        return clientRecordsRegister.get().getClientDetails(clientId);
     }
 
 
@@ -63,7 +71,7 @@ public class ClientRecordsController implements Controller{
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
     // TODO: при добавлении надо возвращать ClientRecord
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
-
+    // DONE
     public Integer createClient(@Par("client") @Json Client client) {
         return clientRecordsRegister.get().createClient(client);
     }
@@ -78,6 +86,7 @@ public class ClientRecordsController implements Controller{
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
     // TODO: при редактирование надо возвращать ClientRecord
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
+    // DONE
     public String changeClient(@Par("client") @Json Client client) {
         return clientRecordsRegister.get().changeClient(client);
     }
@@ -89,6 +98,7 @@ public class ClientRecordsController implements Controller{
     @Mapping("/delete-client")
     // TODO: Почему статусы возвращаешь в виде строки?
     // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
+    // DONE
     public String deleteClient(@Par("clientId") Integer clientId){
         return clientRecordsRegister.get().deleteClient(clientId);
     }
@@ -111,6 +121,15 @@ public class ClientRecordsController implements Controller{
         System.out.println(response.toString());
         clientRecordsRegister.get().downloadReport(filename,response);
     }
+
+    @ToJson
+    @NoSecurity
+    @Mapping("/error-handling")
+    public void errorHandling(){
+        System.err.println("\nHEEEEYYYYAAAA\n");
+        throw new NoCharmError();
+    }
+
 
 
 }

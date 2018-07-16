@@ -7,11 +7,11 @@ import kz.greetgo.sandbox.controller.model.*;
 public interface ClientRecordsRegister {
     ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText);
 
-    Client getExactClient(Integer clientId);
+    Client getClientDetails(Integer clientId);
 
     Integer createClient(Client client);
 
-    String[] getCharms();
+    Charms getCharms();
 
     String changeClient(Client client);
 
@@ -23,4 +23,5 @@ public interface ClientRecordsRegister {
     void downloadReport(String filename,BinResponse response) throws Exception;
 
     void reportTest(ClientRecord clientRecord, int i, ReportClientRecordsView view) throws Exception ;
+
 }

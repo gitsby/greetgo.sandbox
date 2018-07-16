@@ -45,7 +45,7 @@ public interface ClientRecordsDao {
             @Result(property = "gender",column = "client.gender"),
             @Result(property = "validity", column = "client.validity")
     })
-    DbClient getExactClient(@Param("clientId") int clientId);
+    DbClient getClientDetails(@Param("clientId") int clientId);
 
 
     @Select("select last_value from client_id_seq")
@@ -378,6 +378,11 @@ public interface ClientRecordsDao {
             @Param("filter_text") String filterText
     );
 
-    @Select("select name from charm")
-    String[] getCharms();
+    @Select("select id, name from charm")
+    Charms getCharms();
+
+
+    @Select("select count(1) from charm where id=#{charmId}")
+    Integer isThereSuchCharm(@Param("charmId") Integer id);
+
 }

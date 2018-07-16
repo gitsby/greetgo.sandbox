@@ -4,6 +4,10 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.BinResponse;
+import kz.greetgo.sandbox.controller.errors.InvalidClientData;
+import kz.greetgo.sandbox.controller.errors.InvalidParams;
+import kz.greetgo.sandbox.controller.errors.NoCharmError;
+import kz.greetgo.sandbox.controller.errors.NoClient;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
@@ -18,9 +22,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.Date;
+import java.util.NoSuchElementException;
 
 // TODO: war не собирается, исправь ошибку.
 // TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
+// DONE
 @Bean
 public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
@@ -33,6 +39,9 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   @Override
   public ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText){
 
+    if(filterText==null){
+      filterText="";
+    }
     ClientRecordsToSend clientRecordsToSend = new ClientRecordsToSend();
 
     sortDirection = sortDirection.toUpperCase();
@@ -40,8 +49,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     sortType = sortType.toUpperCase();
     filterText = "%"+ filterText + "%";
     if (checkParams(skipNumber,limit,sortDirection,sortType,filterType,filterText)){
-      clientRecordsToSend.table.add(new ClientRecord());
-      return clientRecordsToSend;
+      throw new InvalidParams();
     }
 
     if(sortType.equals("FULLNAME")){
@@ -75,7 +83,6 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   }
 
   public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
-
     return  skipNumber==null || limit==null ||
       sortDirection==null || sortType==null ||
       filterText==null || filterType==null ||
@@ -85,20 +92,17 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
       !sortDirection.matches("(ASC|DESC)") ||
       !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
       !filterType.matches("NAME|SURNAME|PATRONYMIC");
-
   }
 
 
   @Override
-  public Client getExactClient(Integer clientId){
-    boolean existence = clientRecordsDao.get().countClientsWithClientId( clientId) > 0;
-    if(!existence){
-      Client client = new Client();
-      client.id = -1;
-      return client;
+  public Client getClientDetails(Integer clientId){
+
+    if(clientId==null||isThereSuchClient(clientId)){
+      throw new NoClient();
     }
 
-    DbClient dbClient = clientRecordsDao.get().getExactClient(clientId);
+    DbClient dbClient = clientRecordsDao.get().getClientDetails(clientId);
     DbCharm  dbCharm = clientRecordsDao.get().getCharm(1);
 
     DbClientPhone[] dbClientPhones = clientRecordsDao.get().getPhones(clientId);
@@ -107,14 +111,14 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
     DbClientAddress dbClientAddressRegistered = clientRecordsDao.get().getClientAddress(clientId, AddressType.REG.toString());
 
-    Client client = dbModelConverter.convertToClient(dbClient,dbCharm,dbClientPhones,dbClientAddressFactual,dbClientAddressRegistered);
+    Client client = dbModelConverter.convertToClient(dbClient,dbClientPhones,dbClientAddressFactual,dbClientAddressRegistered);
     return client;
   }
 
   private Boolean checkForContraints(Client client){
     if (    client.name==null || client.name.isEmpty() ||
       client.surname==null || client.surname.isEmpty() ||
-      client.charm==null || client.genderType==null ||
+      client.charmId==null|| client.genderType==null ||
       client.phones==null || client.registeredAddress==null ||
       client.birthDate==null ||
       client.registeredAddress.street == null || client.registeredAddress.street.isEmpty() ||
@@ -140,17 +144,17 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
   @Override
   public Integer createClient(Client client){
-//
-//        if(clientRecordsDao.get().countClientsWithClientId( client.id) <= 0){
-//            return -2;
-//        }
 
     if(!checkForContraints(client))
-      return -1;
-    client.validity=true;
-    Integer charmId = charmCheck(client.charm);
+      throw new InvalidClientData();
 
-    DbClient dbClient = dbModelConverter.convertToDbClient(client,charmId);
+    if(!isThereSuchCharm(client.charmId)){
+      throw new NoSuchElementException();
+    }
+
+    client.validity=true;
+
+    DbClient dbClient = dbModelConverter.convertToDbClient(client);
 
     clientRecordsDao.get().insertClient(dbClient);
     client.id = clientRecordsDao.get().getLastClientId();
@@ -168,32 +172,22 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     return client.id;
   }
 
-  public int charmCheck(String charm){
-    Integer charmId = clientRecordsDao.get().getCharmId(charm);
-
-    if(charmId == null){
-      DbCharm dbCharm =  new DbCharm();
-      dbCharm.id=0;
-      dbCharm.name = charm;
-      dbCharm.description = charm;
-      dbCharm.energy = 255.0f;
-      clientRecordsDao.get().insertCharm(dbCharm);
-      charmId = clientRecordsDao.get().getCharmId(charm);
-    }
-    return charmId;
-
-  }
 
   @Override
   public String changeClient(Client client){
 
 
-    if(clientRecordsDao.get().countClientsWithClientId( client.id) <= 0){
-      return "-1";
+    if (client.id==null||!checkForContraints(client)){
+      throw new InvalidClientData();
     }
 
-    if(!checkForContraints(client))
-      return "-1";
+    if(!isThereSuchCharm(client.charmId)){
+      throw new NoCharmError();
+    }
+
+    if(!isThereSuchClient(client.id)){
+      throw new NoClient();
+    }
 
     client.validity=true;
 
@@ -215,9 +209,8 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
         clientRecordsDao.get().insertPhone(dbClientPhone);
     }
 
-    Integer charmId = charmCheck(client.charm);
 
-    clientRecordsDao.get().updateClient(dbModelConverter.convertToDbClient(client, charmId));
+    clientRecordsDao.get().updateClient(dbModelConverter.convertToDbClient(client));
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressRegistered(client));
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressFactual(client));
 
@@ -226,9 +219,8 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
   @Override
   public String deleteClient(Integer clientId){
-
-    if(clientId==null || clientRecordsDao.get().countClientsWithClientId(clientId) <= 0){
-      return "-1";
+    if(!isThereSuchClient(clientId)){
+      throw new NoClient();
     }
     clientRecordsDao.get().deleteClient(clientId);
     clientRecordsDao.get().deletePhone(clientId);
@@ -313,10 +305,12 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     }
 
     @Override
-  public String[] getCharms(){
-    String[] charms = clientRecordsDao.get().getCharms();
-    return charms;
+  public Charms getCharms(){
+      return clientRecordsDao.get().getCharms();
   }
+  public Boolean isThereSuchCharm(int id){ return clientRecordsDao.get().isThereSuchCharm(id) > 0; }
+  public Boolean isThereSuchClient(int id){ return clientRecordsDao.get().countClientsWithClientId(id)>0;}
 }
+
 
 

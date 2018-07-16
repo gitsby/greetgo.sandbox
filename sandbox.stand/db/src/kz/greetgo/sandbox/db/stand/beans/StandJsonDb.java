@@ -14,28 +14,37 @@ import java.io.*;
 //import java.nio.file.Paths;
 //import java.util.HashMap;
 import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Bean
 public class StandJsonDb implements HasAfterInject{
 
     public ArrayСlients clients = new ArrayСlients();
     public int lastId = 0;
+    public Charms charms = new Charms();
     public Accounts accounts = new Accounts();
     public ClientRecordsToSend clientRecordsToSend = new ClientRecordsToSend();
 
 
     public  Gson gson  = new Gson();
-
+//    PathGetter pathGetter =  new PathGetter();
     // TODO: Cool!
     // TODO: But you should think about your other teammates. Don't use the absolute path, change it to relative.
     // TODO: Cause you're not alone on the project.
     // TODO: But the main reason is the project itself becomes inflexible
     // TODO: Make commit and push these files too.
     // TODO: + change the source package. Directory "beans" is for beans only.
+    // DONE;
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
-    public String clientsPath="D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandDbJsonData.json";
-    public String accountsPath = "D:\\greetgonstuff\\greetgo.sandbox\\sandbox.stand\\db\\src\\kz\\greetgo\\sandbox\\db\\stand\\beans\\StandAccountsDb.json";
+    public String clientsPath=getClass().getResource("StandDbJsonData.json").getPath();
+    public String accountsPath = getClass().getResource("StandAccountsDb.json").getPath();
+    public String charmsPath = getClass().getResource("StandDbCharms.json").getPath();
+
+//    public static void main(String[] args){
+//        String data = clientsPath + "\n" + accountsPath;
+//        System.err.println(data);
+//    }
 
     @Override
     public void afterInject() throws Exception {
@@ -43,6 +52,8 @@ public class StandJsonDb implements HasAfterInject{
         clients = gson.fromJson(bufferedReader, ArrayСlients.class);
         bufferedReader = new BufferedReader(new FileReader(accountsPath));
         accounts = gson.fromJson(bufferedReader,Accounts.class);
+        bufferedReader = new BufferedReader(new FileReader(charmsPath));
+        charms = gson.fromJson(bufferedReader,Charms.class);
         Filter filter = new Filter();
         filter.filterType=FilterType.NAME;
         filter.filterText="";
@@ -102,7 +113,7 @@ public class StandJsonDb implements HasAfterInject{
         ClientRecord clientRecord = new ClientRecord();
         clientRecord.fullName= clients.data.get(i).surname + " " + clients.data.get(i).name + " " + clients.data.get(i).patronymic;
         clientRecord.id = clients.data.get(i).id;
-        clientRecord.charm = clients.data.get(i).charm;
+        clientRecord.charm = charms.data.stream().filter((charm) -> charm.id==clients.data.get(i).charmId).findAny().get().name;
         clientRecord.age = clients.data.get(i).birthDate;
         clientRecord.minBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
         clientRecord.maxBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;

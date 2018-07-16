@@ -5,9 +5,11 @@ import { MatDialogRef,MatDialog, MatDialogConfig } from '@angular/material';
 import { ClientDialogComponent } from './client-dialog/client-dialog.component';
 import { ClientRecordsComponent } from "./client-records/client-records.component";
 import { Subscription } from "rxjs/";
+import {CharmService} from "../../services/CharmService";
 
 @Component({
   selector: 'main-form-component',
+  // providers: [charmService]
   templateUrl: './main-form.component.html',
 })
 export class MainFormComponent implements OnDestroy{
@@ -28,7 +30,12 @@ export class MainFormComponent implements OnDestroy{
   // http: Http;
   @ViewChild(ClientRecordsComponent) private clientRecordsComponent: ClientRecordsComponent;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog) {}
+  constructor(private httpService: HttpService, private dialog: MatDialog,
+              private charmService: CharmService) {}
+
+  ngOnInit(){
+    this.charmService.getCharms();
+  }
 
   selectedClientIdChange(changedClient) {
     this.selectedClientId = changedClient;
@@ -36,7 +43,6 @@ export class MainFormComponent implements OnDestroy{
   }
 
   openDialog(id = null) {
-
       this.clientDialogRef = this.dialog.open(ClientDialogComponent, {
         hasBackdrop: true,
         minWidth: 400,
@@ -55,6 +61,7 @@ export class MainFormComponent implements OnDestroy{
         if (data["state"]===true) {
           let client = data["client"];
           if (id === null) {
+
             this.selectedClientId = parseInt(client.id);
             this.clientRecordsComponent.addOneRow(client);
           } else {

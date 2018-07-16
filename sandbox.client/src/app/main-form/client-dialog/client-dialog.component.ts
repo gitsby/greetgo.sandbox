@@ -1,7 +1,6 @@
 import {Component, Input, OnInit, OnChanges, SimpleChanges, Inject, ViewChild} from '@angular/core';
 import { Client } from "../../../models/Client";
 import { HttpService } from "../../../services/HttpService";
-import {CharmType} from "../../../models/CharmType";
 import {Address} from "../../../models/Address";
 import {PhoneType} from "../../../models/PhoneType";
 import {Phone} from "../../../models/Phone";
@@ -20,6 +19,8 @@ import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import {GenderType} from "../../../models/GenderType";
 import {ClientRecordsCustomDatasource} from "../client-records/client-records-custom-datasource";
 import {ClientRecordsComponent} from "../client-records/client-records.component";
+import {CharmService} from "../../../services/CharmService";
+import {forEach} from "@angular/router/src/utils/collection";
 
 @Component({
   selector: 'app-client-dialog',
@@ -29,7 +30,26 @@ import {ClientRecordsComponent} from "../client-records/client-records.component
 export class ClientDialogComponent implements OnInit {
 
   form: FormGroup;
-  charms = Object.keys(CharmType);
+  charmNames = [
+    "BOI","GUTBOI","BERIGUTBOI", "BERIGUTBOI","BERISHUGBOI"
+  ];//this.charmService.charms;
+  charms = [
+    {"id":0,"name":"BOI"},
+    {"name":"GUTBOI",
+    "id":1},
+    {
+      "name":"BATBOI",
+      "id":2
+    },
+    {
+      "name":"BERIGUTBOI",
+      "id":3
+    },
+    {
+      "name":"BERISHUGBOI",
+      "id":5
+    }];
+
   phoneTypes = Object.keys(PhoneType);
   genderTypes = Object.keys(GenderType);
   gettingOrSendingDataToServer:boolean=true;
@@ -40,6 +60,7 @@ export class ClientDialogComponent implements OnInit {
     private formBuilder: FormBuilder,
     private dialogRef: MatDialogRef<ClientDialogComponent>,
     private httpService: HttpService,
+    private charmService: CharmService,
     @Inject(MAT_DIALOG_DATA) private data,
     private picker: MatDatepickerModule,
   ) {}
@@ -52,7 +73,10 @@ export class ClientDialogComponent implements OnInit {
     const name = client.name;
     const surname = client.surname;
     const patronymic = client.patronymic;
-    const charm = client.charm;
+    const charm;
+    this.charms.forEach(){
+
+    }
     const birthDate = new Date(client.birthDate);
     let phones = client.phones;
     const factualAddress = client.factualAddress;
@@ -83,7 +107,7 @@ export class ClientDialogComponent implements OnInit {
 
   ngOnInit() {
     this.gettingOrSendingDataToServer=true;
-    console.log("data id ngoninit" + this.data.id);
+    console.log("data id ngoninit: " + this.data.id);
     this.data.id===null?this.generateNewClient():this.getSelectedClientFromServer(this.data.id);
 
   }
@@ -124,6 +148,8 @@ export class ClientDialogComponent implements OnInit {
           console.log( "submit "+ client);
           this.doWeHaveDataOrNot=false;
           this.dialogRef.close({client:this.client,state:true});
+        },err=>{
+          console.log(err.json());
         }
       );
     }
@@ -133,12 +159,7 @@ export class ClientDialogComponent implements OnInit {
       }).toPromise().then(
         (res) => {
           this.gettingOrSendingDataToServer=false;
-          let id=res.json();
-
-          console.log(id);
-          console.log(typeof id);
-          this.client.id=id.toString();
-          console.log(this.client.id);
+          this.client.id=res.json();
           this.doWeHaveDataOrNot=false;
           this.dialogRef.close({client:this.client,state:true});
         }
@@ -149,8 +170,9 @@ export class ClientDialogComponent implements OnInit {
   // TODO: по наименованию не понятно, что этот метод делает на самом деле.
   // Кажется, что он должен вывести мне только пользователя и всё.
   // TODO: назови правильно.
+  // DONE
 
-  getSelectedClientFromServer(id:string):void{
+  getSelectedClientFromServer(id:number):void{
     this.httpService.get('/client-records/get-exact-client', {'clientId': id}).subscribe(res=>{
       console.log(res);
       this.doWeHaveDataOrNot=false;
@@ -164,11 +186,11 @@ export class ClientDialogComponent implements OnInit {
     client.name = "";
     client.surname = "";
     client.patronymic = "";
-    client.charm = CharmType.BOI;
+    client.charmId = 0;
     client.birthDate = 0;
     client.factualAddress = new Address();
     client.registeredAddress = new Address();
-    client.id = '-1';
+    client.id = -1;
     this.createForm(client);
   }
 

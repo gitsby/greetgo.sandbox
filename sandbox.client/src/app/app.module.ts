@@ -15,6 +15,7 @@ import {
 } from '@angular/material';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { HttpService } from "../services/HttpService";
+import { CharmService } from "../services/CharmService";
 import { ClientDialogComponent } from './main-form/client-dialog/client-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {MatSelectModule} from '@angular/material/select';
@@ -51,7 +52,7 @@ import {MatSelectModule} from '@angular/material/select';
   exports: [
     MatProgressSpinnerModule,
   ],
-  providers: [HttpService],
+  providers: [HttpService, CharmService],
   bootstrap: [AppComponent],
   entryComponents: [ClientDialogComponent]
 })

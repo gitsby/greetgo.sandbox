@@ -1,6 +1,9 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.mvc.interfaces.BinResponse;
+import kz.greetgo.sandbox.controller.errors.InvalidClientData;
+import kz.greetgo.sandbox.controller.errors.NoCharmError;
+import kz.greetgo.sandbox.controller.errors.NoClient;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
@@ -43,9 +46,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
                             sortDirection+" \n"+
                             filterType+" \n"+
                             filterText);
-//        if(skipNumber==null){
-//            skipNumber=0;
-//        }
+
         if(filterText==null){
             filterText="";
         }
@@ -78,6 +79,18 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         return queriedClientRecords;
     }
 
+    public Boolean checkParams(Integer skipNumber, Integer limit, String sortDirection, String sortType, String filterType, String filterText){
+        return  skipNumber==null || limit==null ||
+                sortDirection==null || sortType==null ||
+                filterText==null || filterType==null ||
+                skipNumber==-1 || limit==-1 ||
+                sortDirection.isEmpty() ||sortType.isEmpty() ||
+                filterText.isEmpty() || filterType.isEmpty() ||
+                !sortDirection.matches("(ASC|DESC)") ||
+                !sortType.matches("(FULLNAME|AGE|MAXBALANCE|MINBALANCE|TOTALBALANCE)") ||
+                !filterType.matches("NAME|SURNAME|PATRONYMIC");
+    }
+
     public int getTableSize(){
         try {
             return db.get().clientRecordsToSend.table.size();
@@ -98,21 +111,24 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
 
     @Override
-    public Client getExactClient(Integer clientId){
-        try {
-            return db.get().clients.data.stream().filter((client) -> Objects.equals(clientId, client.id)).findFirst().get();
-        } catch (Exception e){
-            e.printStackTrace();
-            return new Client();
+    public Client getClientDetails(Integer clientId){
+        if (clientId==null||!isThereSuchClient(clientId)){
+            throw new NoClient();
         }
+        return db.get().clients.data.stream().filter((client) -> Objects.equals(clientId, client.id)).findFirst().get();
     }
 
 
     @Override
     public Integer createClient(Client client){
-        if(!checkForValidity(client)){
-            return -1;
+        if(!checkForConstraints(client)){
+            throw new InvalidClientData();
         }
+        client.validity=true;
+        if(!isThereSuchCharm(client.id)){
+            throw new NoCharmError();
+        }
+
         client.id = db.get().lastId+1;
         db.get().clients.data.add(client);
         Account account = new Account();
@@ -126,12 +142,15 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         return getLastId();
     }
 
+    public Boolean isThereSuchCharm(int id){
+        return db.get().charms.data.stream().anyMatch(charm->charm.id==id);
+    }
 
 
-    private Boolean checkForValidity(Client client){
+    private Boolean checkForConstraints(Client client){
         if (    client.name==null || client.name.isEmpty() ||
                 client.surname==null || client.surname.isEmpty() ||
-                client.charm==null || client.genderType==null ||
+                client.charmId==null|| client.genderType==null ||
                 client.phones==null || client.registeredAddress==null ||
                 client.birthDate==null ||
                 client.registeredAddress.street == null || client.registeredAddress.street.isEmpty() ||
@@ -157,17 +176,36 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     @Override
     public String changeClient(Client client){
-        if (!checkForValidity(client)){
-            return "Client is not valid!";
+        if (!checkForConstraints(client)){
+            throw new InvalidClientData();
         }
+
+        if(!isThereSuchCharm(client.charmId)){
+            throw new NoCharmError();
+        }
+
+        if(client.id==null||!isThereSuchClient(client.id)){
+            throw new NoClient();
+        }
+        client.validity=true;
+
         db.get().clients.data.removeIf(client1 -> client.id.equals(client1.id));
         db.get().clients.data.add(client);
         db.get().updateDB();
         return "Client was successfully updated";
     }
 
+    private boolean isThereSuchClient(int id) {
+        return db.get().clients.data.stream().anyMatch(client -> client.charmId==id);
+    }
+
     @Override
     public String deleteClient(Integer clientId){
+
+        if(clientId==null||!isThereSuchClient(clientId)){
+            throw new NoClient();
+        }
+
         db.get().clients.data.removeIf(client -> clientId.equals(client.id));
         db.get().updateDB();
         return "Client was successfully deleted";
@@ -230,12 +268,14 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     }
 
     @Override
-    public String[] getCharms(){
-        return db.get().clients.data.stream().map(client -> client.charm).toArray(String[]::new);
+    public Charms getCharms(){
+        return db.get().charms;
     }
 
     @Override
     public void reportTest(ClientRecord clientRecord, int index, ReportClientRecordsView view){
         return;
     }
+
+
 }

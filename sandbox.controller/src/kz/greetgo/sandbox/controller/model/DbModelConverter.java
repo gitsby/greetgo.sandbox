@@ -9,14 +9,14 @@ import java.util.stream.Collectors;
 public class DbModelConverter {
 
 
-    public Client convertToClient(DbClient dbClient, DbCharm dbCharm, DbClientPhone[] dbPhones, DbClientAddress dbAddressFactual, DbClientAddress dbAddressRegistered){
+    public Client convertToClient(DbClient dbClient, DbClientPhone[] dbPhones, DbClientAddress dbAddressFactual, DbClientAddress dbAddressRegistered){
         Client client = new Client();
         client.id = dbClient.id;
         client.name = dbClient.name;
         client.surname = dbClient.surname;
         client.patronymic = dbClient.patronymic;
         client.genderType = GenderType.valueOf(dbClient.gender);
-        client.charm = dbCharm.name;
+        client.charmId = dbClient.charm;
         client.phones = new Phone[dbPhones.length];
         for (int i = 0; i <dbPhones.length ; i++) {
             Phone phone = new Phone();
@@ -38,14 +38,14 @@ public class DbModelConverter {
         client.birthDate = dbClient.birthDate.getTime();
         return client;
     }
-    public DbClient convertToDbClient(Client client, int charmId){
+    public DbClient convertToDbClient(Client client){
         DbClient dbClient = new DbClient();
         dbClient.id = client.id;
         dbClient.name = client.name;
         dbClient.surname = client.surname;
         dbClient.patronymic = client.patronymic;
         dbClient.gender = client.genderType.toString();
-        dbClient.charm = charmId;
+        dbClient.charm = client.charmId;
         dbClient.birthDate = new Date(client.birthDate);
         dbClient.validity = client.validity;
         return dbClient;

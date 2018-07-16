@@ -8,7 +8,7 @@ public class Client {
     public String name;
     public String patronymic;
     public Long birthDate;
-    public String charm;
+    public Integer charmId;
     public Phone[] phones;
     public Address factualAddress;
     public Address registeredAddress;
@@ -24,7 +24,7 @@ public class Client {
                 ", name='" + name + '\'' +
                 ", patronymic='" + patronymic + '\'' +
                 ", birthDate=" + birthDate +
-                ", charm='" + charm + '\'' +
+                ", charm='" + charmId + '\'' +
                 ", phones=" + Arrays.toString(phones) +
                 ", factualAddress=" + factualAddress +
                 ", registeredAddress=" + registeredAddress +

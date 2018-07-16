@@ -13,6 +13,7 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -433,5 +434,11 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         tableRegister.get().reportTest(clientRecord,0,view);
         assertThat(view.rowList.get(0).equals(clientRecord));
     }
+
+    @Test
+    public void relativePath(){
+
+    }
+
 
 }

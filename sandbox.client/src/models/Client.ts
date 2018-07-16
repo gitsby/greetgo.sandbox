@@ -1,6 +1,5 @@
 import { Phone } from './Phone';
 import { Address } from './Address';
-import {CharmType} from './CharmType'
 import {GenderType} from "./GenderType";
 
 
@@ -12,7 +11,7 @@ export class Client {
     public name: string;
     public patronymic: string | null;
     public birthDate: number;
-    public charm: CharmType | null;
+    public charmId: number | null;
     public phones: Phone[] ;
     public factualAddress: Address | null;
     public registeredAddress: Address;
@@ -23,7 +22,7 @@ export class Client {
         this.surname = o.surname;
         this.name = o.name;
         this.patronymic = o.patronymic;
-        this.charm = o.charm;
+        this.charmId = o.charmId;
         this.birthDate = o.birthDate;
         this.genderType = o.genderType;
         this.phones=o.phones;

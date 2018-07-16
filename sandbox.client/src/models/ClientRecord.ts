@@ -1,9 +1,8 @@
-import {CharmType} from "./CharmType";
 
 export class ClientRecord{
     public id:number;
     public fullName:string;
-    public charm:CharmType|null;
+    public charmId:number;
     public age:number;
     public totalBalance:number;
     public maxBalance:number;
@@ -12,7 +11,7 @@ export class ClientRecord{
     public assign(o: any): ClientRecord{
       this.id = o.id;
       this.fullName = o.fullName;
-      this.charm = o.charm;
+      this.charmId = o.charmId;
       this.age = o.age;
       this.totalBalance = o.totalBalance;
       this.maxBalance = o.maxBalance;

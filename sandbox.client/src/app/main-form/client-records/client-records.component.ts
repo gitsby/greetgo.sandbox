@@ -22,7 +22,7 @@ export class ClientRecordsComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
   public dataSource: ClientRecordsCustomDatasource;
   currentTime=(new Date()).getTime();
-  @Output() selectedClientId: EventEmitter<string> = new EventEmitter<string>();
+  @Output() selectedClientId: EventEmitter<number> = new EventEmitter<number>();
   selectedRowIndex = '-1';
   displayedColumns = ['fullName', 'age', 'charm', 'totalBalance', 'maxBalance', 'minBalance'];
 
