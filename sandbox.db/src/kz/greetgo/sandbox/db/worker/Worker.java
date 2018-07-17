@@ -97,7 +97,7 @@ public abstract class Worker implements WorkerInterface {
     return sql;
   }
 
-  protected String isNull(String str) {
+  protected String checkIsNull(String str) {
     if (str == null) return "\\N";
     str = str.trim();
     if (!str.isEmpty()) {
@@ -108,15 +108,23 @@ public abstract class Worker implements WorkerInterface {
   }
 
   protected void parallelTasks(Runnable... runnableList) {
-    List<Thread> threadList = new ArrayList<>();
-    for (Runnable aRunnableList : runnableList) threadList.add(new Thread(aRunnableList));
-    threadList.forEach(Thread::start);
-    for (Thread thread : threadList) {
+    for (Thread thread : startTasks(runnableList)) {
       try {
         thread.join();
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  protected void backgroundTasks(Runnable... runnableList) {
+    startTasks(runnableList);
+  }
+
+  private List<Thread> startTasks(Runnable[] runnableList) {
+    List<Thread> threadList = new ArrayList<>();
+    for (Runnable aRunnableList : runnableList) threadList.add(new Thread(aRunnableList));
+    threadList.forEach(Thread::start);
+    return threadList;
   }
 }

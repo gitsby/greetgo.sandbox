@@ -27,16 +27,12 @@ public class CIAWorkerTest extends WorkerTest {
 
   @BeforeMethod
   public void beforeMethod() {
-    if (true) { ////
-      migrationDao.get().clearClientTable();
-    }
+    migrationDao.get().clearClientTable();
   }
 
   @AfterMethod
   public void afterMethod() {
-    if (true) { ////
-      removeTmpTables(getCiaTmpTableNames());
-    }
+    removeTmpTables(getCiaTmpTableNames());
   }
 
   @Test

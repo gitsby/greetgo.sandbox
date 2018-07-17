@@ -3,13 +3,12 @@ package kz.greetgo.sandbox.db.core;
 import com.jcraft.jsch.*;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.configs.SshConfig;
 import org.apache.log4j.Logger;
-import org.fest.util.Lists;
 
 import java.io.Closeable;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -19,7 +18,6 @@ public class Ssh implements Closeable {
   private final static Logger logger = Logger.getLogger(Ssh.class);
 
   public BeanGetter<SshConfig> sshConfig;
-  public BeanGetter<MigrationConfig> migrationConfig;
 
   private Session session;
   private ChannelSftp sftpChannel;
@@ -33,7 +31,7 @@ public class Ssh implements Closeable {
     }
   }
 
-  public void createSession() throws JSchException {
+  private void createSession() throws JSchException {
     session = getSession();
     session.setPassword(sshConfig.get().password());
     session.setConfig("StrictHostKeyChecking", "no");
@@ -44,12 +42,12 @@ public class Ssh implements Closeable {
     return new JSch().getSession(sshConfig.get().user(), sshConfig.get().host(), sshConfig.get().port());
   }
 
-  public void createChanel() throws JSchException {
+  private void createChanel() throws JSchException {
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
     sftpChannel.connect();
   }
 
-  public File load(File file) {
+  private File load(File file) {
     File newFile = getNewTmpFile(file.getName());
     try {
       sftpChannel.get(file.getPath(), newFile.getPath());
@@ -60,16 +58,16 @@ public class Ssh implements Closeable {
   }
 
   private File getNewTmpFile(String name) {
-    return new File(migrationConfig.get().tmpFolder()+"/"+name);
+    return new File(getMigrationFolder()+name);
   }
 
-  public void rename(File file, String newName) {
-//    String newNamePath = file.getParent() + "/" + newName;
-//    try {
-//      sftpChannel.rename("./migrationFolder/from_cia_2018-02-21-154929-1-300.xml.tar.bz2", "./migrationFolder/M_from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
-//    } catch (SftpException e) {
-//      logger.error(e);
-//    }
+  private void rename(File file, String newName) {
+    String newNamePath = file.getParent() + "/" + newName;
+    try {
+      sftpChannel.rename(file.getPath(), newNamePath);
+    } catch (SftpException e) {
+      logger.error(e);
+    }
   }
 
   private void renameToMigrated(File file) {
@@ -83,7 +81,7 @@ public class Ssh implements Closeable {
   }
 
   private List<File> getNotMigratedFiles() throws SftpException {
-    List<File> files = Lists.newArrayList();
+    List<File> files = new ArrayList<>();
     Vector migrationFilesVector = getMigrationFolderVector();
     for (Object fileVector : migrationFilesVector) {
       ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileVector;
@@ -94,16 +92,19 @@ public class Ssh implements Closeable {
   }
 
   private boolean isNormalFile (ChannelSftp.LsEntry entry) {
-    if (entry.getFilename().equals(".") || entry.getFilename().equals("..")) return false;
-    return true;
+    return !entry.getFilename().equals(".") && !entry.getFilename().equals("..");
   }
 
   private Vector getMigrationFolderVector() throws SftpException {
-    return sftpChannel.ls(migrationConfig.get().migrationFilesFolder());
+    return sftpChannel.ls(getMigrationFolder());
   }
 
   private File getFile(ChannelSftp.LsEntry entry) {
-    return new File(migrationConfig.get().migrationFilesFolder() + "/" + entry.getFilename());
+    return new File(getMigrationFolder() + entry.getFilename());
+  }
+
+  private String getMigrationFolder() {
+    return "$HOME/files_for_migration/";
   }
 
   private boolean isMigrated(String fileName) {
@@ -111,7 +112,7 @@ public class Ssh implements Closeable {
   }
 
   public List<File> loadMigrationFiles() {
-    List<File> filesForMigration = Lists.newArrayList();
+    List<File> filesForMigration = new ArrayList<>();
     try {
       List<File> notMigratedFiles = getNotMigratedFiles();
       for (File file : notMigratedFiles) {

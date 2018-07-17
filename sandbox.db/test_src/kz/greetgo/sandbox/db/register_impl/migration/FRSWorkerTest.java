@@ -23,18 +23,12 @@ public class FRSWorkerTest extends WorkerTest {
 
   @BeforeMethod
   public void beforeMethod() {
-    if (true) { ////
-      migrationDao.get().clearClientAccountTable();
-    }
+    migrationDao.get().clearClientAccountTable();
   }
 
   @AfterMethod
   public void afterMethod() {
-    if (false) { ////
-      List<String> frsTmpTableNames = getFrsTmpTableNames();
-      if (frsTmpTableNames != null)
-        removeTmpTables(getFrsTmpTableNames());
-    }
+    removeTmpTables(getFrsTmpTableNames());
   }
 
   @Test
@@ -55,6 +49,7 @@ public class FRSWorkerTest extends WorkerTest {
 
     checkInTmpTables(leftTestClientAccounts);
 
+    inputStream.close();
     connection.close();
   }
 
@@ -113,6 +108,7 @@ public class FRSWorkerTest extends WorkerTest {
     //
 
     margeList(leftTestClientAccounts);
+    removeInvalidClientAccounts(leftTestClientAccounts);
     checkInTmpTables(leftTestClientAccounts);
 
     connection.close();
@@ -158,8 +154,8 @@ public class FRSWorkerTest extends WorkerTest {
     for (TestClientAccount clientAccount : leftTestClientAccounts)
       if (clientAccount.tmpClientAccount.accountNumber != null) {
         clientAccounts.add(clientAccount);
-      clientAccount.clientAccountTransactions = removeInvalidClientAccountTransactions(clientAccount.clientAccountTransactions);
-    }
+        clientAccount.clientAccountTransactions = removeInvalidClientAccountTransactions(clientAccount.clientAccountTransactions);
+      }
     return clientAccounts;
   }
 
@@ -174,8 +170,6 @@ public class FRSWorkerTest extends WorkerTest {
   private void checkInTables(List<TestClientAccount> leftTestClientAccounts) {
     List<ClientAccount> clientAccounts = migrationDao.get().getClientAccounts();
     List<ClientAccountTransaction> clientAccountTransactions = migrationDao.get().getClientAccountTransactions();
-
-    System.out.println(leftTestClientAccounts);
 
     assertThat(clientAccounts).hasSize(leftTestClientAccounts.size());
     assertThat(clientAccountTransactions).hasSize(getAccountTransactionsSize(leftTestClientAccounts));
@@ -229,10 +223,15 @@ public class FRSWorkerTest extends WorkerTest {
     List<TestTmpClientAccount> tmpClientAccounts = getTestTmpClientAccounts(getTmpClientAccountTableName(getFrsTmpTableNames()));
     List<TestTmpClientAccountTransaction> tmpClientAccountTransactions = getClientAccountsTransactions(getClientAccountTransactionsTableName(frsTmpTableNames));
 
+    System.out.println(leftTestClientAccounts);
+    System.out.println();
+    System.out.println();
+    System.out.println();
+    System.out.println(tmpClientAccounts);
+    System.out.println(tmpClientAccountTransactions);
+
     assertThat(tmpClientAccounts).hasSize(leftTestClientAccounts.size());
     assertThat(tmpClientAccountTransactions).hasSize(getAccountTransactionsSize(leftTestClientAccounts));
-
-
 
     for (int i = 0; i < leftTestClientAccounts.size(); i++) {
       isEqual(tmpClientAccounts.get(i), leftTestClientAccounts.get(i).tmpClientAccount);
@@ -389,7 +388,12 @@ public class FRSWorkerTest extends WorkerTest {
         ", \"registered_at\":\"" + registeredAt + '\"' +
         ", \"account_number\":\"" + accountNumber + '\"' +
         ", \"type\":\"new_account\"" +
-        '}';
+        "}\n";
+    }
+
+    @Override
+    public String toString() {
+      return toJson();
     }
   }
 
@@ -406,7 +410,7 @@ public class FRSWorkerTest extends WorkerTest {
 
     String toJson() {
       return "{" +
-        "\"money\":\"" + money + '\"' +
+        "  \"money\":\"" + money + '\"' +
         ", \"finished_at\":\"" + finishedAt + '\"' +
         ", \"transaction_type\":\"" + transactionType + '\"' +
         ", \"account_number\":\"" + accountNumber + '\"' +

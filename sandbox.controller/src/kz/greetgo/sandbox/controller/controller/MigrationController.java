@@ -18,5 +18,4 @@ public class MigrationController {
   public void start() {
     migrationRegister.get().start();
   }
-
 }

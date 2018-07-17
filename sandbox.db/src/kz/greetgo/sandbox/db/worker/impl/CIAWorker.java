@@ -65,6 +65,7 @@ public class CIAWorker extends Worker {
   @Override
   public void margeTmpTables() {
     parallelTasks(
+      this::margeCharmTmpTable,
       this::margeClientTmpTable,
       this::margeClientAddressTmpTable,
       this::margeClientPhoneTmpTable
@@ -73,35 +74,31 @@ public class CIAWorker extends Worker {
 
   @Override
   public void validTmpTables() {
-    logger.info("validate main tmp tables begin...");
-    //language=PostgreSQL
+    logger.info("validate tmp tables begin...");
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.SURNAME_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND surname IS NULL;", clientTmp);
-    //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.NAME_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND \"name\" IS NULL;", clientTmp);
-    //language=PostgreSQL
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.BIRTH_DATE_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND birth_date IS NULL;", clientTmp);
-    logger.info("validate main tmp tables end.");
+    logger.info("validate tmp tables end.");
   }
 
   @Override
   public void migrateTmpTables() {
-    migrateParentTmpTableToTables();
-    migrateChildTmpTablesToTables();
+    migrateClientTmpTable();
+    parallelTasks(
+      this::migrateClientAddressTable,
+      this::migrateClientPhoneTmpTable
+    );
   }
 
   private void createTmpTables() {
     logger.info("create tmp tables begin...");
     setTmpTableNames();
-    //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (name VARCHAR(255))", charmTmp);
-    //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (id VARCHAR(255), error VARCHAR(255), surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birth_date varchar(255), charm VARCHAR(255))", clientTmp);
-    //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255), error VARCHAR(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
-    //language=PostgreSQL
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255), error VARCHAR(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
     logger.info("create tmp tables end.");
   }
@@ -178,58 +175,60 @@ public class CIAWorker extends Worker {
 
   private void writeTmpClientCsv(TMPClient client) throws IOException {
     if (!isDate(client.birthDate)) client.birthDate = null;
-    clientCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s|%s|%s\n", client.id, isNull(client.surname),
-      isNull(client.name), isNull(client.patronymic),
-      isNull(client.gender), isNull(client.birthDate),
-      isNull(client.charm)));
+    clientCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s|%s|%s\n", client.id, checkIsNull(client.surname),
+      checkIsNull(client.name), checkIsNull(client.patronymic),
+      checkIsNull(client.gender), checkIsNull(client.birthDate),
+      checkIsNull(client.charm)));
   }
 
   private void writeTmpClientAddressCsv(TMPClientAddress address) throws IOException {
-    clientAddressCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s\n", address.client, isNull(address.type.name()),
-      isNull(address.street), isNull(address.house),
-      isNull(address.flat)));
+    clientAddressCsvBw.write(String.format("%s|\\N|%s|%s|%s|%s\n", address.client, checkIsNull(address.type.name()),
+      checkIsNull(address.street), checkIsNull(address.house),
+      checkIsNull(address.flat)));
   }
 
   private void writeTmpClientPhoneCsv(TMPClientPhone phone) throws IOException {
-    clientPhoneCsvBw.write(String.format("%s|\\N|%s|%s\n", phone.client, isNull(phone.type), isNull(phone.number)));
+    clientPhoneCsvBw.write(String.format("%s|\\N|%s|%s\n", phone.client, checkIsNull(phone.type), checkIsNull(phone.number)));
   }
 
   private void loadCsvFilesToTmpTables(){
     logger.info("load csv files to tmp tables begin...");
+
     CopyManager copyManager;
     try {
       flushWriters();
-
       copyManager = new CopyManager((BaseConnection) connection);
 
-      List<Thread> threadList = Lists.newArrayList();
-      threadList.add(new Thread(()->copy(copyManager, charmCsvFile, charmTmp)));
-      threadList.add(new Thread(()->copy(copyManager, clientCsvFile, clientTmp)));
-      threadList.add(new Thread(()->copy(copyManager, clientAddressCsvFile, clientAddressTmp)));
-      threadList.add(new Thread(()->copy(copyManager, clientPhoneCsvFile, clientPhoneTmp)));
-
-      threadList.forEach(Thread::start);
-      for (Thread thread : threadList) thread.join();
+      parallelTasks(
+        ()->copy(copyManager, charmCsvFile, charmTmp),
+        ()->copy(copyManager, clientCsvFile, clientTmp),
+        ()->copy(copyManager, clientAddressCsvFile, clientAddressTmp),
+        ()->copy(copyManager, clientPhoneCsvFile, clientPhoneTmp)
+      );
     } catch (Exception e) {
       logger.error(e);
     }
     logger.info("load csv files to tmp tables end.");
   }
 
-  public void margeClientTmpTable() {
-    logger.info("marge main tmp tables begin...");
-    if (charmTmp != null) {
-      //language=PostgreSQL
-      exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", charmTmp);
-      //language=PostgreSQL
-      exec("SELECT DISTINCT name INTO TMP_TABLE FROM conductor_TMP_TABLE GROUP BY name;", charmTmp);
-      //language=PostgreSQL
-      exec("DROP TABLE conductor_TMP_TABLE", charmTmp);
-    }
+  private void flushWriters() throws IOException {
+    charmCsvBw.flush();
+    clientCsvBw.flush();
+    clientAddressCsvBw.flush();
+    clientPhoneCsvBw.flush();
+  }
 
-    //language=PostgreSQL
+  private void margeCharmTmpTable() {
+    if (charmTmp != null) {
+      exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", charmTmp);
+      exec("SELECT DISTINCT name INTO TMP_TABLE FROM conductor_TMP_TABLE GROUP BY name;", charmTmp);
+      backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", charmTmp));
+    }
+  }
+
+  private void margeClientTmpTable() {
+    logger.info("marge client tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientTmp);
-    //language=PostgreSQL
     exec("SELECT DISTINCT " +
       "  id, " +
       "  error, " +
@@ -276,17 +275,14 @@ public class CIAWorker extends Worker {
       "             END DESC NULLS LAST " +
       "    ) AS charm " +
       "INTO TMP_TABLE FROM conductor_TMP_TABLE", clientTmp);
-    //language=PostgreSQL
-    exec("DROP TABLE conductor_TMP_TABLE", clientTmp);
+    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientTmp));
 
-    logger.info("marge main tmp tables end.");
+    logger.info("marge client tmp tables end.");
   }
 
   private void margeClientAddressTmpTable() {
-    logger.info("marge child tmp tables begin...");
-    //language=PostgreSQL
+    logger.info("marge client address tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientAddressTmp);
-    //language=PostgreSQL
     exec("SELECT DISTINCT " +
       "  client, \"type\", " +
       "  error," +
@@ -313,37 +309,32 @@ public class CIAWorker extends Worker {
       "    ) AS flat " +
       "INTO TMP_TABLE " +
       "FROM conductor_TMP_TABLE;", clientAddressTmp);
-    //language=PostgreSQL
-    exec("DROP TABLE conductor_TMP_TABLE", clientAddressTmp);
-    logger.info("fuse child tmp tables end.");
+    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientAddressTmp));
+    logger.info("fuse client address tmp tables end.");
   }
 
   private void margeClientPhoneTmpTable() {
-    //language=PostgreSQL
+    logger.info("fuse client phone tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientPhoneTmp);
-    //language=PostgreSQL
     exec("SELECT DISTINCT " +
       "  client, \"type\", error, " +
       "  FIRST_VALUE(number) OVER " +
       "    ( PARTITION BY client, type " +
       "    ORDER BY CASE WHEN number IS NULL " +
-      "      THEN NULL\n" +
+      "      THEN NULL " +
       "             ELSE timeofday() " +
       "             END DESC NULLS LAST " +
       "    ) AS number " +
       "INTO TMP_TABLE " +
       "FROM conductor_TMP_TABLE;", clientPhoneTmp);
-    //language=PostgreSQL
-    exec("DROP TABLE conductor_TMP_TABLE", clientPhoneTmp);
+    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientPhoneTmp));
+    logger.info("fuse client phone tmp tables end.");
   }
 
-  private void migrateParentTmpTableToTables() {
-    logger.info("migrate main tmp tables to tables begin...");
-    //language=PostgreSQL
+  private void migrateClientTmpTable() {
+    logger.info("migrate client tmp table begin...");
     exec("INSERT INTO charm(name, description, energy) " +
       "SELECT \"name\", '', 1.0 FROM TMP_TABLE WHERE \"name\" IS NOT NULL AND \"name\" NOT IN (SELECT name FROM charm);", charmTmp);
-
-    //language=PostgreSQL
     exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm_id, cia_id) " +
         "SELECT t2.surname, t2.name, t2.patronymic, t2.gender, to_date(t2.birth_date, 'yyyy-MM-dd'), 1, t2.id " +
         "FROM TMP_TABLE t2 " +
@@ -356,12 +347,11 @@ public class CIAWorker extends Worker {
         "charm_id=1," +
         "cia_id=EXCLUDED.cia_id;",
       clientTmp);
-    logger.info("migrate main tmp tables to tables end.");
+    logger.info("migrate client tmp table end.");
   }
 
-  private void migrateChildTmpTablesToTables() {
-    logger.info("migrate child tmp tables to tables begin...");
-    //language=PostgreSQL
+  private void migrateClientAddressTable() {
+    logger.info("migrate client address tmp table begin...");
     exec("INSERT INTO client_address(client, type, street, house, flat) " +
       "SELECT id, t2.type, t2.street, t2.house, t2.flat FROM TMP_TABLE t2 " +
       "INNER JOIN client ON t2.client=client.cia_id " +
@@ -369,33 +359,28 @@ public class CIAWorker extends Worker {
       "street=EXCLUDED.street," +
       "house=EXCLUDED.house," +
       "flat=EXCLUDED.flat;", clientAddressTmp);
+    logger.info("migrate client address tmp table end.");
+  }
 
-    //language=PostgreSQL
+  private void migrateClientPhoneTmpTable() {
+    logger.info("migrate client phone tmp table begin...");
     exec("INSERT INTO client_phone(client, type, number) " +
       "SELECT id, t2.type, t2.number FROM TMP_TABLE t2 " +
       "INNER JOIN client ON client.cia_id=t2.client " +
       "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
       "number=EXCLUDED.number;", clientPhoneTmp);
-    logger.info("migrate child tmp tables to tables end.");
-  }
-
-  private void flushWriters() throws IOException {
-    charmCsvBw.flush();
-    clientCsvBw.flush();
-    clientAddressCsvBw.flush();
-    clientPhoneCsvBw.flush();
+    logger.info("migrate client phone tmp table end.");
   }
 
   @Override
   public void deleteTmpTables() {
-    logger.info("delete tmp tables to tables begin...");
-    //language=PostgreSQL
-    exec("DROP TABLE TMP_TABLE", clientTmp);
-    //language=PostgreSQL
-    exec("DROP TABLE TMP_TABLE", clientAddressTmp);
-    //language=PostgreSQL
-    exec("DROP TABLE TMP_TABLE", clientPhoneTmp);
-    logger.info("delete tmp tables to tables end.");
+    logger.info("drop tmp tables to tables begin...");
+    parallelTasks(
+      () -> exec("DROP TABLE TMP_TABLE", clientTmp),
+      () -> exec("DROP TABLE TMP_TABLE", clientAddressTmp),
+      () -> exec("DROP TABLE TMP_TABLE", clientPhoneTmp)
+    );
+    logger.info("drop tmp tables to tables end.");
   }
 
   @Override

@@ -10,7 +10,7 @@ import kz.greetgo.sandbox.db.util.JdbcSandbox;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 @Bean
@@ -22,33 +22,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
   public BeanGetter<Ssh> ssh;
 
   @Override
-  public void connect() {
+  public void start() {
     ssh.get().connect();
     migrateFiles(ssh.get().loadMigrationFiles());
     ssh.get().close();
   }
 
-  @Override
-  public void createTmpTable() {
-
-  }
-
-  @Override
-  public void validTmpTable() {
-
-  }
-
-  @Override
-  public void migrateToTables() {
-
-  }
-
-  @Override
-  public void start() {
-
-  }
-
   private void migrateFiles(List<File> files) {
+    files.sort(Comparator.comparing(File::getName));
     for (File file : files) {
       try {
         migrateFile(ArchiveUtil.unzip(file));
@@ -68,10 +49,5 @@ public class MigrationRegisterImpl implements MigrationRegister {
         return null;
       }
     );
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

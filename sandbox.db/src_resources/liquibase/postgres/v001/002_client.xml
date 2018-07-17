@@ -98,6 +98,7 @@
         money float,
         finished_at date,
         type integer,
+        actual SMALLINT NOT NULL DEFAULT 1,
         FOREIGN KEY (type) REFERENCES transaction_type(id),
         FOREIGN KEY (account) REFERENCES client_account(id)
       )

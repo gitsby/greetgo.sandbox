@@ -89,10 +89,10 @@ public interface MigrationTestDao {
   @Select("SELECT id, client, money, number, registered_at AS registeredAt FROM client_account WHERE actual = 1;")
   List<ClientAccount> getClientAccounts();
 
-  @Select("SELECT id, account AS accountId, money, finished_at AS finishedAt, type AS typeId FROM client_account_transaction;")
+  @Select("SELECT id, account AS accountId, money, finished_at AS finishedAt, type AS typeId FROM client_account_transaction WHERE actual=1;")
   List<ClientAccountTransaction> getClientAccountTransactions();
 
   @Delete("UPDATE client_account SET actual = 0;" +
-    "DELETE FROM client_account_transaction")
+    "UPDATE client_account_transaction SET actual = 0;")
   void clearClientAccountTable();
 }

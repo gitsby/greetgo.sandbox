@@ -31,11 +31,11 @@ public abstract class WorkerTest extends ParentTestNg {
   public BeanGetter<DbConfig> dbConf;
   public BeanGetter<Migration> migration;
 
-  protected CIAWorker getCiaWorker(Connection connection, InputStream inputStream) {
+  CIAWorker getCiaWorker(Connection connection, InputStream inputStream) {
     return Worker.getCiaWorker(connection, inputStream);
   }
 
-  protected FRSWorker getFrsWorker(Connection connection, InputStream inputStream) {
+  FRSWorker getFrsWorker(Connection connection, InputStream inputStream) {
     return Worker.getFrsWorker(connection, inputStream);
   }
 
