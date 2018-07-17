@@ -2,7 +2,7 @@
 export class ClientRecord{
     public id:number;
     public fullName:string;
-    public charmId:number;
+    public charm:string|null;
     public age:number;
     public totalBalance:number;
     public maxBalance:number;
@@ -11,7 +11,7 @@ export class ClientRecord{
     public assign(o: any): ClientRecord{
       this.id = o.id;
       this.fullName = o.fullName;
-      this.charmId = o.charmId;
+      this.charm = o.charm;
       this.age = o.age;
       this.totalBalance = o.totalBalance;
       this.maxBalance = o.maxBalance;

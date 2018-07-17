@@ -21,6 +21,7 @@ import {ClientRecordsCustomDatasource} from "../client-records/client-records-cu
 import {ClientRecordsComponent} from "../client-records/client-records.component";
 import {CharmService} from "../../../services/CharmService";
 import {forEach} from "@angular/router/src/utils/collection";
+import {Charm} from "../../../models/Charm";
 
 @Component({
   selector: 'app-client-dialog',
@@ -30,25 +31,8 @@ import {forEach} from "@angular/router/src/utils/collection";
 export class ClientDialogComponent implements OnInit {
 
   form: FormGroup;
-  charmNames = [
-    "BOI","GUTBOI","BERIGUTBOI", "BERIGUTBOI","BERISHUGBOI"
-  ];//this.charmService.charms;
-  charms = [
-    {"id":0,"name":"BOI"},
-    {"name":"GUTBOI",
-    "id":1},
-    {
-      "name":"BATBOI",
-      "id":2
-    },
-    {
-      "name":"BERIGUTBOI",
-      "id":3
-    },
-    {
-      "name":"BERISHUGBOI",
-      "id":5
-    }];
+  charmNames = [];//this.charmService.charms;
+  charms : Charm[];
 
   phoneTypes = Object.keys(PhoneType);
   genderTypes = Object.keys(GenderType);
@@ -66,17 +50,19 @@ export class ClientDialogComponent implements OnInit {
   ) {}
 
   createForm(client:Client){
-    console.log("\nGONNNNA CREAATTE YOUUUR FUUURRRMM\n");
+    // console.log("\nGONNNNA CREAATTE YOUUUR FUUURRRMM\n");
     this.gettingOrSendingDataToServer=false;
     this.doWeHaveDataOrNot=true;
     const id = client.id;
     const name = client.name;
     const surname = client.surname;
     const patronymic = client.patronymic;
-    const charm;
-    this.charms.forEach(){
-
-    }
+    let charm;
+    this.charmService.charms.forEach((iteratingCharm)=>{
+      if(client.charmId ===iteratingCharm.id){
+        charm=iteratingCharm.name;
+      }
+    } );
     const birthDate = new Date(client.birthDate);
     let phones = client.phones;
     const factualAddress = client.factualAddress;
@@ -107,9 +93,10 @@ export class ClientDialogComponent implements OnInit {
 
   ngOnInit() {
     this.gettingOrSendingDataToServer=true;
-    console.log("data id ngoninit: " + this.data.id);
+    // console.log("data id ngoninit: " + this.data.id);
     this.data.id===null?this.generateNewClient():this.getSelectedClientFromServer(this.data.id);
-
+    this.charms = this.charmService.charms;
+    this.charmNames = this.charms.map((charm)=>charm.name);
   }
 
   get phonesFormArray(): FormArray {
@@ -137,23 +124,37 @@ export class ClientDialogComponent implements OnInit {
 
     this.gettingOrSendingDataToServer=true;
     let client = Client.copy(this.form.getRawValue());
+    this.charmService.charms.forEach((iteratingCharm)=>{
+      if(this.form.getRawValue().charm === iteratingCharm.name){
+        client.charmId = iteratingCharm.id;
+      }
+    });
     client.birthDate = this.form.getRawValue().birthDate.getTime();
     this.client=client;
     if (this.data.id !== null) {
       this.httpService.post('/client-records/change-client', {
         client: JSON.stringify(this.client),
       }).toPromise().then(
-        () => {
+        (ans) => {
           this.gettingOrSendingDataToServer = false;
-          console.log( "submit "+ client);
+          // console.log( "submit "+ client);
           this.doWeHaveDataOrNot=false;
-          this.dialogRef.close({client:this.client,state:true});
-        },err=>{
-          console.log(err.json());
+          let charmName=null;
+          this.charms.forEach((charm)=>{
+            if(this.client.charmId===charm.id)
+              charmName = charm.name;
+          });
+          // console.log(ans);
+          this.dialogRef.close({client:this.client,state:true,charm:charmName});
         }
-      );
+      ).catch(err=>{
+        this.charmsResolve(err);
+      });
     }
     else{
+      // console.log("\n\n\n");
+      // console.log(this.client);
+      // console.log("\n\n\n");
       this.httpService.post('/client-records/create-client', {
         client: JSON.stringify(this.client),
       }).toPromise().then(
@@ -161,9 +162,17 @@ export class ClientDialogComponent implements OnInit {
           this.gettingOrSendingDataToServer=false;
           this.client.id=res.json();
           this.doWeHaveDataOrNot=false;
-          this.dialogRef.close({client:this.client,state:true});
+          let charmName=null;
+          this.charms.forEach((charm)=>{
+            if(this.client.charmId===charm.id)
+              charmName = charm.name;
+          });
+          // console.log(res);
+          this.dialogRef.close({client:this.client,state:true, charm:charmName});
         }
-      );
+      ).catch((err)=>{
+        this.charmsResolve(err);
+      });
     }
   }
 
@@ -172,9 +181,26 @@ export class ClientDialogComponent implements OnInit {
   // TODO: назови правильно.
   // DONE
 
+  charmsResolve(err){
+    // console.log(err._body);
+    this.gettingOrSendingDataToServer = false;
+    alert("User is not submitted, please change the charm");
+    if(err._body==="No such charm!"){
+      this.gettingOrSendingDataToServer = true;
+
+      this.charmService.assignLocalCharms((charms)=>{
+        this.gettingOrSendingDataToServer=false;
+        this.charms = charms;
+        this.charmNames = [];
+        this.charms.forEach((iteratedCharm)=>{
+          this.charmNames.push(iteratedCharm.name);
+        })
+      });
+    }
+  }
   getSelectedClientFromServer(id:number):void{
-    this.httpService.get('/client-records/get-exact-client', {'clientId': id}).subscribe(res=>{
-      console.log(res);
+    this.httpService.get('/client-records/get-client-details', {'clientId': id}).subscribe(res=>{
+      // console.log(res);
       this.doWeHaveDataOrNot=false;
       this.createForm(Client.copy(res.json()))});
   }

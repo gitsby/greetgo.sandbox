@@ -28,7 +28,9 @@ export class ClientRecordsCustomDatasource implements DataSource<ClientRecord> {
   loadClientRecords()
   {
     this.fetchedClientRecords.subscribe(response=>{
+
       let data=response.json();
+      console.log(response.json());
       this.thisClientRecords =data.table.map(ClientRecord.copy);
       this.size = data.size;
       this.clientRecordsSubject.next(this.thisClientRecords);

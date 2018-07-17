@@ -118,7 +118,7 @@ public class ClientRecordsController implements Controller{
     public void downloadReport(@Par("filename") String filename,
                                BinResponse response)
                                    throws Exception {
-        System.out.println(response.toString());
+        //System.out.println(response.toString());
         clientRecordsRegister.get().downloadReport(filename,response);
     }
 

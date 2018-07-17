@@ -41,11 +41,11 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     @Override
     public ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText){
-        System.out.println(skipNumber+" \n"+
-                           limit+" \n"+
-                            sortDirection+" \n"+
-                            filterType+" \n"+
-                            filterText);
+        //System.out.println(skipNumber+" \n"+
+//                           limit+" \n"+
+//                            sortDirection+" \n"+
+//                            filterType+" \n"+
+//                            filterText);
 
         if(filterText==null){
             filterText="";
@@ -112,6 +112,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     @Override
     public Client getClientDetails(Integer clientId){
+        //System.out.println(clientId);
         if (clientId==null||!isThereSuchClient(clientId)){
             throw new NoClient();
         }
@@ -125,7 +126,8 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
             throw new InvalidClientData();
         }
         client.validity=true;
-        if(!isThereSuchCharm(client.id)){
+        //System.out.println("\n\n\n"+client+"\n\n\n");
+        if(!isThereSuchCharm(client.charmId)){
             throw new NoCharmError();
         }
 
@@ -143,7 +145,8 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     }
 
     public Boolean isThereSuchCharm(int id){
-        return db.get().charms.data.stream().anyMatch(charm->charm.id==id);
+
+        return db.get().charms.data.stream().anyMatch(charm->charm.id.equals(id));
     }
 
 
@@ -196,7 +199,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     }
 
     private boolean isThereSuchClient(int id) {
-        return db.get().clients.data.stream().anyMatch(client -> client.charmId==id);
+        return db.get().clients.data.stream().anyMatch(client -> client.id.equals(id));
     }
 
     @Override
@@ -238,7 +241,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         clientRecordsToSend =getClientRecords(0,getTableSize(), sortDirection,sortType, filterType, filterText);
         int j=1;
         for (ClientRecord clientRecord : clientRecordsToSend.table) {
-            System.out.println(j+" "+ clientRecord.toString());
+            //System.out.println(j+" "+ clientRecord.toString());
             reportClientRecordsView.append(clientRecord,j);
             j++;
         }
@@ -269,6 +272,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     @Override
     public Charms getCharms(){
+
         return db.get().charms;
     }
 

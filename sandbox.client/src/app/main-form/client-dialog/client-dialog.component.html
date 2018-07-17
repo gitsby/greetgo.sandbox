@@ -30,7 +30,7 @@
   <mat-dialog-content>
     <mat-form-field>
      <mat-select placeholder="Charm" formControlName="charm" required>
-        <mat-option *ngFor="let charm of charms" [value]="charm">
+        <mat-option *ngFor="let charm of charmNames" [value]="charm">
           {{ charm }}
         </mat-option>
       </mat-select>

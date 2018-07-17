@@ -39,7 +39,7 @@ export class MainFormComponent implements OnDestroy{
 
   selectedClientIdChange(changedClient) {
     this.selectedClientId = changedClient;
-    console.log(this.selectedClientId);
+    //console.log(this.selectedClientId);
   }
 
   openDialog(id = null) {
@@ -55,17 +55,17 @@ export class MainFormComponent implements OnDestroy{
       });
 
       this.clientDialogRef.afterClosed().subscribe((data:object)=> {
-        console.log(typeof data);
-        console.log(data);
-        console.log(data["client"]);
+        //console.log(typeof data);
+        //console.log(data);
+        //console.log(data["client"]);
         if (data["state"]===true) {
           let client = data["client"];
           if (id === null) {
 
             this.selectedClientId = parseInt(client.id);
-            this.clientRecordsComponent.addOneRow(client);
+            this.clientRecordsComponent.addOneRow(client,data["charm"]);
           } else {
-            this.clientRecordsComponent.updateOneRow(client);
+            this.clientRecordsComponent.updateOneRow(client,data["charm"]);
           }
         }
 
@@ -76,7 +76,7 @@ export class MainFormComponent implements OnDestroy{
 
   deleteButtonClicked(): void {
     this.httpService.post("/client-records/delete-client", {"clientId": this.selectedClientId}).toPromise().then(res => {
-      console.log(res.json());
+      //console.log(res.json());
       this.clientRecordsComponent.loadClientRecordsPage();
     });
   }

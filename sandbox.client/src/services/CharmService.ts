@@ -1,18 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HttpService } from 'HttpService';
-import {Http} from "@angular/http";
 import {Charm} from "../models/Charm";
+import {HttpService} from "./HttpService";
 
 @Injectable()
 export class CharmService {
-  httpService:HttpService = new HttpService(Http);
   charms:Charm[];
-  constructor() { }
+  constructor(private httpService: HttpService) { }
 
   getCharms(){
     return this.httpService.get('/client-records/get-charms').subscribe(
       res =>{
-        this.charms=res.json().map(charm=>Charm.copy(charm));
+        this.charms=res.json().data.map(charm=>Charm.copy(charm));
+
+      }
+    )
+  }
+  assignLocalCharms(callback){
+    this.httpService.get('/client-records/get-charms').subscribe(
+      res =>{
+        this.charms=res.json().data.map(charm=>Charm.copy(charm));
+        callback(this.charms);
       }
     )
   }

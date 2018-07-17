@@ -41,10 +41,6 @@ public class StandJsonDb implements HasAfterInject{
     public String accountsPath = getClass().getResource("StandAccountsDb.json").getPath();
     public String charmsPath = getClass().getResource("StandDbCharms.json").getPath();
 
-//    public static void main(String[] args){
-//        String data = clientsPath + "\n" + accountsPath;
-//        System.err.println(data);
-//    }
 
     @Override
     public void afterInject() throws Exception {
@@ -55,6 +51,7 @@ public class StandJsonDb implements HasAfterInject{
         bufferedReader = new BufferedReader(new FileReader(charmsPath));
         charms = gson.fromJson(bufferedReader,Charms.class);
         Filter filter = new Filter();
+        //System.out.println(charms.toString());
         filter.filterType=FilterType.NAME;
         filter.filterText="";
         clientRecordsCreate(filter);
@@ -80,9 +77,9 @@ public class StandJsonDb implements HasAfterInject{
         clientRecordsToSend.table.clear();
 
         for(int i=0; i<clients.data.size(); i++){
-            System.out.println(clients.data.get(i).id);
+            //System.out.println(clients.data.get(i).id);
             if (clients.data.get(i).name.equals("testboi")){
-                System.out.println(clients.data.get(i));
+                //System.out.println(clients.data.get(i));
             }
             if(clients.data.get(i).id>lastId){
                 lastId=clients.data.get(i).id;
@@ -113,7 +110,12 @@ public class StandJsonDb implements HasAfterInject{
         ClientRecord clientRecord = new ClientRecord();
         clientRecord.fullName= clients.data.get(i).surname + " " + clients.data.get(i).name + " " + clients.data.get(i).patronymic;
         clientRecord.id = clients.data.get(i).id;
-        clientRecord.charm = charms.data.stream().filter((charm) -> charm.id==clients.data.get(i).charmId).findAny().get().name;
+        for (Charm charm:charms.data) {
+            if(charm.id.equals(clients.data.get(i).charmId)){
+//                //System.out.println(charm + "  "+charmId+"\n");
+                clientRecord.charm = charm.name;
+            }
+        }
         clientRecord.age = clients.data.get(i).birthDate;
         clientRecord.minBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).min(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
         clientRecord.maxBalance=accounts.data.stream().filter((account) -> clientRecord.id==account.clientId).max(Comparator.comparing(Account::getMoneyNumber)).get().moneyNumber;
