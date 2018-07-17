@@ -1,14 +1,20 @@
 package kz.greetgo.sandbox.controller.register;
 
 
+import java.io.Closeable;
+
 /**
  * Работа с миграцией
  */
-public interface MigrationRegister {
+public interface MigrationRegister extends Closeable {
 
-  /**
-   * Запускает процес миграций
-   */
+  void connect();
+
+  void createTmpTable();
+
+  void validTmpTable();
+
+  void migrateToTables();
+
   void start();
-
 }

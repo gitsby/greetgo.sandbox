@@ -19,21 +19,9 @@ public class Migration implements Closeable {
   private File file;
   private InputStream inputStream;
 
-  public Migration(Connection connection, File file) {
+  public void migrate(Connection connection, File file) throws Exception {
     this.connection = connection;
     this.file = file;
-  }
-
-  @Override
-  public void close() {
-    try {
-      inputStream.close();
-    } catch (Exception e) {
-      logger.error(e);
-    }
-  }
-
-  public void migrate() throws Exception {
     download();
   }
 
@@ -65,5 +53,14 @@ public class Migration implements Closeable {
     if (res.isEmpty()) return null;
     if (res.equals("xml") || res.equals("txt")) return res;
     return getFileFormat(FilenameUtils.removeExtension(path));
+  }
+
+  @Override
+  public void close() {
+    try {
+      inputStream.close();
+    } catch (Exception e) {
+      logger.error(e);
+    }
   }
 }
