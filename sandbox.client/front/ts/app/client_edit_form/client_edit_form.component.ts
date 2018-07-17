@@ -61,7 +61,7 @@ export class ClientEditFormComponent implements OnInit {
 
   checkClientData(): boolean {
     if (this.checkClientPhones() &&
-      this.isCorrectDate(this.clientToSave.birthDate) &&
+      ClientEditFormComponent.isCorrectDate(this.clientToSave.birthDate) &&
       this.checkClientText() &&
       this.checkClientAddress() &&
       !ClientEditFormComponent.isEmpty(this.clientToSave.birthDate) &&
@@ -75,33 +75,33 @@ export class ClientEditFormComponent implements OnInit {
   checkClientAddress(): boolean {
     if (ClientEditFormComponent.isEmpty(this.clientToSave.addressReg)) return false;
     let re = /^[a-zA-Z0-9а-яА-Я_]+$/;
-    return this.isCorrect(re, this.clientToSave.addressReg.street) &&
-      this.isCorrect(re, this.clientToSave.addressReg.house) &&
-      this.isCorrect(re, this.clientToSave.addressReg.flat);
+    return ClientEditFormComponent.isCorrect(re, this.clientToSave.addressReg.street) &&
+      ClientEditFormComponent.isCorrect(re, this.clientToSave.addressReg.house) &&
+      ClientEditFormComponent.isCorrect(re, this.clientToSave.addressReg.flat);
   }
 
   checkClientText(): boolean {
     let re = /^[a-zA-Zа-яА-Я_]*$/;
-    return this.isCorrect(re, this.clientToSave.name)
-      && this.isCorrect(re, this.clientToSave.surname);
+    return ClientEditFormComponent.isCorrect(re, this.clientToSave.name)
+      && ClientEditFormComponent.isCorrect(re, this.clientToSave.surname);
   }
 
   checkClientPhones(): boolean {
     let re = /^[0-9]-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$/;
-    return this.isCorrect(re, this.clientToSave.homePhone.number)
-      && this.isCorrect(re, this.clientToSave.workPhone.number)
-      && this.isCorrect(re, this.clientToSave.mobilePhone.number);
+    return ClientEditFormComponent.isCorrect(re, this.clientToSave.homePhone.number)
+      && ClientEditFormComponent.isCorrect(re, this.clientToSave.workPhone.number)
+      && ClientEditFormComponent.isCorrect(re, this.clientToSave.mobilePhone.number);
   }
 
-  isCorrect(re: RegExp, text: string): boolean {
+  static isCorrect(re: RegExp, text: string): boolean {
     if (ClientEditFormComponent.isEmpty(text)) return false;
     return text.match(re) != null;
   }
 
   reformatAllPhoneNumbers() {
-    this.clientToSave.homePhone.number = this.reformatPhoneNumber(this.clientToSave.homePhone.number);
-    this.clientToSave.mobilePhone.number = this.reformatPhoneNumber(this.clientToSave.mobilePhone.number);
-    this.clientToSave.workPhone.number = this.reformatPhoneNumber(this.clientToSave.workPhone.number);
+    this.clientToSave.homePhone.number = ClientEditFormComponent.reformatPhoneNumber(this.clientToSave.homePhone.number);
+    this.clientToSave.mobilePhone.number = ClientEditFormComponent.reformatPhoneNumber(this.clientToSave.mobilePhone.number);
+    this.clientToSave.workPhone.number = ClientEditFormComponent.reformatPhoneNumber(this.clientToSave.workPhone.number);
   }
 
   static isEmpty(element: any): boolean {
@@ -135,7 +135,7 @@ export class ClientEditFormComponent implements OnInit {
     this.clientToSave.birthDate = new Date(dateText);
   }
 
-  isCorrectDate(date: Date): boolean {
+  static isCorrectDate(date: Date): boolean {
     return date.getTime() < new Date().getTime() && date.getTime() > new Date("1000-01-01").getTime();
   }
 
@@ -196,7 +196,7 @@ export class ClientEditFormComponent implements OnInit {
     return chunk.join("-").toUpperCase();
   }
 
-  reformatPhoneNumber(number: string | null): string {
+  static reformatPhoneNumber(number: string | null): string {
     if (number == null) return "";
     return number.replace(/[($)\W\s._\-]+/g, '');
   }

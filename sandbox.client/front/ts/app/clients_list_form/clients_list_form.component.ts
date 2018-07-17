@@ -162,7 +162,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   close(clientRecord: ClientRecord | null) {
     this.clientInfoFormComponentEnable = false;
     this.editClientId = null;
-    this.insertRecord(clientRecord);
+    if (clientRecord != null) this.insertRecord(clientRecord);
   }
 
   private insertRecord(clientRecord: ClientRecord) {
@@ -194,6 +194,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   migrate() {
+    alert("migration");
     this.httpService.get("/migration/start").toPromise().then();
   }
 }
