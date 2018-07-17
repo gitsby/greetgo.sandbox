@@ -6,10 +6,11 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.MethodFilter;
 import kz.greetgo.mvc.core.RequestMethod;
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
+import kz.greetgo.sandbox.controller.util.Controller;
 
 @Bean
 @Mapping("/migration")
-public class MigrationController {
+public class MigrationController implements Controller {
 
   public BeanGetter<MigrationRegister> migrationRegister;
 

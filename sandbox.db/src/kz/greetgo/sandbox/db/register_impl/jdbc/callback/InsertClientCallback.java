@@ -78,7 +78,7 @@ public class InsertClientCallback extends SqlExecuteConnection<Integer, Integer>
 
   @Override
   public void returning() {
-    sql.append("RETURNING id");
+    sql.append(" RETURNING id");
   }
 
   private boolean isExist(ClientToSave clientToSave) {

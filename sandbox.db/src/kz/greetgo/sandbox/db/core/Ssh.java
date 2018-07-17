@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -15,7 +17,7 @@ import java.util.Vector;
 @Bean
 public class Ssh implements Closeable {
 
-  private final static Logger logger = Logger.getLogger(Ssh.class);
+  private final static Logger logger = Logger.getLogger("callback");
 
   public BeanGetter<SshConfig> sshConfig;
 
@@ -58,20 +60,23 @@ public class Ssh implements Closeable {
   }
 
   private File getNewTmpFile(String name) {
-    return new File(getMigrationFolder()+name);
+    File tmpFile =  new File("build/out_files/"+name);
+    if (!tmpFile.exists()) tmpFile.getParentFile().mkdirs();
+    return tmpFile;
   }
 
-  private void rename(File file, String newName) {
+  private File rename(File file, String newName) {
     String newNamePath = file.getParent() + "/" + newName;
     try {
       sftpChannel.rename(file.getPath(), newNamePath);
     } catch (SftpException e) {
       logger.error(e);
     }
+    return new File(newNamePath);
   }
 
-  private void renameToMigrated(File file) {
-    rename(file, "migrated_"+file.getName());
+  private File renameToMigrated(File file) {
+    return rename(file, "migrated_"+file.getName());
   }
 
   @Override
@@ -92,7 +97,7 @@ public class Ssh implements Closeable {
   }
 
   private boolean isNormalFile (ChannelSftp.LsEntry entry) {
-    return !entry.getFilename().equals(".") && !entry.getFilename().equals("..");
+    return !entry.getFilename().startsWith(".");
   }
 
   private Vector getMigrationFolderVector() throws SftpException {
@@ -104,7 +109,7 @@ public class Ssh implements Closeable {
   }
 
   private String getMigrationFolder() {
-    return "$HOME/files_for_migration/";
+    return System.getProperty("user.home") + "/files_for_migration/";
   }
 
   private boolean isMigrated(String fileName) {
@@ -116,12 +121,20 @@ public class Ssh implements Closeable {
     try {
       List<File> notMigratedFiles = getNotMigratedFiles();
       for (File file : notMigratedFiles) {
-        filesForMigration.add(load(file));
-        renameToMigrated(file);
+        filesForMigration.add(load(renameToMigrated(file)));
       }
     } catch (SftpException e) {
       logger.error(e);
     }
     return filesForMigration;
+  }
+
+  public void uploadFile(File errors) {
+    try(InputStream inputStream = new FileInputStream(errors)) {
+      sftpChannel.put(inputStream, getMigrationFolder()+errors.getName(), ChannelSftp.OVERWRITE);
+    } catch (Exception e) {
+      logger.error(e);
+    }
+    errors.delete();
   }
 }

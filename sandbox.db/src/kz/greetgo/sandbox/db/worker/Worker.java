@@ -32,19 +32,21 @@ public abstract class Worker implements WorkerInterface {
     return new FRSWorker(connection, inputStream);
   }
 
-  public final void execute() throws SQLException, IOException {
+  public final File execute() throws SQLException, IOException {
     logger.info("----- EXECUTING -----");
     long start = System.nanoTime();
     fillTmpTables();
     margeTmpTables();
     validTmpTables();
     migrateTmpTables();
-    deleteTmpTables();
-    finish();
     long end = System.nanoTime();
     Calendar c = new GregorianCalendar();
     c.setTime(new Date(end-start));
     logger.info(String.format("----- FINISH AT: %d n/s -----", end-start));
+    File error = getErrorInFile();
+    deleteTmpTables();
+    finish();
+    return error;
   }
 
   protected void copy(CopyManager copyManager, File file, String tmp) {
@@ -92,7 +94,7 @@ public abstract class Worker implements WorkerInterface {
     }
   }
 
-  private String r(String sql, String tmp) {
+  protected String r(String sql, String tmp) {
     sql = sql.replaceAll("TMP_TABLE", tmp);
     return sql;
   }
@@ -105,6 +107,17 @@ public abstract class Worker implements WorkerInterface {
       return str;
     }
     return "\\N";
+  }
+
+  protected File getFile(String name) {
+    File newFile = new File("build/out_files/"+name);
+    if (!newFile.exists()) newFile.getParentFile().mkdirs();
+    try {
+      newFile.createNewFile();
+    } catch (IOException e) {
+      logger.error(e);
+    }
+    return newFile;
   }
 
   protected void parallelTasks(Runnable... runnableList) {
@@ -126,5 +139,13 @@ public abstract class Worker implements WorkerInterface {
     for (Runnable aRunnableList : runnableList) threadList.add(new Thread(aRunnableList));
     threadList.forEach(Thread::start);
     return threadList;
+  }
+
+  protected void copyOut(CopyManager copyManager, String tmp, Writer writer) {
+    try {
+      copyManager.copyOut(r("COPY (SELECT * FROM TMP_TABLE WHERE error IS NOT NULL) TO STDOUT WITH NULL ''", tmp), writer);
+    } catch (Exception e) {
+      logger.error(e);
+    }
   }
 }

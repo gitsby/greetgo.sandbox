@@ -24,9 +24,8 @@ public interface ClientTestDao {
                     @Param("birth_date") Date birthDate,
                     @Param("charm") Integer charmId);
 
-  @Insert("INSERT INTO charm(id, name, description, energy) VALUES (#{id}, #{name}, #{description}, #{energy})")
-  void insertCharm(@Param("id") Integer id,
-                   @Param("name") String name,
+  @Insert("INSERT INTO charm(name, description, energy) VALUES (#{name}, #{description}, #{energy})")
+  void insertCharm(@Param("name") String name,
                    @Param("description") String description,
                    @Param("energy") Float energy);
 

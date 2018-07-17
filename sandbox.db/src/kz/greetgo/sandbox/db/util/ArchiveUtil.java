@@ -60,4 +60,8 @@ public class ArchiveUtil {
     }
     return null;
   }
+
+  public static void main(String[] args) throws Exception {
+    System.out.println(unzip(new File("/Users/adilbekmailanov/files_for_migration/from_cia_2018-02-21-154929-1-300.xml.tar.bz2")));
+  }
 }

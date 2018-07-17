@@ -26,7 +26,6 @@ public class StandDb implements HasAfterInject {
   @Override
   public void afterInject() throws Exception {
     appendCharms();
-
     appendClientDetailsList();
 
     try (BufferedReader br = new BufferedReader(

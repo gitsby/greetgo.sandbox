@@ -282,6 +282,19 @@ public class FRSWorker extends Worker {
   }
 
   @Override
+  public File getErrorInFile() {
+    File errors = getFile(getNameWithDate("migrated_frs_errors")+".csv");
+    try (Writer writer = getWriter(errors)){
+      CopyManager copyManager = new CopyManager((BaseConnection) connection);
+      copyOut(copyManager, clientAccountTmp, writer);
+      copyOut(copyManager, clientAccountTransactionTmp, writer);
+    } catch (Exception e) {
+      logger.error(e);
+    }
+    return errors;
+  }
+
+  @Override
   public void finish() throws IOException {
     logger.info("finish method begin...");
     clientAccountCsvBw.close();

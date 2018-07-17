@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.sql.Connection;
-import java.util.Objects;
 
 @Bean
 public class Migration implements Closeable {
@@ -19,10 +18,10 @@ public class Migration implements Closeable {
   private File file;
   private InputStream inputStream;
 
-  public void migrate(Connection connection, File file) throws Exception {
+  public File migrate(Connection connection, File file) throws Exception {
     this.connection = connection;
     this.file = file;
-    download();
+    return download();
   }
 
   private void createInputStream() {
@@ -33,19 +32,22 @@ public class Migration implements Closeable {
     }
   }
 
-  private void download() throws Exception {
+  private File download() throws Exception {
 
+    File errorsFile = null;
     createInputStream();
 
     connection.setAutoCommit(false);
-    switch (Objects.requireNonNull(getFileFormat(file.getPath()))) {
+    switch (getFileFormat(file.getPath())) {
       case "xml":
-        Worker.getCiaWorker(connection, inputStream).execute();
+        errorsFile = Worker.getCiaWorker(connection, inputStream).execute();
         break;
       case "txt":
-        Worker.getFrsWorker(connection, inputStream).execute();
+        errorsFile = Worker.getFrsWorker(connection, inputStream).execute();
     }
     connection.setAutoCommit(true);
+
+    return errorsFile;
   }
 
   private static String getFileFormat(String path) {

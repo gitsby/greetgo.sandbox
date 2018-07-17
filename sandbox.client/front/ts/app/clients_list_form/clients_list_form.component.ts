@@ -50,10 +50,10 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   loadPage() {
+    this.clientRecords = [];
     this.httpService.get("/client/list", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
-      this.clientRecords = new Array();
       for (let res of result.json()) {
         this.clientRecords.push(ClientRecord.copy(res));
       }

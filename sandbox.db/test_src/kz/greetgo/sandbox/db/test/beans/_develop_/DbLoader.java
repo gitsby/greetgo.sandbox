@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.db.register_impl.TokenRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
+import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import org.apache.log4j.Logger;
 
 import java.util.function.Function;
@@ -16,6 +17,7 @@ public class DbLoader {
 
   public BeanGetter<StandDb> standDb;
   public BeanGetter<AuthTestDao> authTestDao;
+  public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<TokenRegister> tokenManager;
 
   public void loadTestData() {
@@ -27,7 +29,9 @@ public class DbLoader {
       .peek(p -> p.encryptedPassword = passwordEncryption.apply(p.password))
       .peek(PersonDot::showInfo)
       .forEach(authTestDao.get()::insertPersonDot);
-
+    standDb.get().charms.stream().forEach( charmDot ->
+      clientTestDao.get().insertCharm(charmDot.name, charmDot.description, charmDot.energy)
+    );
     logger.info("Finish loading test data");
   }
 }

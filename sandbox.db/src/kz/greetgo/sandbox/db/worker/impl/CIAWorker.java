@@ -335,8 +335,9 @@ public class CIAWorker extends Worker {
     logger.info("migrate client tmp table begin...");
     exec("INSERT INTO charm(name, description, energy) " +
       "SELECT \"name\", '', 1.0 FROM TMP_TABLE WHERE \"name\" IS NOT NULL AND \"name\" NOT IN (SELECT name FROM charm);", charmTmp);
+
     exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm_id, cia_id) " +
-        "SELECT t2.surname, t2.name, t2.patronymic, t2.gender, to_date(t2.birth_date, 'yyyy-MM-dd'), 1, t2.id " +
+        "SELECT t2.surname, t2.name, t2.patronymic, t2.gender, to_date(t2.birth_date, 'yyyy-MM-dd'), (SELECT t1.id FROM charm t1 WHERE t1.name=t2.charm LIMIT 1), t2.id " +
         "FROM TMP_TABLE t2 " +
         "WHERE t2.error IS NULL ON CONFLICT(cia_id) DO UPDATE SET " +
         "surname=EXCLUDED.surname," +
@@ -344,7 +345,7 @@ public class CIAWorker extends Worker {
         "patronymic=EXCLUDED.patronymic," +
         "gender=EXCLUDED.gender," +
         "birth_date=EXCLUDED.birth_date," +
-        "charm_id=1," +
+        "charm_id=EXCLUDED.charm_id," +
         "cia_id=EXCLUDED.cia_id;",
       clientTmp);
     logger.info("migrate client tmp table end.");
@@ -370,6 +371,20 @@ public class CIAWorker extends Worker {
       "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
       "number=EXCLUDED.number;", clientPhoneTmp);
     logger.info("migrate client phone tmp table end.");
+  }
+
+  @Override
+  public File getErrorInFile() {
+    File errors = getFile(getNameWithDate("migrated_cia_errors")+".csv");
+    try (Writer writer = getWriter(errors)){
+      CopyManager copyManager = new CopyManager((BaseConnection) connection);
+      copyOut(copyManager, clientTmp, writer);
+      copyOut(copyManager, clientAddressTmp, writer);
+      copyOut(copyManager, clientPhoneTmp, writer);
+    } catch (Exception e) {
+      logger.error(e);
+    }
+    return errors;
   }
 
   @Override

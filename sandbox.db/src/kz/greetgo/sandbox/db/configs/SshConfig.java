@@ -6,15 +6,15 @@ import kz.greetgo.conf.hot.Description;
 @Description("Параметры доступа к SSH")
 public interface SshConfig {
 
-  @DefaultStrValue("127.0.0.1")
+  @DefaultStrValue("192.168.26.61")
   String host();
 
-  @DefaultStrValue("user")
+  @DefaultStrValue("adilbekmailanov")
   String user();
 
-  @DefaultStrValue("Secret")
+  @DefaultStrValue("1q2w3e4r5t6y7u8i9o")
   String password();
 
-  @DefaultStrValue("2020")
+  @DefaultStrValue("22")
   Integer port();
 }
