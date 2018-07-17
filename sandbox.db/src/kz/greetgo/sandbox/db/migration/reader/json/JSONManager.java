@@ -82,7 +82,7 @@ public class JSONManager {
 
 
   private void joinDeadThreads() throws InterruptedException {
-    while (accountSenderThreadNum > 6 || transactionSenderThreadNum > 6) {
+    while (accountSenderThreadNum > 1 && transactionSenderThreadNum > 1) {
       System.out.println("THREADS ARE BUSY" + accountSenderThreadNum + " " + transactionSenderThreadNum);
       Thread.sleep(100);
 
@@ -108,10 +108,11 @@ public class JSONManager {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     long time = System.nanoTime();
-    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_1000000.txt");
+    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_30000.txt");
     System.out.println("LOADING");
     manager.load(transactions -> {
       System.out.println("TRANSACTIONS:" + transactions.size() + "::::");
+      System.out.println("MONEY: " + Float.valueOf(transactions.get(0).money.replace("_", "")));
       System.out.println(transactions);
     }, accounts -> {
       System.out.println("ACCOUNTS:" + accounts.size() + "::::");

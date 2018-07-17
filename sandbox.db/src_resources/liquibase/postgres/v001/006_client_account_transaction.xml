@@ -7,10 +7,20 @@
     <sql endDelimiter=";;"><![CDATA[
       create table transaction_type (
         id int not null primary key,
-        code varchar(30) not null,
+        code varchar(30),
         name varchar(100)
       )
     ]]></sql>
+  </changeSet>
+
+  <changeSet author="ali" id="auto-increment-TransactionType">
+    <addAutoIncrement
+      columnDataType="int"
+      columnName="id"
+      incrementBy="1"
+      schemaName="public"
+      startWith="1"
+      tableName="transaction_type"/>
   </changeSet>
 
   <changeSet author="ali" id="create-table-ClientAccountTransaction">
@@ -25,6 +35,16 @@
         )
       ]]>
     </sql>
+  </changeSet>
+
+  <changeSet author="ali" id="auto-increment-ClientAccountTransaction">
+    <addAutoIncrement
+      columnDataType="int"
+      columnName="id"
+      incrementBy="1"
+      schemaName="public"
+      startWith="1"
+      tableName="client_account_transaction"/>
   </changeSet>
 
   <changeSet author="ali" id="create-foreign-TransactionAccountFK">

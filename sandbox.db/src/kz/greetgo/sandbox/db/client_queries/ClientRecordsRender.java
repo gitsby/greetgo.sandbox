@@ -39,7 +39,7 @@ public class ClientRecordsRender extends ClientRecordsView<Void> {
 
     while (resultSet.next()) {
       ClientRecordRow clientRecord = new ClientRecordRow();
-      clientRecord.id = resultSet.getInt("id");
+      clientRecord.id = resultSet.getInt("client_id");
       clientRecord.surname = resultSet.getString("surname");
       clientRecord.name = resultSet.getString("name");
       clientRecord.patronymic = (resultSet.getString("patronymic") != null) ? resultSet.getString("patronymic") : "";

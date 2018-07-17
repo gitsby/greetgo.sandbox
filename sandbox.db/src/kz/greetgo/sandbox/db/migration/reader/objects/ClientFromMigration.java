@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public class ClientFromMigration {
 
-  public String id;
+  public String client_id;
 
   public String name;
 
@@ -42,7 +42,7 @@ public class ClientFromMigration {
 
   public String toInsertString(StringBuilder error) {
     return "insert into temp_client(client_id, name, surname, patronymic, gender, charm, error, created_at) " +
-      "values('" + id + "','" + name + "','" + surname + "','" + patronymic + "','" + gender + "','" + charm + "','" + error.toString() + "',current_timestamp);";
+      "values('" + client_id + "','" + name + "','" + surname + "','" + patronymic + "','" + gender + "','" + charm + "','" + error.toString() + "',current_timestamp);";
   }
 
 }

@@ -30,7 +30,7 @@ public class ClientHandler extends DefaultHandler {
   private boolean isWorkPhone = false;
   private boolean isHomePhone = false;
 
-  private int clientBatchSize = 1000;
+  private int clientBatchSize = 200;
 
   private int threadNum = 0;
 
@@ -43,8 +43,6 @@ public class ClientHandler extends DefaultHandler {
   private List<ClientSenderThread> clientSenderThreads = new LinkedList<>();
   private List<PhoneSenderThread> phoneSenderThreads = new LinkedList<>();
   private List<AddressSenderThread> addressSenderThreads = new LinkedList<>();
-
-  private StringBuilder error = new StringBuilder();
 
   private boolean mobileOccured = false;
   private boolean regOccured = false;
@@ -63,7 +61,7 @@ public class ClientHandler extends DefaultHandler {
       mobileOccured = false;
       regOccured = false;
       client.timestamp = new Timestamp(new Date().getTime());
-      client.id = attributes.getValue(0);
+      client.client_id = attributes.getValue(0);
     }
     if (client == null) {
       return;
@@ -102,6 +100,7 @@ public class ClientHandler extends DefaultHandler {
         regOccured = true;
       }
       AddressFromMigration address = new AddressFromMigration();
+      address.client_id = client.client_id;
       address.street = attributes.getValue("street");
       address.house = attributes.getValue("house");
       address.flat = attributes.getValue("flat");
@@ -116,7 +115,7 @@ public class ClientHandler extends DefaultHandler {
     if (isMobilePhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "MOBILE";
 
       phones.add(phone);
@@ -125,7 +124,7 @@ public class ClientHandler extends DefaultHandler {
     if (isWorkPhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "WORKING";
 
       phones.add(phone);
@@ -134,7 +133,7 @@ public class ClientHandler extends DefaultHandler {
     if (isHomePhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "HOME";
 
       phones.add(phone);

@@ -5,6 +5,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.db.classes.TestView;
+import kz.greetgo.sandbox.db.helper.DateHelper;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PhoneDot;
@@ -15,10 +16,6 @@ import org.testng.annotations.Test;
 
 import java.sql.Timestamp;
 import java.text.Collator;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -699,24 +696,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
       ClientRecord record = new ClientRecord();
       Date date = dateRandom(2000, 1980);
       record.id = insertClientWithDate(date);
-      record.age = calculateAge(toLocalDate(date), toLocalDate(new Date()));
+      record.age = DateHelper.calculateAge(DateHelper.toLocalDate(date), DateHelper.toLocalDate(new Date()));
       clientRecords.add(record);
     }
 
     return clientRecords;
   }
 
-  public static LocalDate toLocalDate(Date date) {
-    return LocalDate.from(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
-  }
-
-  private int calculateAge(LocalDate birthDate, LocalDate currentDate) {
-    if ((birthDate != null) && (currentDate != null)) {
-      return Period.between(birthDate, currentDate).getYears();
-    } else {
-      return 0;
-    }
-  }
 
   private int insertClientWithDate(Date date) {
     ClientDot clientDot = new ClientDot();

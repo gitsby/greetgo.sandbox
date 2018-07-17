@@ -30,7 +30,7 @@ public class ClientRecordsQuery extends ClientRecordsView<List<ClientRecord>> {
     ResultSet resultSet = statement.executeQuery();
     while (resultSet.next()) {
       ClientRecord clientRecord = new ClientRecord();
-      clientRecord.id = resultSet.getInt("id");
+      clientRecord.id = resultSet.getInt("client_id");
 
       clientRecord.surname = resultSet.getString("surname");
       clientRecord.name = resultSet.getString("name");

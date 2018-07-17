@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Connector {
+public class SSHConnector {
 
   private final String ip;
   private final int port;
@@ -21,7 +21,7 @@ public class Connector {
 
   private Channel channel;
 
-  public Connector(String ip, int port, String userName, String password, int timeOut) throws Exception {
+  public SSHConnector(String ip, int port, String userName, String password, int timeOut) throws Exception {
     this.ip = ip;
     this.port = port;
     this.userName = userName;
@@ -49,7 +49,7 @@ public class Connector {
     return res;
   }
 
-  public void sendCommand(String command) throws IOException, JSchException {
+  public void sendCommand(String command) throws JSchException {
     channel = session.openChannel("exec");
     ((ChannelExec) channel).setCommand(command);
     channel.connect();
@@ -94,20 +94,25 @@ public class Connector {
   }
 
   public void downloadFile(String filePath) throws JSchException, SftpException {
+    System.out.println("Downloading:" + filePath);
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
-    sftp.get(filePath, "C:\\Programs\\TEST");
+    sftp.get("/Users/tester/test/" + filePath, "build/" + filePath);
     sftp.disconnect();
   }
 
+  public static SSHConnector getConnection() throws Exception {
+    return new SSHConnector("192.168.26.61", 22, "Tester", "123", 120000);
+  }
+
   public static void main(String[] args) throws Exception {
-    Connector connector = new Connector("192.168.26.61", 22, "Tester", "123", 120000);
+    SSHConnector connector = new SSHConnector("192.168.26.61", 22, "Tester", "123", 120000);
 
     connector.openConnection();
     connector.sendCommand("cd test; ls");
 
     for (String file : connector.recData()) {
-      connector.downloadFile("/Users/tester/test/" + file);
+      connector.downloadFile(file);
     }
 
     System.out.println("Downloaded files.");
