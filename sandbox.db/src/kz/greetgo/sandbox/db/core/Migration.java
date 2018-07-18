@@ -1,17 +1,15 @@
 package kz.greetgo.sandbox.db.core;
 
 import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.sandbox.db.util.Informative;
 import kz.greetgo.sandbox.db.worker.Worker;
 import liquibase.util.file.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.sql.Connection;
-import java.util.Objects;
 
 @Bean
-public class Migration extends Informative implements Closeable {
+public class Migration implements Closeable {
 
   private static Logger logger = Logger.getLogger(Migration.class);
 
@@ -20,45 +18,36 @@ public class Migration extends Informative implements Closeable {
   private File file;
   private InputStream inputStream;
 
-  public Migration(Connection connection, File file) {
+  public File migrate(Connection connection, File file) throws Exception {
     this.connection = connection;
     this.file = file;
-  }
-
-  @Override
-  public void close() {
-    try {
-      inputStream.close();
-    } catch (Exception e) {
-      logger.error(e.getMessage());
-    }
-  }
-
-  public void migrate() throws Exception {
-    download();
+    return download();
   }
 
   private void createInputStream() {
     try {
       inputStream = new FileInputStream(file);
     } catch (FileNotFoundException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
-  private void download() throws Exception {
+  private File download() throws Exception {
 
+    File errorsFile = null;
     createInputStream();
 
     connection.setAutoCommit(false);
-    switch (Objects.requireNonNull(getFileFormat(file.getPath()))) {
+    switch (getFileFormat(file.getPath())) {
       case "xml":
-        Worker.getCiaWorker(connection, inputStream).execute();
+        errorsFile = Worker.getCiaWorker(connection, inputStream).execute();
         break;
       case "txt":
-        Worker.getFrsWorker(connection, inputStream).execute();
+        errorsFile = Worker.getFrsWorker(connection, inputStream).execute();
     }
     connection.setAutoCommit(true);
+
+    return errorsFile;
   }
 
   private static String getFileFormat(String path) {
@@ -66,5 +55,14 @@ public class Migration extends Informative implements Closeable {
     if (res.isEmpty()) return null;
     if (res.equals("xml") || res.equals("txt")) return res;
     return getFileFormat(FilenameUtils.removeExtension(path));
+  }
+
+  @Override
+  public void close() {
+    try {
+      inputStream.close();
+    } catch (Exception e) {
+      logger.error(e);
+    }
   }
 }

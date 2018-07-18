@@ -6,9 +6,5 @@ package kz.greetgo.sandbox.controller.register;
  */
 public interface MigrationRegister {
 
-  /**
-   * Запускает процес миграций
-   */
   void start();
-
 }

@@ -40,7 +40,7 @@ export class ClientsListFormComponent implements AfterViewInit {
     if (page <= 0) return;
     this.currentPage = page;
     this.clientFilter.offset = this.currentPage * this.numberOfItemInPage - this.numberOfItemInPage;
-    this.clientFilter.limit = this.currentPage * this.numberOfItemInPage;
+    this.clientFilter.limit = this.numberOfItemInPage;
     this.loadPage();
   }
 
@@ -53,7 +53,7 @@ export class ClientsListFormComponent implements AfterViewInit {
     this.httpService.get("/client/list", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
-      this.clientRecords = new Array();
+      this.clientRecords = [];
       for (let res of result.json()) {
         this.clientRecords.push(ClientRecord.copy(res));
       }
@@ -162,7 +162,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   close(clientRecord: ClientRecord | null) {
     this.clientInfoFormComponentEnable = false;
     this.editClientId = null;
-    this.insertRecord(clientRecord);
+    if (clientRecord != null) this.insertRecord(clientRecord);
   }
 
   private insertRecord(clientRecord: ClientRecord) {
@@ -191,5 +191,10 @@ export class ClientsListFormComponent implements AfterViewInit {
   getRender(fileType: FileTypeEnum) {
     let url = "/report/get-render?fileName="+this.userName+"&clientFilter="+JSON.stringify(this.clientFilter)+"&fileTypeEnum="+JSON.stringify(fileType);
     window.open(this.httpService.url(url));
+  }
+
+  migrate() {
+    alert("migration");
+    this.httpService.get("/migration/start").toPromise().then();
   }
 }

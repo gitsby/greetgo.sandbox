@@ -10,4 +10,19 @@ public class Client {
   public GenderEnum gender;
   public Date birthDate;
   public Integer charmId;
+  public String ciaId;
+
+  @Override
+  public String toString() {
+    return "{" +
+      "id=" + id +
+      ", surname='" + surname + '\'' +
+      ", name='" + name + '\'' +
+      ", patronymic='" + patronymic + '\'' +
+      ", gender=" + gender +
+      ", birthDate=" + birthDate +
+      ", charmId=" + charmId +
+      ", ciaId='" + ciaId + '\'' +
+      "}\n";
+  }
 }

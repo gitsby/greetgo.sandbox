@@ -59,7 +59,7 @@ public class ClientRegisterStand implements ClientRegister {
     if (clientFilter.limit > clientRecords.size()) clientFilter.limit = clientRecords.size();
     if (clientFilter.offset > clientRecords.size()) clientFilter.offset = clientRecords.size();
 
-    return clientRecords.subList(clientFilter.offset, clientFilter.limit);
+    return clientRecords.subList(clientFilter.offset, clientFilter.offset+clientFilter.limit);
   }
 
   @Override
@@ -213,31 +213,27 @@ public class ClientRegisterStand implements ClientRegister {
     return db.get().phones.stream().filter(clientPhone -> clientPhone.client.equals(client) && clientPhone.type.equals(type)).findFirst().get().toClientPhone();
   }
 
-  private ClientAddress saveClientAddress(Integer client, ClientAddress saveClientAddress) {
+  private void saveClientAddress(Integer client, ClientAddress saveClientAddress) {
     System.out.println(client);
     if (saveClientAddress.client == null) {
       saveClientAddress.client = client;
       db.get().addresses.add(new ClientAddressDot(saveClientAddress));
-      return saveClientAddress;
     } else {
       ClientAddress clientAddress = getClientAddress(saveClientAddress.client, saveClientAddress.type);
       clientAddress.street = saveClientAddress.street;
       clientAddress.house = saveClientAddress.house;
       clientAddress.flat = saveClientAddress.flat;
-      return clientAddress;
     }
   }
 
-  private ClientPhone saveClientPhone(Integer client, ClientPhone saveClientPhone) {
+  private void saveClientPhone(Integer client, ClientPhone saveClientPhone) {
     if (saveClientPhone.client == null) {
       saveClientPhone.client = client;
       db.get().phones.add(new ClientPhoneDot(saveClientPhone));
-      return saveClientPhone;
     } else {
       ClientPhone clientPhone = getClientPhone(saveClientPhone.client, saveClientPhone.type);
       clientPhone.number = saveClientPhone.number;
       clientPhone.type = saveClientPhone.type;
-      return clientPhone;
     }
   }
 }

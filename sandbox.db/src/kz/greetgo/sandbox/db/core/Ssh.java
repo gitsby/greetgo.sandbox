@@ -3,24 +3,23 @@ package kz.greetgo.sandbox.db.core;
 import com.jcraft.jsch.*;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.configs.SshConfig;
-import kz.greetgo.sandbox.db.util.Informative;
 import org.apache.log4j.Logger;
-import org.fest.util.Lists;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 @Bean
-public class Ssh extends Informative implements Closeable {
+public class Ssh implements Closeable {
 
-  private final static Logger logger = Logger.getLogger(Ssh.class);
+  private final static Logger logger = Logger.getLogger("callback");
 
   public BeanGetter<SshConfig> sshConfig;
-  public BeanGetter<MigrationConfig> migrationConfig;
 
   private Session session;
   private ChannelSftp sftpChannel;
@@ -30,11 +29,11 @@ public class Ssh extends Informative implements Closeable {
       createSession();
       createChanel();
     } catch (JSchException e) {
-      logger.error(e.getMessage() + " 33");
+      logger.error(e);
     }
   }
 
-  public void createSession() throws JSchException {
+  private void createSession() throws JSchException {
     session = getSession();
     session.setPassword(sshConfig.get().password());
     session.setConfig("StrictHostKeyChecking", "no");
@@ -45,36 +44,39 @@ public class Ssh extends Informative implements Closeable {
     return new JSch().getSession(sshConfig.get().user(), sshConfig.get().host(), sshConfig.get().port());
   }
 
-  public void createChanel() throws JSchException {
+  private void createChanel() throws JSchException {
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
     sftpChannel.connect();
   }
 
-  public File load(File file) {
+  private File load(File file) {
     File newFile = getNewTmpFile(file.getName());
     try {
       sftpChannel.get(file.getPath(), newFile.getPath());
     } catch (SftpException e) {
-      logger.error(e.getMessage() + " 58");
+      logger.error(e);
     }
     return newFile;
   }
 
   private File getNewTmpFile(String name) {
-    return new File(migrationConfig.get().tmpFolder()+"/"+name);
+    File tmpFile =  new File("build/out_files/"+name);
+    if (!tmpFile.exists()) tmpFile.getParentFile().mkdirs();
+    return tmpFile;
   }
 
-  public void rename(File file, String newName) {
-//    String newNamePath = file.getParent() + "/" + newName;
-//    try {
-//      sftpChannel.rename("./migrationFolder/from_cia_2018-02-21-154929-1-300.xml.tar.bz2", "./migrationFolder/M_from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
-//    } catch (SftpException e) {
-//      logger.error(e.getMessage() + " 72");
-//    }
+  private File rename(File file, String newName) {
+    String newNamePath = file.getParent() + "/" + newName;
+    try {
+      sftpChannel.rename(file.getPath(), newNamePath);
+    } catch (SftpException e) {
+      logger.error(e);
+    }
+    return new File(newNamePath);
   }
 
-  private void renameToMigrated(File file) {
-    rename(file, "migrated_"+file.getName());
+  private File renameToMigrated(File file) {
+    return rename(file, "migrated_"+file.getName());
   }
 
   @Override
@@ -84,7 +86,7 @@ public class Ssh extends Informative implements Closeable {
   }
 
   private List<File> getNotMigratedFiles() throws SftpException {
-    List<File> files = Lists.newArrayList();
+    List<File> files = new ArrayList<>();
     Vector migrationFilesVector = getMigrationFolderVector();
     for (Object fileVector : migrationFilesVector) {
       ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileVector;
@@ -95,16 +97,19 @@ public class Ssh extends Informative implements Closeable {
   }
 
   private boolean isNormalFile (ChannelSftp.LsEntry entry) {
-    if (entry.getFilename().equals(".") || entry.getFilename().equals("..")) return false;
-    return true;
+    return !entry.getFilename().startsWith(".");
   }
 
   private Vector getMigrationFolderVector() throws SftpException {
-    return sftpChannel.ls(migrationConfig.get().migrationFilesFolder());
+    return sftpChannel.ls(getMigrationFolder());
   }
 
   private File getFile(ChannelSftp.LsEntry entry) {
-    return new File(migrationConfig.get().migrationFilesFolder() + "/" + entry.getFilename());
+    return new File(getMigrationFolder() + entry.getFilename());
+  }
+
+  private String getMigrationFolder() {
+    return System.getProperty("user.home") + "/files_for_migration/";
   }
 
   private boolean isMigrated(String fileName) {
@@ -112,16 +117,24 @@ public class Ssh extends Informative implements Closeable {
   }
 
   public List<File> loadMigrationFiles() {
-    List<File> filesForMigration = Lists.newArrayList();
+    List<File> filesForMigration = new ArrayList<>();
     try {
       List<File> notMigratedFiles = getNotMigratedFiles();
       for (File file : notMigratedFiles) {
-        filesForMigration.add(load(file));
-        renameToMigrated(file);
+        filesForMigration.add(load(renameToMigrated(file)));
       }
     } catch (SftpException e) {
-      logger.error(e.getMessage()+" 123");
+      logger.error(e);
     }
     return filesForMigration;
+  }
+
+  public void uploadFile(File errors) {
+    try(InputStream inputStream = new FileInputStream(errors)) {
+      sftpChannel.put(inputStream, getMigrationFolder()+errors.getName(), ChannelSftp.OVERWRITE);
+    } catch (Exception e) {
+      logger.error(e);
+    }
+    errors.delete();
   }
 }

@@ -188,6 +188,13 @@
             </div>
           </th>
           <th>
+            <div style="float: right;" class="custom-button">
+              <button style="float: right; height: 50px" (click)="migrate()">
+                MIGRATE
+              </button>
+            </div>
+          </th>
+          <th>
             <div style="float: right;">
               <select [(ngModel)]="numberOfItemInPage" class="pagination selector" (change)="loadClientRecordsList(1)">
                 <option *ngFor="let i of range(10, 31, 10)" value="{{i}}">

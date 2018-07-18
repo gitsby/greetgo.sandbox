@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.db.util;
 
-import kz.greetgo.db.DbType;
 import kz.greetgo.db.TransactionManager;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.apache.ibatis.transaction.Transaction;
@@ -8,7 +7,6 @@ import org.apache.ibatis.transaction.TransactionFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 

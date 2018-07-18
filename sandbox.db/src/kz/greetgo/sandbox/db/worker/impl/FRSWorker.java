@@ -3,6 +3,8 @@ package kz.greetgo.sandbox.db.worker.impl;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.sandbox.controller.model.MigrationError;
 import kz.greetgo.sandbox.controller.model.TMPClientAccount;
 import kz.greetgo.sandbox.controller.model.TMPClientAccountTransaction;
 import kz.greetgo.sandbox.db.worker.Worker;
@@ -14,6 +16,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.io.*;
 import java.sql.Connection;
 
+@Bean
 public class FRSWorker extends Worker {
 
   private static Logger logger = Logger.getLogger(FRSWorker.class);
@@ -37,46 +40,83 @@ public class FRSWorker extends Worker {
     initParser();
   }
 
+  @Override
+  public void fillTmpTables() {
+    createTmpTables();
+    createCsvFiles();
+    loadCsvFile();
+    loadCsvFilesToTmpTables();
+  }
+
+  @Override
+  public void margeTmpTables() {
+    parallelTasks(
+      this::margeTransactionTypeTmpTable,
+      this::margeClientAccountTmpTable,
+      this::margeClientAccountTransactionTmpTable
+    );
+  }
+
+  @Override
+  public void validTmpTables() {
+    logger.info("valid tmp tables begin...");
+    parallelTasks(
+      this::validClientAccountTmpTable,
+      this::validClientAccountTransactionTmpTable
+    );
+    logger.info("valid tmp tables end.");
+  }
+
+  @Override
+  public void migrateTmpTables() {
+    migrateClientAccountTable();
+    migrateClientAccountTransactionTable();
+  }
+
   private void initParser() {
     try {
       jsonParser = new MappingJsonFactory().createParser(inputStream);
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
-  @Override
-  public void createTmpTables() {
+  private void createTmpTables() {
     logger.info("create tmp tables begin...");
     setTmpTableNames();
-    exec("CREATE TABLE TMP_TABLE(client_cia_id VARCHAR(255), registered_at VARCHAR(255), account_number VARCHAR(255))", clientAccountTmp);
-    exec("CREATE TABLE TMP_TABLE(money FLOAT, finished_at VARCHAR(255), transaction_type VARCHAR(255), account_number VARCHAR(255))", clientAccountTransactionTmp);
+    exec("CREATE TABLE TMP_TABLE(client_cia_id VARCHAR(255), error VARCHAR(255), money FLOAT, registered_at VARCHAR(255), account_number VARCHAR(255))", clientAccountTmp);
+    exec("CREATE TABLE TMP_TABLE(money FLOAT, error VARCHAR(255), finished_at VARCHAR(255), transaction_type VARCHAR(255), account_number VARCHAR(255))", clientAccountTransactionTmp);
     exec("CREATE TABLE TMP_TABLE(name VARCHAR(255));", transactionTypeTmp);
     logger.info("create tmp tables end");
   }
 
   private void setTmpTableNames() {
-    clientAccountTmp = getTmpTableName("client_account_tmp");
-    clientAccountTransactionTmp = getTmpTableName("client_account_transaction_tmp");
-    transactionTypeTmp = getTmpTableName("transaction_type_tmp");
+    setTmpTableNames(getNameWithDate("frs_migration_client_account_tmp"),
+      getNameWithDate("frs_migration_client_account_transaction_tmp"),
+      getNameWithDate("frs_migration_transaction_type_tmp"));
   }
 
-  @Override
-  public void createCsvFiles() {
+  public void setTmpTableNames(String clientAccountTmp, String clientAccountTransactionTmp, String transactionTypeTmp) {
+    this.clientAccountTmp = clientAccountTmp;
+    this.clientAccountTransactionTmp = clientAccountTransactionTmp;
+    this.transactionTypeTmp = transactionTypeTmp;
+  }
+
+  private void createCsvFiles() {
     logger.info("create csv files begin");
     try {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("create csv files end");
   }
 
   private void createFiles() throws IOException {
-    clientAccountCsvFile = createFile("client_account_csv_file.csv");
-    clientAccountTransactionCsvFile = createFile("client_account_transaction_csv_file.csv");
-    transactionTypeCsvFile = createFile("transaction_type_csv_file.csv");
+    clientAccountCsvFile = createFile(getNameWithDate("client_account_csv_file")+".csv");
+    clientAccountTransactionCsvFile = createFile(getNameWithDate("client_account_transaction_csv_file")+".csv");
+    transactionTypeCsvFile = createFile(getNameWithDate("transaction_type_csv_file")+".csv");
   }
 
   private void createWriters() throws FileNotFoundException, UnsupportedEncodingException {
@@ -85,8 +125,7 @@ public class FRSWorker extends Worker {
     transactionTypeCsvBw = getWriter(transactionTypeCsvFile);
   }
 
-  @Override
-  public void loadCsvFile() {
+  private void loadCsvFile() {
     logger.info("load csv files begin...");
     JSONHandler handler = new JSONHandler();
     try {
@@ -103,132 +142,41 @@ public class FRSWorker extends Worker {
 
   private void write(TMPClientAccount tmp) {
     try {
-      clientAccountCsvBw.write(String.format("%s|%s|%s\n",
-        checkStr(tmp.clientId,null), checkStr(tmp.registeredAt,System.nanoTime()),
-        checkStr(tmp.accountNumber,System.nanoTime())));
+      clientAccountCsvBw.write(String.format("%s|\\N|0|%s|%s\n",
+        checkIsNull(tmp.clientId), checkIsNull(tmp.registeredAt),
+        checkIsNull(tmp.accountNumber)));
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
   private void write(TMPClientAccountTransaction tmp) {
     try {
-      clientAccountTransactionCsvBw.write(String.format("%s|%s|%s|%s\n",
-        checkStr(tmp.money,null).replace("_", ""), checkStr(tmp.finishedAt,null),
-        checkStr(tmp.transactionType,System.nanoTime()), checkStr(tmp.accountNumber,null)));
-      transactionTypeCsvBw.write(String.format("%s\n", checkStr(tmp.transactionType, null)));
+      clientAccountTransactionCsvBw.write(String.format("%s|\\N|%s|%s|%s\n",
+        checkIsNull(tmp.money).replace("_", ""), checkIsNull(tmp.finishedAt),
+        checkIsNull(tmp.transactionType), checkIsNull(tmp.accountNumber)));
+      transactionTypeCsvBw.write(String.format("%s\n", checkIsNull(tmp.transactionType)));
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
-  @Override
-  public void loadCsvFilesToTmpTables() {
+  private void loadCsvFilesToTmpTables() {
     logger.info("load csv files to tmp begin...");
     CopyManager copyManager;
     try {
       flushWriters();
-
       copyManager = new CopyManager((BaseConnection) connection);
 
-      copy(copyManager, clientAccountCsvFile, clientAccountTmp);
-      copy(copyManager, clientAccountTransactionCsvFile, clientAccountTransactionTmp);
-      copy(copyManager, transactionTypeCsvFile, transactionTypeTmp);
+      parallelTasks(
+        () -> copy(copyManager, clientAccountCsvFile, clientAccountTmp),
+        () -> copy(copyManager, clientAccountTransactionCsvFile, clientAccountTransactionTmp),
+        () -> copy(copyManager, transactionTypeCsvFile, transactionTypeTmp)
+      );
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     logger.info("load csv files to tmp end...");
-  }
-
-  @Override
-  public void fuseMainTmpTables() {
-    logger.info("fuse main tmp tables begin...");
-    //language=PostgreSQL
-    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", transactionTypeTmp);
-    //language=PostgreSQL
-    exec("CREATE TABLE TMP_TABLE(name VARCHAR(255) UNIQUE NOT NULL);", transactionTypeTmp);
-    //language=PostgreSQL
-    exec("INSERT INTO TMP_TABLE SELECT DISTINCT \"name\" " +
-      "FROM TMP_TABLE_conductor t1 " +
-      "WHERE t1.name IS NOT NULL " +
-      "ON CONFLICT(\"name\") " +
-      "DO NOTHING;", transactionTypeTmp);
-
-    //language=PostgreSQL
-    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor;", clientAccountTmp);
-    //language=PostgreSQL
-    exec("SELECT (SELECT id FROM client WHERE cia_id=t1.client_cia_id) AS client_id," +
-      "  CAST(NULL AS VARCHAR(255)) AS error," +
-      "  CAST(0 AS FLOAT) AS money," +
-      "  split_part(max(registered_at), '#', 2) AS registered_at," +
-      "  split_part(max(account_number), '#', 2) AS account_number " +
-      "INTO TMP_TABLE " +
-      "FROM TMP_TABLE_conductor t1 GROUP BY client_id;", clientAccountTmp);
-
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE t1 SET money=t1.money+t2.money FROM "+clientAccountTransactionTmp+" t2 WHERE t1.account_number=t2.account_number", clientAccountTmp);
-    logger.info("duse main tmp tables end.");
-  }
-
-  @Override
-  public void validateMainTmpTables() {
-    logger.info("valid main tmp tables begin...");
-    exec("UPDATE TMP_TABLE SET error='Клиент не найден' " +
-      "WHERE error IS NULL AND client_id IS NULL;", clientAccountTmp);
-    logger.info("valid main tmp tables end.");
-  }
-
-  @Override
-  public void migrateMainTmpTableToTables() {
-    logger.info("migrate main tmp tables begin...");
-    //language=PostgreSQL
-    exec("INSERT INTO client_account(client, money, registered_at, number) " +
-      "SELECT client_id, money, registered_at::DATE, account_number FROM TMP_TABLE WHERE error IS NULL " +
-      "ON CONFLICT(number) DO UPDATE SET " +
-      "money=EXCLUDED.money," +
-      "registered_at=EXCLUDED.registered_at;", clientAccountTmp);
-    //language=PostgreSQL
-    exec("INSERT INTO transaction_type(name)" +
-      "SELECT \"name\" FROM TMP_TABLE ON CONFLICT(name) DO NOTHING;", transactionTypeTmp);
-    logger.info("migrate main tmp tables end.");
-  }
-
-  @Override
-  public void fuseChildTmpTables() {
-    logger.info("fuse child tmp tables begin...");
-    //language=PostgreSQL
-    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", clientAccountTransactionTmp);
-    //language=PostgreSQL
-    exec("SELECT " +
-      "(SELECT id FROM client_account WHERE client_account.number=t1.account_number) AS client_account_id, " +
-      "CAST(NULL AS VARCHAR(255)) AS error, " +
-      "money, " +
-      "(SELECT id FROM transaction_type WHERE \"name\"=split_part(max(transaction_type), '#', 2)) AS transaction_type, " +
-      "finished_at, account_number " +
-      "INTO TMP_TABLE " +
-      "FROM TMP_TABLE_conductor t1 " +
-      "GROUP BY money, finished_at, account_number;", clientAccountTransactionTmp);
-    logger.info("fuse child tmp tables end.");
-  }
-
-  @Override
-  public void validateChildTmpTables() {
-    logger.info("valid child tmp tables begin...");
-    //language=PostgreSQL
-    exec("UPDATE TMP_TABLE SET error='Клиент не найден' " +
-      "WHERE error IS NULL AND client_account_id IS NULL;", clientAccountTransactionTmp);
-    logger.info("valid child tmp tables end.");
-  }
-
-  @Override
-  public void migrateChildTmpTablesToTables() {
-    logger.info("migrate child tmp tables begin...");
-    //language=PostgreSQL
-    exec("INSERT INTO client_account_transaction(account, money, finished_at, type) " +
-      "SELECT client_account_id, money::FLOAT, finished_at::DATE," +
-      "transaction_type " +
-      "FROM TMP_TABLE WHERE error IS NULL;", clientAccountTransactionTmp);
-    logger.info("migrate child tmp tables end.");
   }
 
   private void flushWriters() throws IOException {
@@ -237,13 +185,113 @@ public class FRSWorker extends Worker {
     transactionTypeCsvBw.flush();
   }
 
+
+  private void margeTransactionTypeTmpTable() {
+    if (transactionTypeTmp != null) {
+      exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor", transactionTypeTmp);
+      exec("SELECT DISTINCT \"name\" INTO TMP_TABLE FROM TMP_TABLE_conductor", transactionTypeTmp);
+      backgroundTasks(()->exec("DROP TABLE TMP_TABLE_conductor", transactionTypeTmp));
+    }
+  }
+
+  private void margeClientAccountTmpTable() {
+    logger.info("marge client account tmp tables begin...");
+    exec("ALTER TABLE TMP_TABLE RENAME TO TMP_TABLE_conductor;", clientAccountTmp);
+    exec("SELECT DISTINCT " +
+      "  (SELECT id FROM client WHERE cia_id=client_cia_id LIMIT 1) AS client_id," +
+      "  client_cia_id, account_number, " +
+      "  error, " +
+      "  CAST(0 AS FLOAT) AS money, " +
+      "  registered_at " +
+      "INTO TMP_TABLE " +
+      "FROM TMP_TABLE_conductor t1 WHERE error IS NULL;", clientAccountTmp);
+    backgroundTasks(()->exec("DROP TABLE TMP_TABLE_conductor", clientAccountTmp));
+    logger.info("marge client account tmp tables end.");
+  }
+
+  private void margeClientAccountTransactionTmpTable() {
+    logger.info("marge client account transaction tmp tables begin...");
+    exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientAccountTransactionTmp);
+    exec(
+      "SELECT DISTINCT " +
+        "  CAST(0 AS INTEGER) AS account_id," +
+        "  account_number, " +
+        "  error, " +
+        "  money, " +
+        "  finished_at, " +
+        "  FIRST_VALUE(transaction_type) OVER " +
+        "    ( PARTITION BY account_number, money, finished_at " +
+        "    ORDER BY CASE WHEN transaction_type IS NULL " +
+        "      THEN NULL " +
+        "             ELSE timeofday() " +
+        "             END DESC NULLS LAST " +
+        "    ) AS transaction_type " +
+        "INTO TMP_TABLE " +
+        "FROM conductor_TMP_TABLE t1;", clientAccountTransactionTmp);
+    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientAccountTransactionTmp));
+    logger.info("marge client account transaction tmp tables end.");
+  }
+
+  private void validClientAccountTmpTable() {
+    exec("UPDATE TMP_TABLE SET error='"+MigrationError.FRS.ACCOUNT_NUMBER_NOT_FOUND+'\'' +
+      "WHERE error IS NULL AND client_cia_id IS NULL;", clientAccountTmp);
+    exec("UPDATE TMP_TABLE SET error='"+MigrationError.FRS.ACCOUNT_NUMBER_NOT_FOUND+'\'' +
+      "WHERE error IS NULL AND account_number IS NULL;", clientAccountTmp);
+    exec("UPDATE TMP_TABLE SET client_id=0 " +
+      "WHERE error IS NULL AND client_id IS NULL;", clientAccountTmp);
+  }
+
+  private void validClientAccountTransactionTmpTable() {
+    exec("UPDATE TMP_TABLE SET error='"+MigrationError.FRS.ACCOUNT_NUMBER_NOT_FOUND+'\'' +
+      "WHERE error IS NULL AND account_number IS NULL;", clientAccountTransactionTmp);
+  }
+
+  private void migrateClientAccountTable() {
+    logger.info("migrate client account tmp tables begin...");
+    exec("UPDATE TMP_TABLE t1 SET money=t1.money+t2.money FROM "+clientAccountTransactionTmp+" t2 WHERE t1.account_number=t2.account_number AND t1.error IS NULL", clientAccountTmp);
+    exec("INSERT INTO client_account(client, money, registered_at, number) " +
+      "SELECT client_id, money, registered_at::DATE, account_number FROM TMP_TABLE WHERE error IS NULL " +
+      "ON CONFLICT(number) DO UPDATE SET " +
+      "money=EXCLUDED.money," +
+      "registered_at=EXCLUDED.registered_at;", clientAccountTmp);
+    exec("INSERT INTO transaction_type(name)" +
+      "SELECT \"name\" FROM TMP_TABLE ON CONFLICT(name) DO NOTHING;", transactionTypeTmp);
+    logger.info("migrate client account tmp tables end.");
+  }
+
+  private void migrateClientAccountTransactionTable() {
+    logger.info("migrate client account transaction tmp tables begin...");
+    exec("UPDATE TMP_TABLE SET account_id=(SELECT id FROM client_account WHERE number=account_number)", clientAccountTransactionTmp);
+    exec("UPDATE TMP_TABLE SET error='client_account_not_found' WHERE error IS NULL AND account_id IS NULL", clientAccountTransactionTmp);
+    exec("INSERT INTO client_account_transaction(account, money, finished_at, type) " +
+      "SELECT account_id, money::FLOAT, finished_at::DATE," +
+      "(SELECT id FROM transaction_type WHERE name=transaction_type) " +
+      "FROM TMP_TABLE WHERE error IS NULL;", clientAccountTransactionTmp);
+    logger.info("migrate client account transaction tmp tables end.");
+  }
+
   @Override
   public void deleteTmpTables() {
-    logger.info("delete tmp tables begin...");
-    deleteTable(clientAccountTmp);
-    deleteTable(clientAccountTransactionTmp);
-    deleteTable(transactionTypeTmp);
-    logger.info("delete tmp tables end.");
+    logger.info("drop tmp tables begin...");
+    parallelTasks(
+      () -> exec("DROP TABLE TMP_TABLE", clientAccountTmp),
+      () -> exec("DROP TABLE TMP_TABLE", clientAccountTransactionTmp),
+      () -> exec("DROP TABLE TMP_TABLE", transactionTypeTmp)
+    );
+    logger.info("drop tmp tables end.");
+  }
+
+  @Override
+  public File getErrorInFile() {
+    File errors = getFile(getNameWithDate("migrated_frs_errors")+".csv");
+    try (Writer writer = getWriter(errors)){
+      CopyManager copyManager = new CopyManager((BaseConnection) connection);
+      copyOut(copyManager, clientAccountTmp, writer);
+      copyOut(copyManager, clientAccountTransactionTmp, writer);
+    } catch (Exception e) {
+      logger.error(e);
+    }
+    return errors;
   }
 
   @Override

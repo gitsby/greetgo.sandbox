@@ -8,10 +8,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,6 +17,8 @@ import java.util.stream.Stream;
 
 @Bean
 public class ClientRenderImplPdf implements ClientRender {
+
+  private static Logger logger = Logger.getLogger(ClientRenderImplPdf.class);
 
   private OutputStream out;
   private Document document;
@@ -41,8 +41,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       pdfWriter = PdfWriter.getInstance(document, out);
     } catch (Exception e) {
-      // FIXME: 7/11/18 Проглатываение ошибки - неправильно
-      e.getMessage();
+      logger.error(e);
     }
   }
 
@@ -52,7 +51,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       document.add(p);
     } catch (DocumentException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
 
     table = new PdfPTable(8);
@@ -118,29 +117,7 @@ public class ClientRenderImplPdf implements ClientRender {
       pdfWriter.close();
       out.close();
     } catch (Exception e) {
-      // FIXME: 7/11/18 Нужно перечилисть все места где есть printStackTrace?!
-      e.printStackTrace();
+      logger.error(e);
     }
-  }
-
-  public static void main(String[] args) throws Exception {
-    String fileName = "TEST.pdf";
-    ClientRenderImplPdf asd = new ClientRenderImplPdf(new FileOutputStream(new File(System.getProperty("user.home")+"/Desktop/"+fileName)));
-    asd.start(RND.str(10), new Date());
-    for (int i=0;i<30; i++) asd.append(getRandomClientRecord(i));
-    asd.finish();
-  }
-
-  private static ClientRecord getRandomClientRecord(int i) {
-    ClientRecord row = new ClientRecord();
-    row.id=i;
-    row.surname = RND.str(10);
-    row.name = RND.str(10);
-    row.patronymic = RND.str(10);
-    row.age = RND.plusInt(60);
-    row.middle_balance = RND.plusInt(10000);
-    row.max_balance = RND.plusInt(10000);
-    row.min_balance = RND.plusInt(10000);
-    return row;
   }
 }

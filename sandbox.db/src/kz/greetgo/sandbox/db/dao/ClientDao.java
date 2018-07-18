@@ -43,10 +43,11 @@ public interface ClientDao {
   @Select("SELECT id, name, description, energy FROM charm WHERE actual=1;")
   List<CharmRecord> getCharms();
 
-  @Select("SELECT client.id, client.surname, client.name, client.patronymic, date_part('year',age(client.birth_date)) AS age," +
-    "AVG(coalesce(client_account.money, 0.0)) AS middle_balance," +
-    "MAX(coalesce(client_account.money, 0.0)) AS max_balance,"+
-    "MIN(coalesce(client_account.money, 0.0)) AS min_balance FROM client LEFT JOIN client_account ON client.id=client_account.client WHERE client.id=#{clientId} AND client.actual=1 AND client_account.actual=1 GROUP BY client.id;")
+  @Select("SELECT client.id, client.surname, client.name, client.patronymic, date_part('year',age(client.birth_date)) AS age, " +
+    "AVG(coalesce(client_account.money, 0.0)) AS middle_balance, " +
+    "MAX(coalesce(client_account.money, 0.0)) AS max_balance, " +
+    "MIN(coalesce(client_account.money, 0.0)) AS min_balance FROM client LEFT JOIN client_account ON client.id=client_account.client AND client_account.actual=1 " +
+    "WHERE client.id=#{clientId} AND client.actual=1 GROUP BY client.id;")
   ClientRecord getClientRecord(@Param("clientId") Integer res);
 
   @Select("SELECT * FROM client_phone WHERE client=#{clientId} AND type=#{type} AND actual=1;")

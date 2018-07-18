@@ -4,16 +4,13 @@ import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
 import org.apache.log4j.Logger;
 import org.postgresql.copy.CopyManager;
-import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 public abstract class Worker implements WorkerInterface {
 
@@ -21,7 +18,6 @@ public abstract class Worker implements WorkerInterface {
 
   protected Connection connection;
   protected InputStream inputStream;
-
 
   public Worker(Connection connection, InputStream inputStream) {
     this.connection = connection;
@@ -36,37 +32,35 @@ public abstract class Worker implements WorkerInterface {
     return new FRSWorker(connection, inputStream);
   }
 
-  public final void execute() throws SQLException, IOException, SAXException {
+  public final File execute() throws SQLException, IOException {
     logger.info("----- EXECUTING -----");
     long start = System.nanoTime();
-    createTmpTables();
-    createCsvFiles();
-    loadCsvFile();
-    loadCsvFilesToTmpTables();
-    fuseMainTmpTables();
-    validateMainTmpTables();
-    migrateMainTmpTableToTables();
-    fuseChildTmpTables();
-    validateChildTmpTables();
-    migrateChildTmpTablesToTables();
-    deleteTmpTables();
-    finish();
+    fillTmpTables();
+    margeTmpTables();
+    validTmpTables();
+    migrateTmpTables();
     long end = System.nanoTime();
     Calendar c = new GregorianCalendar();
     c.setTime(new Date(end-start));
     logger.info(String.format("----- FINISH AT: %d n/s -----", end-start));
+    File error = getErrorInFile();
+    deleteTmpTables();
+    finish();
+    return error;
   }
 
-  protected void copy(CopyManager copyManager, File file, String tmp) throws IOException, SQLException {
+  protected void copy(CopyManager copyManager, File file, String tmp) {
     String copyQuery = "COPY TMP_TABLE FROM STDIN WITH DELIMITER '|'";
-    FileReader reader = new FileReader(file);
-    copyManager.copyIn(r(copyQuery, tmp), reader);
-    reader.close();
+    try(FileReader reader = new FileReader(file)) {
+      copyManager.copyIn(r(copyQuery, tmp), reader);
+    } catch (IOException | SQLException e) {
+      logger.error(e);
+    }
     file.delete();
   }
 
-  protected String getTmpTableName(String tableName) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+  protected String getNameWithDate(String tableName) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss_S");
     Date nowDate = new Date();
     return tableName+"_"+sdf.format(nowDate);
   }
@@ -96,28 +90,62 @@ public abstract class Worker implements WorkerInterface {
     try (Statement statement = connection.createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
   }
 
-  private String r(String sql, String tmp) {
+  protected String r(String sql, String tmp) {
     sql = sql.replaceAll("TMP_TABLE", tmp);
     return sql;
   }
 
-  protected void deleteTable(String tmp) {
-    exec("DROP TABLE IF EXISTS TMP_TABLE", tmp);
-    exec("DROP TABLE IF EXISTS TMP_TABLE_conductor", tmp);
-  }
-
-  protected String checkStr(String str, Long counter) {
+  protected String checkIsNull(String str) {
     if (str == null) return "\\N";
     str = str.trim();
     if (!str.isEmpty()) {
       if (str.toLowerCase().equals("null")) return "\\N";
-      if (counter == null) return str;
-      else return counter + "#" + str;
+      return str;
     }
     return "\\N";
+  }
+
+  protected File getFile(String name) {
+    File newFile = new File("build/out_files/"+name);
+    if (!newFile.exists()) newFile.getParentFile().mkdirs();
+    try {
+      newFile.createNewFile();
+    } catch (IOException e) {
+      logger.error(e);
+    }
+    return newFile;
+  }
+
+  protected void parallelTasks(Runnable... runnableList) {
+    for (Thread thread : startTasks(runnableList)) {
+      try {
+        thread.join();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  protected void backgroundTasks(Runnable... runnableList) {
+    startTasks(runnableList);
+  }
+
+  private List<Thread> startTasks(Runnable[] runnableList) {
+    List<Thread> threadList = new ArrayList<>();
+    for (Runnable aRunnableList : runnableList) threadList.add(new Thread(aRunnableList));
+    threadList.forEach(Thread::start);
+    return threadList;
+  }
+
+  protected void copyOut(CopyManager copyManager, String tmp, Writer writer) {
+    try {
+      copyManager.copyOut(r("COPY (SELECT * FROM TMP_TABLE WHERE error IS NOT NULL) TO STDOUT WITH NULL ''", tmp), writer);
+    } catch (Exception e) {
+      logger.error(e);
+    }
   }
 }

@@ -94,6 +94,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
+
     List<ClientDetails> detailsList;
 
     {
@@ -776,7 +777,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private void insertCharm(CharmRecord charmRecord) {
-    clientTestDao.get().insertCharm(charmRecord.id, charmRecord.name, charmRecord.description, charmRecord.energy);
+    clientTestDao.get().insertCharm(charmRecord.name, charmRecord.description, charmRecord.energy);
   }
 
   private static void sortList(List<ClientRecord> clientRecords, SortByEnum sortBy, SortDirection sortDirection) {

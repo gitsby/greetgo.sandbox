@@ -20,4 +20,13 @@ public class ClientPhone {
       number.equals(clientPhone.number)) return true;
     return false;
   }
+
+  @Override
+  public String toString() {
+    return "ClientPhone{" +
+      "client=" + client +
+      ", type=" + type +
+      ", number='" + number + '\'' +
+      '}';
+  }
 }

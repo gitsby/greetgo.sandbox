@@ -1,6 +1,8 @@
-package kz.greetgo.sandbox.db.input_file_generator;
+package kz.greetgo.sandbox.db.util;
 
+import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,14 +19,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Bean
 public class GenerateInputFiles {
 
-  public static final int CIA_LIMIT = 1_000_000;
-  public static final int FRS_LIMIT = 10_000_000;
+  private static Logger logger = Logger.getLogger("callback");
 
-  public static void main(String[] args) throws Exception {
-    new GenerateInputFiles().execute();
-  }
+  public static int CIA_LIMIT = 0;
+  public static int FRS_LIMIT = 0;
 
   private static final String ENG = "abcdefghijklmnopqrstuvwxyz";
   private static final String DEG = "0123456789";
@@ -66,7 +67,7 @@ public class GenerateInputFiles {
     }
   }
 
-  final Info info = new Info();
+  private final Info info = new Info();
 
   @SuppressWarnings("SameParameterValue")
   private static String rndStr(int len) {
@@ -199,10 +200,10 @@ public class GenerateInputFiles {
     }
 
     public void showInfo() {
-      System.out.println("Selector rnd: values.length = " + values.length);
+      logger.info("Selector rnd: values.length = " + values.length);
       int i = 0;
       for (Object value : values) {
-        System.out.println("  " + i++ + " : " + value);
+        logger.info("  " + i++ + " : " + value);
       }
     }
   }
@@ -223,7 +224,10 @@ public class GenerateInputFiles {
   String outFileName;
   File outFile;
 
-  private void execute() throws Exception {
+  private List<File> execute(int cl, int fl) throws Exception {
+
+    CIA_LIMIT = cl;
+    FRS_LIMIT = fl;
 
     rowTypeRnd.showInfo();
     errorTypeRnd.showInfo();
@@ -248,6 +252,7 @@ public class GenerateInputFiles {
         try {
           Thread.sleep(300);
         } catch (InterruptedException e) {
+          logger.error(e);
           break;
         }
 
@@ -290,43 +295,28 @@ public class GenerateInputFiles {
 
       currentFileRecords = 0;
 
-      int fileIndex = 1;
-      for (; currentFileRecords < CIA_LIMIT && working.get(); i++) {
+      for (; currentFileRecords < CIA_LIMIT; i++) {
 
         printClient(i, rowTypeRnd.next());
         currentFileRecords++;
 
-        if (fileIndex == 1 && currentFileRecords >= 300) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-        if (fileIndex == 2 && currentFileRecords >= 3000) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-        if (fileIndex == 3 && currentFileRecords >= 30_000) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-        if (fileIndex == 4 && currentFileRecords >= 300_000) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-
-        if (showInfo.get()) {
-          showInfo.set(false);
-          System.out.println("Сформировано записей в текущем файле CIA: "
-            + currentFileRecords + ", всего записей: " + i);
-        }
       }
 
-      System.out.println("ИТОГО: Сформировано записей в текущем файле CIA: "
+      clearPrinter.set(true);
+
+      if (showInfo.get()) {
+        showInfo.set(false);
+        logger.info("Сформировано записей в текущем файле CIA: "
+          + currentFileRecords + ", всего записей: " + i);
+      }
+
+      logger.info("ИТОГО: Сформировано записей в текущем файле CIA: "
         + currentFileRecords + ", всего записей: " + i);
     }
 
     finishPrinter("</cia>", ".xml");
 
-    System.out.println("Файлы CIA сформированы: приступаем к формированию файлов FRS...");
+    logger.info("Файлы CIA сформированы: приступаем к формированию файлов FRS...");
 
     {
       newFrsFile.getParentFile().mkdirs();
@@ -334,29 +324,21 @@ public class GenerateInputFiles {
 
       currentFileRecords = 0;
 
-      int i = 1, fileIndex = 1;
-      for (; currentFileRecords < FRS_LIMIT && working.get(); i++) {
-
+      int i = 1;
+      for (; currentFileRecords < FRS_LIMIT; i++) {
         printAccountWithTransactions(i);
         currentFileRecords++;
-
-        if (fileIndex == 1 && currentFileRecords >= 30_000) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-        if (fileIndex == 2 && currentFileRecords >= 700_000) {
-          fileIndex++;
-          clearPrinter.set(true);
-        }
-
-        if (showInfo.get()) {
-          showInfo.set(false);
-          System.out.println("Сформировано записей в текущем файле FRS: "
-            + currentFileRecords + ", всего записей: " + i);
-        }
       }
 
-      System.out.println("ИТОГО: Сформировано записей в текущем файле FRS: "
+      clearPrinter.set(true);
+      if (showInfo.get()) {
+        showInfo.set(false);
+        logger.info("Сформировано записей в текущем файле FRS: "
+          + currentFileRecords + ", всего записей: " + i);
+      }
+
+
+      logger.info("ИТОГО: Сформировано записей в текущем файле FRS: "
         + currentFileRecords + ", всего записей: " + i);
     }
 
@@ -366,11 +348,18 @@ public class GenerateInputFiles {
 
     archive();
 
+    List<File> files = new ArrayList<>();
+
+    files.add(new File(newCiaFile.getPath()+".tar.bz2"));
+    files.add(new File(newFrsFile.getPath()+".tar.bz2"));
+
     workingFile.delete();
     newCiaFile.delete();
     newFrsFile.delete();
 
     saveInfoFile();
+
+    return files;
   }
 
   private void saveInfoFile() throws Exception {
@@ -874,8 +863,7 @@ public class GenerateInputFiles {
     try {
       archiveQueueEx(fileQueue);
     } catch (Exception e) {
-      if (e instanceof RuntimeException) throw (RuntimeException) e;
-      throw new RuntimeException(e);
+      logger.error(e);
     }
   }
 
@@ -889,7 +877,7 @@ public class GenerateInputFiles {
 
   private void archiveFile(File file) throws Exception {
     File dest = new File(file.getPath() + ".tar.bz2");
-    System.out.println("Start archiving file " + file.getName()
+    logger.info("Start archiving file " + file.getName()
       + " with size " + file.length() + " -> " + dest.getName());
 
     ProcessBuilder builder = new ProcessBuilder();
