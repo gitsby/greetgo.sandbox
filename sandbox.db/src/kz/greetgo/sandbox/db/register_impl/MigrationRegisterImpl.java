@@ -48,7 +48,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     downloadFiles();
     unpackFiles();
 
-    Thread ciaTempThread = new Thread(() -> insertCIAIntoTemp());
+    Thread ciaTempThread = new Thread(this::insertCIAIntoTemp);
     Thread frsThread = new Thread(() -> {
       try {
         insertFRSIntoTemp();
