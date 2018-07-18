@@ -22,15 +22,15 @@ public interface ClientTestDao {
     "values(#{client_id},#{number},#{type})")
   void insertNewPhoneDot(PhoneDot phoneDot);
 
-  @Insert("insert into client_account (client_id, money) values (#{client_id}, #{money})")
+  @Insert("insert into client_account (client_id, money) values (#{id}, #{money})")
   void insertNewAccount(ClientAccount account);
 
   // ------------------------------------
   @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
-    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning client_id")
+    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")
   int insertNewClient(ClientDot clientDot);
 
-  @Select("insert into characters (name) values(#{charm}) RETURNING client_id;")
+  @Select("insert into characters (name) values(#{charm}) RETURNING id;")
   int insertNewCharm(String charm);
 
   @Select("select count(*) from client " +
@@ -39,7 +39,7 @@ public interface ClientTestDao {
   Integer getClientCount(ClientRecordFilter filter);
 
 
-  @Select("select * from client where client_id =#{client_id} and actual=1")
+  @Select("select * from client where id =#{client_id} and actual=1")
   ClientDot getClientDotById(int id);
 
   @Select("select * from client_address where client_id=#{client_id} and actual=1")
@@ -57,7 +57,7 @@ public interface ClientTestDao {
   @Select("select client_id, number, type from client_phone where client_id=#{client_id} and actual=1")
   List<PhoneDot> getPhoneDots(int id);
 
-  @Select("select name from client where client_id=#{client_id} and actual=1")
+  @Select("select name from client where id=#{client_id} and actual=1")
   String clientExists(int id);
 
   //----------------------------------------

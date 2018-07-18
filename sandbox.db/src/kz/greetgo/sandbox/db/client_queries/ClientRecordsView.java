@@ -15,7 +15,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
 
   @Override
   void select() {
-    sql.SELECT("client.client_id,\n" +
+    sql.SELECT("client.id,\n" +
       "  client.name,\n" +
       "  client.surname,\n" +
       "  client.patronymic,\n" +
@@ -30,7 +30,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
 
   @Override
   void join() {
-    sql.JOIN("characters c2 on client.charm = c2.client_id");
+    sql.JOIN("characters c2 on client.charm = c2.id");
   }
 
   @Override
@@ -41,7 +41,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
       "          max(money),\n" +
       "          min(money)\n" +
       "        from client_account\n" +
-      "        group by client_id) as accountMoneys on client.client_id=accountMoneys.client_id");
+      "        group by client_id) as accountMoneys on client.id=accountMoneys.client_id");
   }
 
   @Override
@@ -85,7 +85,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
           "  patronymic asc " + limit);
         break;
       case "age":
-        sql.ORDER_BY(" age ASC, client_id ASC " + limit);
+        sql.ORDER_BY(" age ASC, id ASC " + limit);
         break;
       case "total":
         sql.ORDER_BY(" accBalance ASC " + limit);
@@ -102,7 +102,7 @@ public class ClientRecordsView<T> extends ClientRecordQueryMethods<T> {
           "  patronymic desc " + limit);
         break;
       case "-age":
-        sql.ORDER_BY(" age DESC , client_id ASC " + limit);
+        sql.ORDER_BY(" age DESC , id ASC " + limit);
         break;
       case "-total":
         sql.ORDER_BY(" sum DESC " + limit);

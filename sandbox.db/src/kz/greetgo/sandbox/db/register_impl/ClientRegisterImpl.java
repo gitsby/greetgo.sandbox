@@ -55,14 +55,14 @@ public class ClientRegisterImpl implements ClientRegister {
     filter.columnName = "empty";
 
     ClientRecordsQuery query = new ClientRecordsQuery(filter);
-    query.sql.WHERE("client.client_id=?");
+    query.sql.WHERE("client.id=?");
 
     query.params.add(clientId);
     return jdbc.get().execute(query).get(0);
   }
 
   @Override
-  public List<CharmRecord> charm() {
+  public List<CharmRecord> getCharms() {
     return clientDao.get().getCharms();
   }
 
