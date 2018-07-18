@@ -127,7 +127,7 @@ public class ClientRenderImplPdf implements ClientRender {
       out.close();
     } catch (Exception e) {
       logger.error(e);
-      //FIXME нельзя глотать ошибки
+      //FIXME если просто throw сделаешь, то MVC обработает ошибку
     }
   }
 }

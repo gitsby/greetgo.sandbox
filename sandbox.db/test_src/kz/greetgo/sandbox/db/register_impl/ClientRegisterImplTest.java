@@ -1,7 +1,20 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientFilter;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
+import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.SortByEnum;
+import kz.greetgo.sandbox.controller.model.SortDirection;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
@@ -234,7 +247,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     };
   }
 
-  //FIXME разделить на 5 тестов
+  //FIXME разделить на 5 тестов. Подойди на третьий объясню
   @Test(dataProvider = "getRecords_pagination_DP")
   public void getRecords_pagination(PaginationEnum paginationEnum) {
 
