@@ -40,7 +40,7 @@ public class ReportController implements Controller {
     try {
       binResponse.out().flush();
     } catch (IOException e) {
-      e.printStackTrace();//FIXME НЕЛЬЗЯ глотать ошибки
+      e.printStackTrace();//FIXME НЕЛЬЗЯ использовать принт на сервере
     }
     if (fileType.equals("xlsx")) {
       view = new ClientRecordsViewXlsx(binResponse.out());

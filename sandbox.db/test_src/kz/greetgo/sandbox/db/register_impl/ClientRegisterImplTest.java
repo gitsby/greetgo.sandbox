@@ -665,7 +665,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(10);
   }
 
-  @Test//FIXME только один случай пагинации - нужно все
+  @Test//FIXME только один случай пагинации - нужно все, их 5
   public void paginationTest() {
     List<ClientRecord> clientRecords = getClientRecords(100);
     clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
