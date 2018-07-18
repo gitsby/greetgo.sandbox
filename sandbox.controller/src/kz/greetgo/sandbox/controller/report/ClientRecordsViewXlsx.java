@@ -76,7 +76,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
 
   }
 
-  public static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) throws IOException {
     new File("build").mkdirs();
     FileOutputStream fileOutputStream = new FileOutputStream("build/test1.xlsx");
     ClientRecordsViewXlsx xlsx = new ClientRecordsViewXlsx(fileOutputStream);
@@ -99,6 +99,6 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
       xlsx.appendRow(recordRow);
     }
 
-//    xlsx.finish("Me", new Date());
+    xlsx.finish("Me", new Date());
   }
 }

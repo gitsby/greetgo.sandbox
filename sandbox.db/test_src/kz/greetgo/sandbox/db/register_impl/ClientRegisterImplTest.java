@@ -50,8 +50,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
+    //
     List<ClientRecord> recordsFromDb = clientRegister.get().getClients(clientRecordFilter);
-
+    //
+    //
 
     assertThat(recordsFromDb).hasSize(10);
 
@@ -71,7 +74,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
       charms.add(charm);
     }
 
+    //
+    //
     List<CharmRecord> charmRecords = clientRegister.get().getCharms();
+    //
+    //
 
     for (int i = 0; i < charmRecords.size(); i++) {
       assertThat(charmRecords.get(i).name).isEqualTo(charms.get(i));
@@ -115,7 +122,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.addedAddresses = new ArrayList<>();
     clientToSave.addedAddresses.add(address);
 
+    //
     ClientRecord record = clientRegister.get().save(clientToSave);
+    //
+
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(record.id), record);
     assertWithAddressDot(testDaoBeanGetter.get().getAddressDot(record.id), address);
     assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(record.id), phone);
@@ -174,10 +184,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+    //
+    //
     ClientDot dot = testDaoBeanGetter.get().getClientDotById(clientRecord.id);
     assertThat(dot.gender.equals("OTHER")).isTrue();
-    //
-    //
+
   }
 
   @Test
@@ -212,7 +223,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     clientToSave.editedPhones.add(phone);
 
+    //
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+    //
 
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(clientToSave.id), clientRecord);
     assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(clientToSave.id), phone);
@@ -232,7 +245,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
 
     assertThat(records).hasSameSizeAs(clientDots);
 
@@ -759,7 +774,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientRecordFilter filter = new ClientRecordFilter();
     filter.searchName = "";
 
+    //
+    //
     int clientCount = testDaoBeanGetter.get().getClientCount(filter);
+    //
+    //
 
     assertThat(clientCount).isEqualTo(10);
   }
@@ -892,7 +911,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private List<ClientRecord> getClientRecords(int num) {
-    testDaoBeanGetter.get().deleteAll();
     List<Integer> ids = insertClientsAndGetIds(num);
 
     List<ClientRecord> clientRecords = new ArrayList<>();

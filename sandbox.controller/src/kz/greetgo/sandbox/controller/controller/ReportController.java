@@ -15,8 +15,6 @@ import kz.greetgo.sandbox.controller.report.ClientRecordsViewPdf;
 import kz.greetgo.sandbox.controller.report.ClientRecordsViewXlsx;
 import kz.greetgo.sandbox.controller.util.Controller;
 
-import java.io.IOException;
-
 @Bean
 @Mapping("/report")
 public class ReportController implements Controller {
