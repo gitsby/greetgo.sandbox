@@ -14,6 +14,8 @@ import java.util.Date;
 @Bean//FIXME это не бин
 public class ClientRenderImplXlsx implements ClientRender {
 
+  // FIXME: 7/18/18 Сделай main в каждом рендер классе отедльно
+
   private static Logger logger = Logger.getLogger(ClientRenderImplXlsx.class);
 
   private final OutputStream out;
