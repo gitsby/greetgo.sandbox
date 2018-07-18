@@ -4,15 +4,22 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
-import kz.greetgo.sandbox.db.migration.workers.DBConnector;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 @Bean
-public class CIAInMigration extends DBConnector {
+public class CIAInMigration {
 
   CIAInMigrationWorker cia;
+  private Connection connection;
+
+  public CIAInMigration(Connection connection) {
+
+    this.connection = connection;
+  }
 
   public void prepareWorker() {
     cia = new CIAInMigrationWorker(connection);
@@ -46,8 +53,15 @@ public class CIAInMigration extends DBConnector {
     cia.sendAddresses(addresses);
   }
 
+  public void updateError() throws SQLException, IOException {
+    cia.updateError();
+  }
 
   public void dropTempTables() throws SQLException {
     cia.dropTempTables();
+  }
+
+  public void closeConnection() throws SQLException {
+    connection.close();
   }
 }

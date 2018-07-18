@@ -2,7 +2,11 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
+import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.SSHConfig;
 import kz.greetgo.sandbox.db.migration.archiver.ArchiveUtils;
 import kz.greetgo.sandbox.db.migration.connection.SSHConnector;
 import kz.greetgo.sandbox.db.migration.reader.json.JSONManager;
@@ -11,46 +15,65 @@ import kz.greetgo.sandbox.db.migration.workers.cia.CIAInMigration;
 import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 
-
+@Bean
 public class MigrationRegisterImpl implements MigrationRegister {
 
-  CIAInMigration cia = new CIAInMigration();
+  public BeanGetter<SSHConfig> sshConfig;
+  public BeanGetter<DbConfig> dbConfig;
 
-  FRSInMigration frs = new FRSInMigration();
+  CIAInMigration cia;
+  FRSInMigration frs;
 
+  Connection connection;
   SSHConnector connector;
 
   List<String> files;
 
   @Override
   public void migrate() throws Exception {
-    long startTime = System.nanoTime();
+    connectToDatabase();
+
+    cia = new CIAInMigration(connection);
+    frs = new FRSInMigration(connection);
+
     connectSSH();
     prepareCIAFRS();
 
     downloadFiles();
     unpackFiles();
 
-    insertCIAIntoTemp();
-    insertFRSIntoTemp();
+    Thread ciaTempThread = new Thread(() -> insertCIAIntoTemp());
+    Thread frsThread = new Thread(() -> {
+      try {
+        insertFRSIntoTemp();
+      } catch (Exception e) {
+      }
+    });
 
-    long endTime = System.nanoTime();
-    long totalTime = endTime - startTime;
+    ciaTempThread.start();
+    frsThread.start();
 
-    System.out.println("ENDED IN:" + totalTime / 1000000000.0);
+    while (ciaTempThread.isAlive() || frsThread.isAlive()) ;
 
-    System.out.println("INSERTING FROM TEMP");
 
-    Thread.sleep(2000);
+    updateError();
 
     insertCIAIntoReal();
     insertFRSIntoReal();
 
-    System.out.println("------------FINISHED ALL TASKS------------------------");
     dropTempTables();
+    closeSSH();
+  }
+
+  private void updateError() throws SQLException, IOException, SftpException, JSchException {
+    cia.updateError();
+    connector.uploadErrorFile();
   }
 
   private void dropTempTables() throws SQLException {
@@ -58,8 +81,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     cia.closeConnection();
 
     frs.dropTempTables();
-    frs.closeConnection();
-
+    cia.closeConnection();
   }
 
 
@@ -75,21 +97,20 @@ public class MigrationRegisterImpl implements MigrationRegister {
   }
 
   private void connectSSH() throws Exception {
-    connector = SSHConnector.getConnection();
+    connector = new SSHConnector(sshConfig.get().ip(), sshConfig.get().port(), sshConfig.get().user(), sshConfig.get().password(), sshConfig.get().timeOut());
+
     connector.openConnection();
   }
 
   private void prepareCIAFRS() throws Exception {
-    cia.connect();
     cia.prepareWorker();
     cia.createTempTables();
 
-    frs.connect();
     frs.prepareWorker();
     frs.createTempTables();
   }
 
-  public void downloadFiles() throws JSchException, SftpException, IOException {
+  private void downloadFiles() throws JSchException, SftpException, IOException {
     connector.sendCommand("cd test/; ls");
     files = connector.recData();
     for (String file : files) {
@@ -98,7 +119,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   }
 
-  public void insertCIAIntoTemp() {
+  private void insertCIAIntoTemp() {
     for (String file : files) {
       if (file.contains(".xml")) {
         String xmlFile = file.replace(".tar.bz2", "");
@@ -111,13 +132,13 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
   }
 
-  public void unpackFiles() throws IOException {
+  private void unpackFiles() throws IOException {
     for (String file : files) {
       ArchiveUtils.extract(file);
     }
   }
 
-  public void insertFRSIntoTemp() throws IOException, InterruptedException {
+  private void insertFRSIntoTemp() throws IOException, InterruptedException {
     for (String file : files) {
       if (file.contains(".txt")) {
         String txtFile = file.replace(".tar.bz2", "");
@@ -129,18 +150,16 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
   }
 
-  private void closeSSH() {
-    connector.close();
+  private void connectToDatabase() throws SQLException {
+    String url = dbConfig.get().url();
+    Properties properties = new Properties();
+    properties.setProperty("user", dbConfig.get().username());
+    properties.setProperty("password", dbConfig.get().password());
+    connection = DriverManager.getConnection(url, properties);
   }
 
-  public static void main(String[] args) throws Exception {
-    MigrationRegisterImpl migrationRegister = new MigrationRegisterImpl();
-    long startTime = System.nanoTime();
-    migrationRegister.migrate();
-    long endTime = System.nanoTime();
-    long totalTime = endTime - startTime;
-    System.out.println(totalTime / 1000000000.0);
-    migrationRegister.closeSSH();
+  private void closeSSH() {
+    connector.close();
   }
 
 }

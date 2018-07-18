@@ -25,7 +25,7 @@ public class StandDb implements HasAfterInject {
   String[] randomName = {"Jason", "Steven", "Delphi", "Tomas", "Fred", "Pindre", "Andro"
     , "Ford", "Klinton", "George", "Mikael", "Alden", "Frank", "Sebastian", "Pupy", "Maximus",
     "Sonre", "Nox", "Nyx", "Taurus", "Talmit", "Ferdinand", "Somali", "Freddy", "Bart", "Aquinas",
-    "Talos"};
+    "Talos" };
 
   @Override
   public void afterInject() throws Exception {
@@ -67,7 +67,7 @@ public class StandDb implements HasAfterInject {
   private void initClientAccs() {
     for (int i = 0; i < 100; i++) {
       ClientAccountDot accountDot = new ClientAccountDot();
-      accountDot.clientId = i;
+      accountDot.client_id = i;
       accountDot.id = i;
       accountDot.money = (float) random.nextInt(200);
       clientAccountDots.add(accountDot);

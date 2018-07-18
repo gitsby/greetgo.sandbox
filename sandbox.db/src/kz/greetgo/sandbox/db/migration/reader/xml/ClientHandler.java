@@ -147,38 +147,38 @@ public class ClientHandler extends DefaultHandler {
     if (client != null) {
       if (qName.equals("client")) {
         clients.add(client);
-        if (!mobileOccured) {
-          client.error.append("No mobile phone;");
-        }
-        if (!regOccured) {
-          client.error.append("No reg address;");
-        }
-        if (clients.size() < clientBatchSize) {
-          return;
+        if (clients.size() > clientBatchSize) {
+          sendClient();
         }
 
-        threadNum++;
-        joinDeadThreads();
-
-        List<ClientFromMigration> fromMigrations = new LinkedList<>(clients);
-
-        clientSenderThreads.add(new ClientSenderThread(processor, fromMigrations));
-        clientSenderThreads.get(clientSenderThreads.size() - 1).start();
-
-        List<AddressFromMigration> addressFromMigr = new LinkedList<>(addresses);
-        addressSenderThreads.add(new AddressSenderThread(addressProcessor, addressFromMigr));
-        addressSenderThreads.get(addressSenderThreads.size() - 1).start();
-
-        List<PhoneFromMigration> phonesFromMigr = new LinkedList<>(phones);
-
-        phoneSenderThreads.add(new PhoneSenderThread(phoneProcessor, phonesFromMigr));
-        phoneSenderThreads.get(phoneSenderThreads.size() - 1).start();
-
-        clients = new LinkedList<>();
-        addresses = new LinkedList<>();
-        phones = new LinkedList<>();
+      } else if (qName.equals("cia")) {
+        System.out.println();
+        sendClient();
       }
     }
+  }
+
+  private void sendClient() {
+    threadNum++;
+    joinDeadThreads();
+
+    List<ClientFromMigration> fromMigrations = new LinkedList<>(clients);
+
+    clientSenderThreads.add(new ClientSenderThread(processor, fromMigrations));
+    clientSenderThreads.get(clientSenderThreads.size() - 1).start();
+
+    List<AddressFromMigration> addressFromMigr = new LinkedList<>(addresses);
+    addressSenderThreads.add(new AddressSenderThread(addressProcessor, addressFromMigr));
+    addressSenderThreads.get(addressSenderThreads.size() - 1).start();
+
+    List<PhoneFromMigration> phonesFromMigr = new LinkedList<>(phones);
+
+    phoneSenderThreads.add(new PhoneSenderThread(phoneProcessor, phonesFromMigr));
+    phoneSenderThreads.get(phoneSenderThreads.size() - 1).start();
+
+    clients = new LinkedList<>();
+    addresses = new LinkedList<>();
+    phones = new LinkedList<>();
   }
 
   private void joinDeadThreads() {

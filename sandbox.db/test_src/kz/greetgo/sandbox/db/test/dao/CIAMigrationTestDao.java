@@ -3,6 +3,11 @@ package kz.greetgo.sandbox.db.test.dao;
 import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
+import kz.greetgo.sandbox.db.stand.model.AddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.PhoneDot;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -22,6 +27,11 @@ public interface CIAMigrationTestDao {
     "          error text);")
   void createTempClientTable();
 
+
+  @Insert("insert into temp_client(client_id, name, surname, patronymic, gender, birth_date, charm,created_at) " +
+    "values(#{client_id}, #{name}, #{surname}, #{patronymic}, #{gender}, current_date, #{charm},current_timestamp)")
+  void insertTempClient(ClientFromMigration client);
+
   @Update("drop table if exists temp_client")
   void dropTempClientTable();
 
@@ -33,7 +43,6 @@ public interface CIAMigrationTestDao {
 
   @Update("drop table if exists temp_phone")
   void dropTempPhoneTable();
-
 
   @Update("create table if not exists temp_address (\n" +
     "  client_id varchar(40),\n" +
@@ -54,6 +63,21 @@ public interface CIAMigrationTestDao {
   @Select("select * from temp_phone")
   List<PhoneFromMigration> getTempPhones();
 
-  @Select("select * from temp_address")
-  List<AddressFromMigration> getAddresses();
+  @Select("select * from temp_address order by client_id asc")
+  List<AddressFromMigration> getTempAddresses();
+
+  @Select("select * from client order by migr_client_id")
+  List<ClientDot> getClientDots();
+
+  @Delete("delete from client where migr_client_id notnull")
+  void deleteFromClient();
+
+  @Delete("delete from characters")
+  void deleteFromCharms();
+
+  @Select("select * from client_phone")
+  List<PhoneDot> getPhonesFromReal();
+
+  @Select("select * from client_address order by client_id")
+  List<AddressDot> getAddressDots();
 }

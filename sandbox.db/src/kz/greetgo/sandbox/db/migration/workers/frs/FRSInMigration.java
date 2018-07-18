@@ -2,15 +2,20 @@ package kz.greetgo.sandbox.db.migration.workers.frs;
 
 import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
-import kz.greetgo.sandbox.db.migration.workers.DBConnector;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
 
-public class FRSInMigration extends DBConnector {
+public class FRSInMigration {
 
   FRSInMigrationWorker frs;
+  private Connection connection;
+
+  public FRSInMigration(Connection connection) {
+    this.connection = connection;
+  }
 
   public void prepareWorker() {
     frs = new FRSInMigrationWorker(connection);

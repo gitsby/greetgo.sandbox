@@ -93,16 +93,18 @@ public class SSHConnector {
     return reachable;
   }
 
-  public void downloadFile(String filePath) throws JSchException, SftpException {
-    System.out.println("Downloading:" + filePath);
+  public void downloadFile(String file) throws JSchException, SftpException, IOException {
+    System.out.println("Downloading:" + file);
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
-    sftp.get("/Users/tester/test/" + filePath, "build/" + filePath);
+    sftp.get("/Users/adilbekmailanov/test/" + file, "build/" + file);
+    sendCommand("mv /Users/adilbekmailanov/test/" + file + " /Users/adilbekmailanov/test/[downloaded]" + file);
+    recData();
     sftp.disconnect();
   }
 
   public static SSHConnector getConnection() throws Exception {
-    return new SSHConnector("192.168.26.61", 22, "Tester", "123", 120000);
+    return new SSHConnector("192.168.26.61", 22, "adilbekmailanov", "1q2w3e4r5t6y7u8i9o", 120000);
   }
 
   public static void main(String[] args) throws Exception {
@@ -117,5 +119,12 @@ public class SSHConnector {
 
     System.out.println("Downloaded files.");
     connector.close();
+  }
+
+  public void uploadErrorFile() throws JSchException, SftpException {
+    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
+    sftp.connect();
+    sftp.put("build/error.csv", "/Users/adilbekmailanov/err/");
+    sftp.disconnect();
   }
 }

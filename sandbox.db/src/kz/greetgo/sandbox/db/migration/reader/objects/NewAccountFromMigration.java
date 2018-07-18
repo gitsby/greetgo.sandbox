@@ -7,6 +7,11 @@ public class NewAccountFromMigration {
   public String type;
   public String client_id;
 
+  public String toJson() {
+    return "{\"type\":\"new_account\", \"account_number\":\"" + account_number + "\"," +
+      "\"registered_at\":\"" + registered_at + "\", \"client_id\":\"" + client_id + "\"}";
+  }
+
   @Override
   public String toString() {
     return "NewAccountFromMigration{" +

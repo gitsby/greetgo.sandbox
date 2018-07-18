@@ -17,13 +17,13 @@ public class FRSInMigrationWorker extends SqlWorker {
   }
 
   public void prepare() throws SQLException {
-    exec("create table temp_transaction(" +
+    exec("create table if not exists temp_transaction(" +
       "finished_at timestamp," +
       "account_number varchar(100), " +
       "money float, " +
       "transaction_type varchar(200));");
 
-    exec("create table temp_account (\n" +
+    exec("create table if not exists temp_account (\n" +
       "  account_number varchar(100),\n" +
       "  client_id      varchar(40),\n" +
       "  registered_at  timestamp\n" +
@@ -63,13 +63,6 @@ public class FRSInMigrationWorker extends SqlWorker {
   }
 
   public void insertIntoAccount() throws SQLException {
-    exec("insert into client_account (client_id, registered_at, number)\n" +
-      "  select\n" +
-      "    client.client_id,\n" +
-      "    temp_account.registered_at,\n" +
-      "    temp_account.account_number\n" +
-      "  from temp_account, client\n" +
-      "  where temp_account.client_id = client.migr_client_id;");
     exec("insert into client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
       "  select\n" +
       "    'NoAcc',\n" +
@@ -77,7 +70,7 @@ public class FRSInMigrationWorker extends SqlWorker {
       "    'NoAcc',\n" +
       "    'NoAcc',\n" +
       "    current_date,\n" +
-      "    (select client_id\n" +
+      "    (select id\n" +
       "     from characters\n" +
       "     limit 1),\n" +
       "    temp_account.client_id\n" +
@@ -86,6 +79,13 @@ public class FRSInMigrationWorker extends SqlWorker {
       "        not in\n" +
       "        (select migr_client_id\n" +
       "         from client);");
+    exec("insert into client_account (client_id, registered_at, number)\n" +
+      "  select\n" +
+      "    client.id,\n" +
+      "    temp_account.registered_at,\n" +
+      "    temp_account.account_number\n" +
+      "  from temp_account, client\n" +
+      "  where temp_account.client_id = client.migr_client_id;");
     connection.commit();
   }
 
@@ -97,12 +97,12 @@ public class FRSInMigrationWorker extends SqlWorker {
 
     exec("insert into client_account_transaction (account, money, finished_at, type)\n" +
       "  select\n" +
-      "    trans.client_id,\n" +
+      "    trans.id,\n" +
       "    trans.money,\n" +
       "    trans.finished_at,\n" +
-      "    transaction_type.client_id\n" +
+      "    transaction_type.id\n" +
       "  from (select\n" +
-      "          client_account.client_id,\n" +
+      "          client_account.id,\n" +
       "          temp_transaction.money,\n" +
       "          temp_transaction.finished_at,\n" +
       "          temp_transaction.transaction_type\n" +

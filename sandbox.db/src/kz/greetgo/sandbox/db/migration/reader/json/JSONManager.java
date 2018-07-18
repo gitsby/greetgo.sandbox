@@ -34,7 +34,7 @@ public class JSONManager {
 
   public void load(TransactionProcessor transactionProcessor, AccountProcessor accountProcessor) throws IOException, InterruptedException {
     BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    String current = null;
+    String current;
 
     transactions = new LinkedList<>();
     accounts = new LinkedList<>();
@@ -59,6 +59,7 @@ public class JSONManager {
         sendAccounts(accountProcessor);
       }
     }
+    reader.close();
     sendTransactions(transactionProcessor);
     sendAccounts(accountProcessor);
     joinDeadThreads();
@@ -83,9 +84,6 @@ public class JSONManager {
 
   private void joinDeadThreads() throws InterruptedException {
     while (accountSenderThreadNum > 1 && transactionSenderThreadNum > 1) {
-      System.out.println("THREADS ARE BUSY" + accountSenderThreadNum + " " + transactionSenderThreadNum);
-      Thread.sleep(100);
-
       for (TransactionSenderThread thread : transactionSenderThreads) {
         if (!thread.isAlive()) {
           thread.join();

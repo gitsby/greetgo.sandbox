@@ -40,9 +40,4 @@ public class ClientFromMigration {
       "        then EXCLUDED.charm end;";
   }
 
-  public String toInsertString(StringBuilder error) {
-    return "insert into temp_client(client_id, name, surname, patronymic, gender, charm, error, created_at) " +
-      "values('" + client_id + "','" + name + "','" + surname + "','" + patronymic + "','" + gender + "','" + charm + "','" + error.toString() + "',current_timestamp);";
-  }
-
 }

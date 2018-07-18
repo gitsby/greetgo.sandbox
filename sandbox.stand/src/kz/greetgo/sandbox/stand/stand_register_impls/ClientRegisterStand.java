@@ -411,7 +411,7 @@ public class ClientRegisterStand implements ClientRegister {
     return records.size();
   }
 
-  @Override
+
   public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) {
     System.out.println("STARTED");
 

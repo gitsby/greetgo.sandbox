@@ -4,11 +4,15 @@ import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
 import kz.greetgo.sandbox.db.migration.workers.SqlWorker;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 
 public class CIAInMigrationWorker extends SqlWorker {
@@ -18,7 +22,7 @@ public class CIAInMigrationWorker extends SqlWorker {
   }
 
   public void createTempTables() throws SQLException {
-    exec("create table temp_client ( \n" +
+    exec("create table if not exists temp_client ( \n" +
       "          created_at timestamp not null ,\n" +
       "          client_id varchar(40) primary key,  \n" +
       "          name varchar(30), \n" +
@@ -29,12 +33,12 @@ public class CIAInMigrationWorker extends SqlWorker {
       "          charm varchar(15), \n" +
       "          error text);");
 
-    exec("create table temp_phone(" +
+    exec("create table if not exists temp_phone(" +
       "client_id varchar(40)," +
       "number varchar(30)," +
       "type varchar(10));");
 
-    exec("create table temp_address (\n" +
+    exec("create table if not exists temp_address (\n" +
       "  client_id varchar(40),\n" +
       "  street    varchar(100),\n" +
       "  flat      varchar(100),\n" +
@@ -48,14 +52,13 @@ public class CIAInMigrationWorker extends SqlWorker {
 
   public void insertIntoClient() throws SQLException {
     exec("alter table client\n" +
-      "  add column migr_client_id varchar(40);\n");
+      "  add column if not exists migr_client_id varchar(40);\n");
 
     exec("insert into characters (name) select charm\n" +
       "                              from temp_client\n" +
       "                              where charm notnull\n" +
       "                              group by charm;");
 
-    System.out.println("CHARS READY");
 
     exec("insert into\n" +
       "  client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
@@ -65,16 +68,11 @@ public class CIAInMigrationWorker extends SqlWorker {
       "    temp_client.patronymic,\n" +
       "    temp_client.gender,\n" +
       "    temp_client.birth_date,\n" +
-      "    characters.client_id,\n" +
+      "    characters.id,\n" +
       "    temp_client.client_id\n" +
       "  from temp_client, characters\n" +
-      "  where temp_client.charm = characters.name and\n" +
-      "        temp_client.name notnull and TRIM(temp_client.name) != '' and\n" +
-      "        temp_client.surname notnull and TRIM(temp_client.surname) != '' and\n" +
-      "        temp_client.birth_date notnull and\n" +
-      "        temp_client.gender notnull and TRIM(temp_client.gender) != '';");
+      "  where temp_client.charm = characters.name and error isnull");
 
-    System.out.println("CLIENTS READY");
 
     connection.commit();
   }
@@ -82,71 +80,69 @@ public class CIAInMigrationWorker extends SqlWorker {
   public void insertIntoPhone() throws SQLException {
     exec("insert into client_phone (client_id, number, type)\n" +
       "  select\n" +
-      "    client.client_id,\n" +
+      "    client.id,\n" +
       "    temp_phone.number,\n" +
       "    temp_phone.type\n" +
       "  from client, temp_phone\n" +
       "  where client.migr_client_id = temp_phone.client_id;");
-    System.out.println("PHONE READY");
     connection.commit();
   }
 
   public void insertIntoAddress() throws SQLException {
     exec("insert into client_address (client_id, type, street, house, flat)\n" +
       "  SELECT\n" +
-      "    client.client_id,\n" +
+      "    client.id,\n" +
       "    temp_address.type,\n" +
       "    temp_address.street,\n" +
       "    temp_address.house,\n" +
       "    temp_address.flat\n" +
       "  from client, temp_address\n" +
       "  where client.migr_client_id = temp_address.client_id;");
-    System.out.println("ADDRESS READY");
     connection.commit();
   }
 
 
   public void dropTempTables() throws SQLException {
 
-    //exec("alter table client drop column migr_client_id;");
+    exec("alter table client drop column migr_client_id;");
 
-//    exec("drop table temp_client");
-//    exec("drop table temp_phone");
-//    exec("drop table temp_address");
-    //connection.commit();
+    exec("drop table temp_client");
+    exec("drop table temp_phone");
+    exec("drop table temp_address");
+    connection.commit();
 
   }
 
   public void sendClient(List<ClientFromMigration> clients) throws SQLException {
-    StringBuilder builder = new StringBuilder();
-    List<Object> params = new LinkedList<>();
-
+    PreparedStatement statement = connection.prepareStatement("insert into temp_client(client_id, name, surname, patronymic, gender, charm, birth_date,created_at)" +
+      "values(?,?,?,?,?,?,?,?) on conflict (client_id)\n" +
+      "  do update\n" +
+      "    set\n" +
+      "      surname    = case when EXCLUDED.surname notnull\n" +
+      "        then EXCLUDED.surname end,\n" +
+      "      name       = case when EXCLUDED.name notnull\n" +
+      "        then EXCLUDED.name end,\n" +
+      "      patronymic = EXCLUDED.patronymic,\n" +
+      "      birth_date = case when EXCLUDED.birth_date notnull\n" +
+      "        then EXCLUDED.birth_date end,\n" +
+      "      gender     = case when EXCLUDED.gender notnull\n" +
+      "        then EXCLUDED.gender end,\n" +
+      "      charm      = case when EXCLUDED.charm notnull\n" +
+      "        then EXCLUDED.charm end;");
     for (int i = 0; i < clients.size(); i++) {
       ClientFromMigration client = clients.get(i);
 
-      params.add(client.client_id);
-      params.add(client.name);
-      params.add(client.surname);
-      params.add(client.patronymic);
-      params.add(client.gender);
-      params.add(client.charm);
-      params.add(client.error.toString());
+      Date date = null;
 
-      if (client.birth == null) {
-        params.add(null);
-      } else if (!isValidFormat("yyyy-MM-dd", client.birth)) {
-        params.add(null);
-      } else {
-        params.add(formatDate(client.birth));
+      if (isValidFormat("yyyy-MM-dd", client.birth)) {
+        date = formatDate(client.birth);
       }
 
-      builder.append(client.getInsertString());
-      params.add(client.timestamp);
+      batchInsert(statement, client.client_id, client.name, client.surname, client.patronymic, client.gender, client.charm, date, client.timestamp);
     }
 
-    exec(builder.toString(), params.toArray());
+    statement.executeBatch();
     connection.commit();
-    System.out.println("Clients send!");
   }
 
   public void sendAddresses(List<AddressFromMigration> addressFromMigrations) throws SQLException {
@@ -185,4 +181,23 @@ public class CIAInMigrationWorker extends SqlWorker {
     connection.commit();
   }
 
+  public void updateError() throws SQLException, IOException {
+    exec("update temp_client\n" +
+      "set error = case\n" +
+      "            when name isnull or TRIM(name) = ''\n" +
+      "              then 'Invalid name;'\n" +
+      "            when surname isnull or TRIM(surname) = ''\n" +
+      "              then 'Invalid surname;'\n" +
+      "            when birth_date isnull\n" +
+      "              then 'Invalid birth date;'\n" +
+      "            when charm isnull or TRIM(charm) = ''\n" +
+      "              then 'Invalid charm;'\n" +
+      "            when gender isnull or TRIM(gender) = ''\n" +
+      "              then 'Invalid gender;'\n" +
+      "            end;\n");
+    CopyManager copyManager = new CopyManager((BaseConnection) connection);
+    copyManager.copyOut("COPY (select * from temp_client where error!='' and error notnull) to STDOUT ", new PrintWriter("build/error.csv", "UTF-8"));
+
+    connection.commit();
+  }
 }
