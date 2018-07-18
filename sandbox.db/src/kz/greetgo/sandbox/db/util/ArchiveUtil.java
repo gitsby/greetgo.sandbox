@@ -4,16 +4,17 @@ import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ArchiveUtil {
 
   private static Logger logger = Logger.getLogger(ArchiveUtil.class);
 
-  public static File unzip(File file) throws Exception {
+  public static File unzip(File file) throws IOException, InterruptedException {
     return unarchiveFile(file);
   }
 
-  private static File unarchiveFile(File file) throws Exception {
+  private static File unarchiveFile(File file) throws IOException, InterruptedException {
     logger.info("Begin unzip "+file.getName()+"...");
     logger.info("Create unzip folder.");
     File unzipFolder = new File(file.getParent()+"/unzipFolder");
@@ -59,9 +60,5 @@ public class ArchiveUtil {
       if (res != null) return res;
     }
     return null;
-  }
-
-  public static void main(String[] args) throws Exception {
-    System.out.println(unzip(new File("/Users/adilbekmailanov/files_for_migration/from_cia_2018-02-21-154929-1-300.xml.tar.bz2")));
   }
 }

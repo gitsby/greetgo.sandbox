@@ -9,12 +9,14 @@ import kz.greetgo.sandbox.controller.model.TMPClientAccount;
 import kz.greetgo.sandbox.controller.model.TMPClientAccountTransaction;
 import kz.greetgo.sandbox.db.worker.Worker;
 import org.apache.log4j.Logger;
+import org.fest.util.Files;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 @Bean
 public class FRSWorker extends Worker {
@@ -77,7 +79,7 @@ public class FRSWorker extends Worker {
     try {
       jsonParser = new MappingJsonFactory().createParser(inputStream);
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -108,7 +110,7 @@ public class FRSWorker extends Worker {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
     logger.info("create csv files end");
   }
@@ -134,8 +136,8 @@ public class FRSWorker extends Worker {
         handler.element(jsonParser.readValueAsTree());
       }
       handler.endDocument();
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
     logger.info("load csv files end.");
   }
@@ -146,7 +148,7 @@ public class FRSWorker extends Worker {
         checkIsNull(tmp.clientId), checkIsNull(tmp.registeredAt),
         checkIsNull(tmp.accountNumber)));
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -157,7 +159,7 @@ public class FRSWorker extends Worker {
         checkIsNull(tmp.transactionType), checkIsNull(tmp.accountNumber)));
       transactionTypeCsvBw.write(String.format("%s\n", checkIsNull(tmp.transactionType)));
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -173,8 +175,8 @@ public class FRSWorker extends Worker {
         () -> copy(copyManager, clientAccountTransactionCsvFile, clientAccountTransactionTmp),
         () -> copy(copyManager, transactionTypeCsvFile, transactionTypeTmp)
       );
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
     }
     logger.info("load csv files to tmp end...");
   }
@@ -282,31 +284,31 @@ public class FRSWorker extends Worker {
   }
 
   @Override
-  public File getErrorInFile() {
+  public File writeOutErrorData() {
     File errors = getFile(getNameWithDate("migrated_frs_errors")+".csv");
     try (Writer writer = getWriter(errors)){
       CopyManager copyManager = new CopyManager((BaseConnection) connection);
       copyOut(copyManager, clientAccountTmp, writer);
       copyOut(copyManager, clientAccountTransactionTmp, writer);
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
     }
     return errors;
   }
 
   @Override
-  public void finish() throws IOException {
-    logger.info("finish method begin...");
+  public void close() throws IOException {
+    logger.info("close method begin...");
     clientAccountCsvBw.close();
     clientAccountTransactionCsvBw.close();
     transactionTypeCsvBw.close();
 
-    clientAccountCsvFile.delete();
-    clientAccountTransactionCsvFile.delete();
-    transactionTypeCsvFile.delete();
+    Files.delete(clientAccountCsvFile);
+    Files.delete(clientAccountTransactionCsvFile);
+    Files.delete(transactionTypeCsvFile);
 
     jsonParser.close();
-    logger.info("finish method end.");
+    logger.info("close method end.");
   }
 
   private class JSONHandler extends DefaultHandler {
@@ -331,7 +333,6 @@ public class FRSWorker extends Worker {
         case "new_account":
           parseToClientAccount(jsonNode);
           write(tmpClientAccount);
-          break;
       }
       reload();
     }

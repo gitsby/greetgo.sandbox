@@ -32,7 +32,7 @@ public abstract class Worker implements WorkerInterface {
     return new FRSWorker(connection, inputStream);
   }
 
-  public final File execute() throws SQLException, IOException {
+  public final File execute() {
     logger.info("----- EXECUTING -----");
     long start = System.nanoTime();
     fillTmpTables();
@@ -43,9 +43,8 @@ public abstract class Worker implements WorkerInterface {
     Calendar c = new GregorianCalendar();
     c.setTime(new Date(end-start));
     logger.info(String.format("----- FINISH AT: %d n/s -----", end-start));
-    File error = getErrorInFile();
+    File error = writeOutErrorData();
     deleteTmpTables();
-    finish();
     return error;
   }
 
@@ -54,7 +53,7 @@ public abstract class Worker implements WorkerInterface {
     try(FileReader reader = new FileReader(file)) {
       copyManager.copyIn(r(copyQuery, tmp), reader);
     } catch (IOException | SQLException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
     file.delete();
   }
@@ -94,7 +93,7 @@ public abstract class Worker implements WorkerInterface {
     }
   }
 
-  protected String r(String sql, String tmp) {
+  private String r(String sql, String tmp) {
     sql = sql.replaceAll("TMP_TABLE", tmp);
     return sql;
   }
@@ -103,7 +102,7 @@ public abstract class Worker implements WorkerInterface {
     if (str == null) return "\\N";
     str = str.trim();
     if (!str.isEmpty()) {
-      if (str.toLowerCase().equals("null")) return "\\N";
+      if ("null".equals(str.toLowerCase())) return "\\N";
       return str;
     }
     return "\\N";
@@ -144,8 +143,8 @@ public abstract class Worker implements WorkerInterface {
   protected void copyOut(CopyManager copyManager, String tmp, Writer writer) {
     try {
       copyManager.copyOut(r("COPY (SELECT * FROM TMP_TABLE WHERE error IS NOT NULL) TO STDOUT WITH NULL ''", tmp), writer);
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
     }
   }
 }

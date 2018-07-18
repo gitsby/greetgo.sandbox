@@ -10,6 +10,7 @@ import kz.greetgo.sandbox.db.util.ArchiveUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,6 +27,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   @Override
   public void start() {
+    try {
+      migrate();
+    } catch (InterruptedException | IOException | SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void migrate() throws InterruptedException, SQLException, IOException {
     logger.info("start migration.");
     ssh.get().connect();
     migrateFiles(ssh.get().loadMigrationFiles());
@@ -33,25 +42,16 @@ public class MigrationRegisterImpl implements MigrationRegister {
     logger.info("finish migration.");
   }
 
-  private void migrateFiles(List<File> files) {
+  private void migrateFiles(List<File> files) throws IOException, InterruptedException, SQLException {
     logger.info("migrate files " + files);
     files.sort(Comparator.comparing(File::getName));
-    for (File file : files) {
-      try {
-        logger.warn("Unzip file "+file.getName());
-        migrateFile(ArchiveUtil.unzip(file));
-      } catch (Exception e) {
-        logger.error("Unzip file "+file.getPath(), e);
-      }
-    }
+    for (File file : files) migrateFile(ArchiveUtil.unzip(file));
   }
 
-  private void migrateFile(File file) {
+  private void migrateFile(File file) throws IOException, SQLException {
     try (Migration migration = new Migration(); Connection connection = getConnection()) {
       File errors = migration.migrate(connection, file);
       ssh.get().uploadFile(errors);
-    } catch (Exception e) {
-      logger.error("Migrate file "+file.getPath(), e);
     }
   }
 

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -192,9 +193,9 @@ public class FRSWorkerTest extends WorkerTest {
 
   private TestTmpClientAccountTransaction include(List<TestTmpClientAccountTransaction> accountTransactions, TestTmpClientAccountTransaction accountTransaction) {
     for (TestTmpClientAccountTransaction testAccountTransaction : accountTransactions)
-      if (isEqual(testAccountTransaction.finishedAt, accountTransaction.finishedAt)
-        && isEqual(testAccountTransaction.money, accountTransaction.money)
-        && isEqual(testAccountTransaction.accountNumber, accountTransaction.accountNumber)) return testAccountTransaction;
+      if (Objects.equals(testAccountTransaction.finishedAt, accountTransaction.finishedAt)
+        && Objects.equals(testAccountTransaction.money, accountTransaction.money)
+        && Objects.equals(testAccountTransaction.accountNumber, accountTransaction.accountNumber)) return testAccountTransaction;
     return null;
   }
 
@@ -377,9 +378,11 @@ public class FRSWorkerTest extends WorkerTest {
 
     @Override
     public boolean equals(Object obj) {
+      if (obj == null) return false;
+      if (!(obj instanceof TestTmpClientAccount)) return false;
       TestTmpClientAccount o = (TestTmpClientAccount) obj;
-      return isEqual(o.accountNumber, accountNumber) && isEqual(o.error, error)
-        && isEqual(o.clientId, clientId);
+      return Objects.equals(o.accountNumber, accountNumber) && Objects.equals(o.error, error)
+        && Objects.equals(o.clientId, clientId);
     }
 
     String toJson() {
@@ -402,10 +405,12 @@ public class FRSWorkerTest extends WorkerTest {
 
     @Override
     public boolean equals(Object obj) {
+      if (obj == null) return false;
+      if (!(obj instanceof TestTmpClientAccountTransaction)) return false;
       TestTmpClientAccountTransaction o = (TestTmpClientAccountTransaction) obj;
-      return isEqual(o.error, error) && isEqual(o.accountNumber, accountNumber)
-        && isEqual(o.transactionType, transactionType) && isEqual(o.finishedAt, finishedAt)
-        && isEqual(o.money, money);
+      return Objects.equals(o.error, error) && Objects.equals(o.accountNumber, accountNumber)
+        && Objects.equals(o.transactionType, transactionType) && Objects.equals(o.finishedAt, finishedAt)
+        && Objects.equals(o.money, money);
     }
 
     String toJson() {

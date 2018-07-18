@@ -1,20 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientFilter;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.GenderEnum;
-import kz.greetgo.sandbox.controller.model.PhoneType;
-import kz.greetgo.sandbox.controller.model.SortByEnum;
-import kz.greetgo.sandbox.controller.model.SortDirection;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.render.ClientRender;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
@@ -32,13 +19,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -234,54 +215,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-  enum PaginationEnum {
-    LimitLessThanOffset, OffsetLessThanLimit, LimitOffsetEqual
-  }
+  @Test
+  public void getRecord() {
 
-  @DataProvider
-  public Object[][] getRecords_pagination_DP() {
-    return new Object[][]{
-      new Object[]{PaginationEnum.LimitLessThanOffset},
-      new Object[]{PaginationEnum.LimitOffsetEqual},
-      new Object[]{PaginationEnum.OffsetLessThanLimit}
-    };
-  }
-
-  //FIXME разделить на 5 тестов. Подойди на третьий объясню
-  @Test(dataProvider = "getRecords_pagination_DP")
-  public void getRecords_pagination(PaginationEnum paginationEnum) {
-
-    int offset = 0, limit = 0;
-    switch (paginationEnum) {
-      case LimitLessThanOffset:
-        limit = RND.plusInt(100);
-        offset = RND.plusInt(100) + limit;
-        break;
-      case LimitOffsetEqual:
-        limit = RND.plusInt(100);
-        offset = limit;
-        break;
-      case OffsetLessThanLimit:
-        offset = RND.plusInt(100);
-        limit = RND.plusInt(100) + offset;
-    }
-
-    ClientFilter emptyFilter = new ClientFilter();
-    emptyFilter.offset = offset;
-    emptyFilter.limit = limit;
-
-    List<ClientDot> leftDots = new ArrayList<>();
-
-    {
-      for (int i = 0; i < offset + limit; i++) {
-        ClientDot dot = generateRandomClientDot();
-        leftDots.add(dot);
-        insertClient(dot);
-      }
-
-      Comparator<ClientDot> comparator = Comparator.comparing(o -> o.id);
-      leftDots.sort(comparator);
-    }
+    ClientFilter emptyFilter = getClientFilter(0, 10);
+    List<ClientDot> leftDots = getRandomClientDotList(100);
 
     //
     //
@@ -291,11 +229,85 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    assertThat(clientRecordList.size()).isEqualTo(limit);
 
-    for (int i = 0; i < limit; i++)
-      isEqual(clientRecordList.get(i), leftDots.get(i + offset));
+    for (int i = 0; i < clientRecordList.size(); i++) {
+      ClientRecord expected = fromDot(leftDots.get(i));
+      assertThat(clientRecordList.get(i)).isEqualsToByComparingFields(expected);
+    }
   }
+
+  private ClientFilter getClientFilter(int limit, int offset) {
+    ClientFilter filter = new ClientFilter();
+    filter.offset = offset;
+    filter.limit = limit;
+    return filter;
+  }
+
+  private List<ClientDot> getRandomClientDotList(int count) {
+    List<ClientDot> leftDots = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      ClientDot dot = generateRandomClientDot();
+      leftDots.add(dot);
+      insertClient(dot);
+    }
+
+    leftDots.sort(Comparator.comparing(o -> o.id));
+    return leftDots;
+  }
+
+  @Test()
+  public void getRecords_pagination_1() {
+    inNClient(0, 10, 100);
+  }
+
+  @Test()
+  public void getRecords_pagination_2() {
+    inNClient(10, 55, 100);
+  }
+
+  @Test()
+  public void getRecords_pagination_3() {
+    inNClient(10, 95, 100);
+  }
+
+  @Test()
+  public void getRecords_pagination_4() {
+    inNClient(110, 0, 100);
+  }
+
+  @Test()
+  public void getRecords_pagination_5() {
+    inNClient(5, -5,20);
+  }
+
+  private void inNClient(int limit, int offset, int clientSize) {
+    ClientFilter filter = getClientFilter(limit, offset);
+    List<ClientDot> leftDots = getRandomClientDotList(clientSize);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(filter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList).hasSize(getExpectedSize(filter.offset, filter.limit, leftDots.size()));
+
+    int j = 0;
+    for (int i = filter.offset<0?0:filter.offset; i < clientRecordList.size()+filter.offset; i++) {
+      assertThat(clientRecordList.get(j++).id).isEqualTo(leftDots.get(i).id);
+    }
+  }
+
+  private int getExpectedSize(int offset, int limit, int maxSize) {
+    if (limit < 0) limit = 0;
+    if (offset < 0) offset = 0;
+    if (limit > maxSize || offset + limit > maxSize) return maxSize - offset;
+    if (offset > maxSize) return 0;
+    return limit;
+  }
+
 
   enum FioEnum {
     SURNAME, NAME, PATRONYMIC
@@ -355,8 +367,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRecordList.size()).isEqualTo(1);
 
     ClientRecord expected = fromDot(dot);
-    // FIXME: 7/18/18 Сделай отдельный тест, который проверяет все поля. а во всех остальных местах  проверяй только ID
-    //assertThat(clientRecordList.get(0)).isEqualsToByComparingFields(expected);
     assertThat(clientRecordList.get(0).id).isEqualTo(expected.id);
   }
 
@@ -800,7 +810,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   private void insertCharm(CharmRecord charmRecord) {
-    clientTestDao.get().insertCharm(charmRecord.name, charmRecord.description, charmRecord.energy);
+    clientTestDao.get().insertCharmWithId(charmRecord.id, charmRecord.name, charmRecord.description, charmRecord.energy);
   }
 
   private static void sortList(List<ClientRecord> clientRecords, SortByEnum sortBy, SortDirection sortDirection) {

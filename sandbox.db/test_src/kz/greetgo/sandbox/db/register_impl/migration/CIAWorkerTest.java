@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -471,11 +472,13 @@ public class CIAWorkerTest extends WorkerTest {
 
     @Override
     public boolean equals(Object obj) {
+      if (obj == null) return false;
+      if (!(obj instanceof TestTmpClient)) return false;
       TestTmpClient o = (TestTmpClient) obj;
-      return isEqual(o.id, id) && isEqual(o.surname, surname)
-        && isEqual(o.error, error) && isEqual(o.name, name)
-        && isEqual(o.patronymic, patronymic) && isEqual(o.birthDate, birthDate)
-        && isEqual(o.charm, charm) && isEqual(o.gender, gender);
+      return Objects.equals(o.id, id) && Objects.equals(o.surname, surname)
+        && Objects.equals(o.error, error) && Objects.equals(o.name, name)
+        && Objects.equals(o.patronymic, patronymic) && Objects.equals(o.birthDate, birthDate)
+        && Objects.equals(o.charm, charm) && Objects.equals(o.gender, gender);
     }
   }
 
