@@ -355,6 +355,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRecordList.size()).isEqualTo(1);
 
     ClientRecord expected = fromDot(dot);
+    // FIXME: 7/18/18 Сделай отдельный тест, который проверяет все поля. а во всех остальных местах  проверяй только ID
     //assertThat(clientRecordList.get(0)).isEqualsToByComparingFields(expected);
     assertThat(clientRecordList.get(0).id).isEqualTo(expected.id);
   }
