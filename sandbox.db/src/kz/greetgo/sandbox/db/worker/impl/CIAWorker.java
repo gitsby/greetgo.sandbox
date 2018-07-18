@@ -375,6 +375,7 @@ public class CIAWorker extends Worker {
 
   @Override
   public File getErrorInFile() {
+    logger.info("copy error clients to file.");
     File errors = getFile(getNameWithDate("migrated_cia_errors")+".csv");
     try (Writer writer = getWriter(errors)){
       CopyManager copyManager = new CopyManager((BaseConnection) connection);
@@ -382,8 +383,9 @@ public class CIAWorker extends Worker {
       copyOut(copyManager, clientAddressTmp, writer);
       copyOut(copyManager, clientPhoneTmp, writer);
     } catch (Exception e) {
-      logger.error(e);
+      logger.error("Copy errors client to file error", e);
     }
+    logger.info("copy error clients to file finished.");
     return errors;
   }
 

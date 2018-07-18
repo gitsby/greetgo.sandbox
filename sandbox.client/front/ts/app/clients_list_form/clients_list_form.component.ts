@@ -40,7 +40,7 @@ export class ClientsListFormComponent implements AfterViewInit {
     if (page <= 0) return;
     this.currentPage = page;
     this.clientFilter.offset = this.currentPage * this.numberOfItemInPage - this.numberOfItemInPage;
-    this.clientFilter.limit = this.currentPage * this.numberOfItemInPage;
+    this.clientFilter.limit = this.numberOfItemInPage;
     this.loadPage();
   }
 
@@ -50,10 +50,10 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   loadPage() {
-    this.clientRecords = [];
     this.httpService.get("/client/list", {
       "clientFilter": JSON.stringify(this.clientFilter)
     }).toPromise().then(result => {
+      this.clientRecords = [];
       for (let res of result.json()) {
         this.clientRecords.push(ClientRecord.copy(res));
       }

@@ -4,6 +4,30 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
   <appender name="CALLBACK" class="org.apache.log4j.RollingFileAppender">
+    <param name="File" value="${user.home}/sandbox.d/logs/register.log"/>
+    <param name="Threshold" value="INFO"/>
+    <param name="Append" value="true"/>
+    <param name="MaxFileSize" value="100MB"/>
+    <param name="MaxBackupIndex" value="100"/>
+
+    <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
+      <param name="LoggerNameCut" value="0"/>
+    </layout>
+  </appender>
+
+  <appender name="WORKER" class="org.apache.log4j.RollingFileAppender">
+    <param name="File" value="${user.home}/sandbox.d/logs/worker.log"/>
+    <param name="Threshold" value="INFO"/>
+    <param name="Append" value="true"/>
+    <param name="MaxFileSize" value="100MB"/>
+    <param name="MaxBackupIndex" value="100"/>
+
+    <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
+      <param name="LoggerNameCut" value="0"/>
+    </layout>
+  </appender>
+
+  <appender name="REGISTER" class="org.apache.log4j.RollingFileAppender">
     <param name="File" value="${user.home}/sandbox.d/logs/callback.log"/>
     <param name="Threshold" value="INFO"/>
     <param name="Append" value="true"/>
@@ -18,6 +42,16 @@
   <category name="callback" additivity="true">
     <priority value="TRACE"/>
     <appender-ref ref="CALLBACK"/>
+  </category>
+
+  <category name="worker" additivity="true">
+    <priority value="TRACE"/>
+    <appender-ref ref="CALLBACK"/>
+  </category>
+
+  <category name="register" additivity="true">
+    <priority value="TRACE"/>
+    <appender-ref ref="REGISTER"/>
   </category>
 
 </log4j:configuration>

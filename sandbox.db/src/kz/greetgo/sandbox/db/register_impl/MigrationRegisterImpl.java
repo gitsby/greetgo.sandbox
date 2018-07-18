@@ -7,7 +7,6 @@ import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.core.Ssh;
 import kz.greetgo.sandbox.db.util.ArchiveUtil;
-import kz.greetgo.sandbox.db.util.JdbcSandbox;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -20,9 +19,8 @@ import java.util.List;
 @Bean
 public class MigrationRegisterImpl implements MigrationRegister {
 
-  private static Logger logger = Logger.getLogger("callback");
+  private static Logger logger = Logger.getLogger(MigrationRegisterImpl.class.getName());
 
-  public BeanGetter<JdbcSandbox> jdbc;
   public BeanGetter<DbConfig> dbConfig;
   public BeanGetter<Ssh> ssh;
 
@@ -40,20 +38,20 @@ public class MigrationRegisterImpl implements MigrationRegister {
     files.sort(Comparator.comparing(File::getName));
     for (File file : files) {
       try {
+        logger.warn("Unzip file "+file.getName());
         migrateFile(ArchiveUtil.unzip(file));
       } catch (Exception e) {
-        logger.error(e);
+        logger.error("Unzip file "+file.getPath(), e);
       }
     }
   }
 
   private void migrateFile(File file) {
-
     try (Migration migration = new Migration(); Connection connection = getConnection()) {
       File errors = migration.migrate(connection, file);
       ssh.get().uploadFile(errors);
     } catch (Exception e) {
-      logger.error(e);
+      logger.error("Migrate file "+file.getPath(), e);
     }
   }
 
