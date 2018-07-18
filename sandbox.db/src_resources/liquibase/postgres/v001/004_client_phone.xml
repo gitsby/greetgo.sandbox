@@ -8,7 +8,7 @@
       <![CDATA[
         create table Client_Phone(
           client_id int not null,
-          number varchar(20) not null,
+          number varchar(50) not null,
           type varchar(20) not null,
           actual int default 1
         )

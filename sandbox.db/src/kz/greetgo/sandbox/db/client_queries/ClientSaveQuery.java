@@ -34,7 +34,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
     } else {
       sql.UPDATE("client");
       validateClientUpdate();
-      sql.WHERE("id=?");
+      sql.WHERE("client_id=?");
       params.add(client.id);
     }
   }
@@ -80,7 +80,7 @@ public class ClientSaveQuery implements ConnectionCallback<Integer> {
 
     ResultSet set = statement.getGeneratedKeys();
     set.next();
-    int clientId = set.getInt("id");
+    int clientId = set.getInt("client_id");
 
     connection.close();
     return clientId;

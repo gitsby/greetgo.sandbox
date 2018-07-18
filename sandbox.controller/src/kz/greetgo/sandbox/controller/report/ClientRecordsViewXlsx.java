@@ -57,10 +57,10 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
     createCell(clientRecord.surname, row, columnNum++);
     createCell(clientRecord.name, row, columnNum++);
     createCell(clientRecord.patronymic, row, columnNum++);
-    createCell(clientRecord.age+"", row, columnNum++);
-    createCell(clientRecord.accBalance+"", row, columnNum++);
-    createCell(clientRecord.minBalance+"", row, columnNum++);
-    createCell(clientRecord.maxBalance+"", row, columnNum++);
+    createCell(clientRecord.age + "", row, columnNum++);
+    createCell(clientRecord.accBalance + "", row, columnNum++);
+    createCell(clientRecord.minBalance + "", row, columnNum++);
+    createCell(clientRecord.maxBalance + "", row, columnNum++);
 
     rowNum++;
   }
@@ -77,14 +77,15 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
       date.setCellValue("Date of report: " + currentDate.toString());
       workbook.write(outputStream);
     } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
   public static void main(String[] args) throws FileNotFoundException {
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test.xlsx");
+    FileOutputStream fileOutputStream = new FileOutputStream("build/test1.xlsx");
     ClientRecordsViewXlsx xlsx = new ClientRecordsViewXlsx(fileOutputStream);
+
     xlsx.start();
+
     Random random = new Random();
     for (int i = 0; i < 101; i++) {
       ClientRecordRow recordRow = new ClientRecordRow();
@@ -100,6 +101,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
 
       xlsx.appendRow(recordRow);
     }
+
     xlsx.finish("Me", new Date());
   }
 }

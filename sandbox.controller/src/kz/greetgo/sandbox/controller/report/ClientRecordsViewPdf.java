@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.sandbox.controller.model.ClientRecordRow;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -52,6 +53,7 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
   @Override
   public void finish(String userName, Date currentDate) {
+
     try {
       document.add(table);
 
@@ -61,14 +63,14 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
 
       document.add(preface);
       document.close();
+
     } catch (DocumentException e) {
-      e.printStackTrace();
     }
+
   }
 
   public static void main(String[] args) throws FileNotFoundException {
-    // FIXME: 7/11/18 Нельзя хардкодить путь. У меня она не запускается
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test.pdf");
+    FileOutputStream fileOutputStream = new FileOutputStream("build/test.pdf");
     ClientRecordsViewPdf pdf = new ClientRecordsViewPdf(fileOutputStream);
 
     pdf.start();

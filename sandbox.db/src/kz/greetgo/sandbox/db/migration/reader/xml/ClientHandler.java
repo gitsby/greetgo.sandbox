@@ -13,6 +13,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class ClientHandler extends DefaultHandler {
   private boolean isWorkPhone = false;
   private boolean isHomePhone = false;
 
-  private int clientBatchSize = 1000;
+  public int clientBatchSize = 200;
 
   private int threadNum = 0;
 
@@ -49,59 +51,62 @@ public class ClientHandler extends DefaultHandler {
   }
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-    if (qName.charAt(0) == 'c' && qName.charAt(qName.length() - 1) == 't') {
+  public void startElement(String uri, String localName, String qName, Attributes attributes) {
+    if ("client".equals(qName)) {
       client = new ClientFromMigration();
-      client.id = attributes.getValue(0);
+      client.error = new StringBuilder();
+      client.timestamp = new Timestamp(new Date().getTime());
+      client.client_id = attributes.getValue(0);
     }
     if (client == null) {
       return;
     }
-    if (qName.charAt(0) == 'n') {
+    if ("name".equals(qName)) {
       client.name = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 's') {
+    if ("surname".equals(qName)) {
       client.surname = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 'p') {
+    if ("patronymic".equals(qName)) {
       client.patronymic = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 'b') {
+    if ("birth".equals(qName)) {
       client.birth = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 'g') {
+    if ("gender".equals(qName)) {
       client.gender = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 'c' && qName.charAt(qName.length() - 1) == 'm') {
+    if ("charm".equals(qName)) {
       client.charm = attributes.getValue(0);
     }
-    if (qName.charAt(0) == 'm') {
+    if ("mobilePhone".equals(qName)) {
       isMobilePhone = true;
     }
-    if (qName.charAt(0) == 'w') {
+    if ("workPhone".equals(qName)) {
       isWorkPhone = true;
     }
-    if (qName.charAt(0) == 'h') {
+    if ("homePhone".equals(qName)) {
       isHomePhone = true;
     }
 
-    if ((qName.charAt(0) == 'f' || qName.charAt(0) == 'r')) {
+    if (("fact".equals(qName) || "register".equals(qName))) {
       AddressFromMigration address = new AddressFromMigration();
+      address.client_id = client.client_id;
       address.street = attributes.getValue("street");
       address.house = attributes.getValue("house");
       address.flat = attributes.getValue("flat");
-      address.type = (qName.charAt(0) == 'f') ? "FACT" : "REG";
+      address.type = ("fact".equals(qName)) ? "FACT" : "REG";
       addresses.add(address);
     }
   }
 
   @Override
-  public void characters(char ch[], int start, int length) throws SAXException {
+  public void characters(char ch[], int start, int length) {
 
     if (isMobilePhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "MOBILE";
 
       phones.add(phone);
@@ -110,7 +115,7 @@ public class ClientHandler extends DefaultHandler {
     if (isWorkPhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "WORKING";
 
       phones.add(phone);
@@ -119,7 +124,7 @@ public class ClientHandler extends DefaultHandler {
     if (isHomePhone) {
       PhoneFromMigration phone = new PhoneFromMigration();
       phone.number = new String(ch, start, length);
-      phone.client_id = client.id;
+      phone.client_id = client.client_id;
       phone.type = "HOME";
 
       phones.add(phone);
@@ -129,36 +134,42 @@ public class ClientHandler extends DefaultHandler {
   }
 
   @Override
-  public void endElement(String uri, String localName, String qName) throws SAXException {
+  public void endElement(String uri, String localName, String qName) {
     if (client != null) {
       if (qName.equals("client")) {
         clients.add(client);
-        if (clients.size() < clientBatchSize) {
-          return;
+        if (clients.size() > clientBatchSize) {
+          sendClient();
         }
 
-        threadNum++;
-        joinDeadThreads();
-
-        List<ClientFromMigration> fromMigrations = new LinkedList<>(clients);
-
-        clientSenderThreads.add(new ClientSenderThread(processor, fromMigrations));
-        clientSenderThreads.get(clientSenderThreads.size() - 1).start();
-
-        List<AddressFromMigration> addressFromMigr = new LinkedList<>(addresses);
-        addressSenderThreads.add(new AddressSenderThread(addressProcessor, addressFromMigr));
-        addressSenderThreads.get(addressSenderThreads.size() - 1).start();
-
-        List<PhoneFromMigration> phonesFromMigr = new LinkedList<>(phones);
-
-        phoneSenderThreads.add(new PhoneSenderThread(phoneProcessor, phonesFromMigr));
-        phoneSenderThreads.get(phoneSenderThreads.size() - 1).start();
-
-        clients = new LinkedList<>();
-        addresses = new LinkedList<>();
-        phones = new LinkedList<>();
+      } else if (qName.equals("cia")) {
+        System.out.println();
+        sendClient();
       }
     }
+  }
+
+  private void sendClient() {
+    threadNum++;
+    joinDeadThreads();
+
+    List<ClientFromMigration> fromMigrations = new LinkedList<>(clients);
+
+    clientSenderThreads.add(new ClientSenderThread(processor, fromMigrations));
+    clientSenderThreads.get(clientSenderThreads.size() - 1).start();
+
+    List<AddressFromMigration> addressFromMigr = new LinkedList<>(addresses);
+    addressSenderThreads.add(new AddressSenderThread(addressProcessor, addressFromMigr));
+    addressSenderThreads.get(addressSenderThreads.size() - 1).start();
+
+    List<PhoneFromMigration> phonesFromMigr = new LinkedList<>(phones);
+
+    phoneSenderThreads.add(new PhoneSenderThread(phoneProcessor, phonesFromMigr));
+    phoneSenderThreads.get(phoneSenderThreads.size() - 1).start();
+
+    clients = new LinkedList<>();
+    addresses = new LinkedList<>();
+    phones = new LinkedList<>();
   }
 
   private void joinDeadThreads() {

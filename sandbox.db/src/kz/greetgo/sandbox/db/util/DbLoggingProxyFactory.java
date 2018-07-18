@@ -54,7 +54,7 @@ public class DbLoggingProxyFactory {
 
     @Override
     public void connectionClose(String connectionId) {
-      logTrace(connectionId + " close connection");
+      logTrace(connectionId + " closeConnection connection");
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DbLoggingProxyFactory {
 
     @Override
     public void statementClose(String connectionId) {
-      logTrace(connectionId + " close statement");
+      logTrace(connectionId + " closeConnection statement");
     }
 
     @Override
@@ -147,7 +147,7 @@ public class DbLoggingProxyFactory {
 
         if (parameterTypes.length == 0) {
 
-          if (methodName.equals("close")) {
+          if (methodName.equals("closeConnection")) {
             sqlViewer.connectionClose(connectionId);
             return method.invoke(originalConnection, args);
           }
@@ -221,7 +221,7 @@ public class DbLoggingProxyFactory {
 
           if (parameterTypes.length == 0) {
 
-            if (methodName.equals("close")) {
+            if (methodName.equals("closeConnection")) {
               sqlViewer.statementClose(connectionId);
               return method.invoke(originalStatement, args);
             }

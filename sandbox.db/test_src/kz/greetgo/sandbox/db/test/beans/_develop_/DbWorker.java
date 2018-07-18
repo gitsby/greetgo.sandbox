@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.SSHConfig;
 import kz.greetgo.sandbox.db.util.App;
 import kz.greetgo.sandbox.db.util.LiquibaseManager;
 import kz.greetgo.util.ServerUtil;
@@ -28,11 +29,13 @@ public class DbWorker {
   final Logger logger = Logger.getLogger(getClass());
 
   public BeanGetter<DbConfig> postgresDbConfig;
+  public BeanGetter<SSHConfig> sshConfig;
   public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
   public BeanGetter<LiquibaseManager> liquibaseManager;
 
   public void recreateAll() throws Exception {
     prepareDbConfig();
+    prepareSSHConfig();
     recreateDb();
 
     liquibaseManager.get().apply();
@@ -111,6 +114,30 @@ public class DbWorker {
       allPostgresConfigFactory.get().reset();
     }
   }
+
+  private void prepareSSHConfig() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(SSHConfig.class);
+
+    if (!file.exists()) {
+      file.getParentFile().mkdirs();
+      writeSSHConfigFile();
+    } else if ("null".equals(sshConfig.get().ip())) {
+      writeSSHConfigFile();
+      allPostgresConfigFactory.get().reset();
+    }
+  }
+
+  private void writeSSHConfigFile() throws Exception {
+    File file = allPostgresConfigFactory.get().storageFileFor(SSHConfig.class);
+    try (PrintStream out = new PrintStream(file, "UTF-8")) {
+      out.println("ip=192.168.26.61");
+      out.println("port=22");
+      out.println("user=adilbekmailanov");
+      out.println("password=1q2w3e4r5t6y7u8i9o");
+      out.println("timeOut=120000");
+    }
+  }
+
 
   private void writeDbConfigFile() throws Exception {
     File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);

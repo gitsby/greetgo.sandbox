@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Connector {
+public class SSHConnector {
 
   private final String ip;
   private final int port;
@@ -21,7 +21,7 @@ public class Connector {
 
   private Channel channel;
 
-  public Connector(String ip, int port, String userName, String password, int timeOut) throws Exception {
+  public SSHConnector(String ip, int port, String userName, String password, int timeOut) throws Exception {
     this.ip = ip;
     this.port = port;
     this.userName = userName;
@@ -31,7 +31,7 @@ public class Connector {
     if (!pingIp(ip)) {
       throw new Exception("IP is not reachable");
     }
-    System.out.println("IP is reachable");
+    System.out.println("IP IS Reachable");
   }
 
   public boolean openConnection() throws JSchException {
@@ -45,17 +45,11 @@ public class Connector {
     session.setConfig("StrictHostKeyChecking", "no");
     session.setTimeout(timeOut);
     session.connect();
-//
-//    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
-//
-//    sftp.connect();
-
-    //sftp.get("/Users/tester/migrationFolder/from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2", "C:\\Programs");
 
     return res;
   }
 
-  public void sendCommand(String command) throws IOException, JSchException {
+  public void sendCommand(String command) throws JSchException {
     channel = session.openChannel("exec");
     ((ChannelExec) channel).setCommand(command);
     channel.connect();
@@ -64,11 +58,17 @@ public class Connector {
   public List<String> recData() throws IOException, JSchException {
     List<String> content = new ArrayList<>();
     InputStream stream = channel.getInputStream();
-
+    StringBuilder builder = new StringBuilder();
     int readByte = stream.read();
 
     while (readByte != 0xffffffff) {
-      content.add(((char) readByte)+"");
+
+      builder.append((char) readByte);
+      if (builder.toString().contains(".bz2")) {
+        content.add(builder.toString().replace("\n", ""));
+        builder = new StringBuilder();
+      }
+
       readByte = stream.read();
     }
     channel.disconnect();
@@ -93,20 +93,38 @@ public class Connector {
     return reachable;
   }
 
-  public void downloadFile(String filePath) throws JSchException, SftpException {
+  public void downloadFile(String file) throws JSchException, SftpException, IOException {
+    System.out.println("Downloading:" + file);
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
-    sftp.get(filePath, "C:\\Programs");
+    sftp.get("/Users/adilbekmailanov/test/" + file, "build/" + file);
+    sendCommand("mv /Users/adilbekmailanov/test/" + file + " /Users/adilbekmailanov/test/[downloaded]" + file);
+    recData();
+    sftp.disconnect();
+  }
+
+  public static SSHConnector getConnection() throws Exception {
+    return new SSHConnector("192.168.26.61", 22, "adilbekmailanov", "1q2w3e4r5t6y7u8i9o", 120000);
   }
 
   public static void main(String[] args) throws Exception {
-    Connector connector = new Connector("192.168.26.61", 22, "Tester", "123", 120000);
+    SSHConnector connector = new SSHConnector("192.168.26.61", 22, "Tester", "123", 120000);
 
     connector.openConnection();
-    connector.sendCommand("cd migrationFolder; ls");
+    connector.sendCommand("cd test; ls");
 
-    System.out.println(connector.recData());
-    System.out.println("CONNECTED");
+    for (String file : connector.recData()) {
+      connector.downloadFile(file);
+    }
+
+    System.out.println("Downloaded files.");
     connector.close();
+  }
+
+  public void uploadErrorFile() throws JSchException, SftpException {
+    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
+    sftp.connect();
+    sftp.put("build/error.csv", "/Users/adilbekmailanov/err/");
+    sftp.disconnect();
   }
 }

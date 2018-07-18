@@ -34,7 +34,7 @@ public class JSONManager {
 
   public void load(TransactionProcessor transactionProcessor, AccountProcessor accountProcessor) throws IOException, InterruptedException {
     BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    String current = null;
+    String current;
 
     transactions = new LinkedList<>();
     accounts = new LinkedList<>();
@@ -59,6 +59,7 @@ public class JSONManager {
         sendAccounts(accountProcessor);
       }
     }
+    reader.close();
     sendTransactions(transactionProcessor);
     sendAccounts(accountProcessor);
     joinDeadThreads();
@@ -82,10 +83,7 @@ public class JSONManager {
 
 
   private void joinDeadThreads() throws InterruptedException {
-    while (accountSenderThreadNum > 6 || transactionSenderThreadNum > 6) {
-      System.out.println("THREADS ARE BUSY" + accountSenderThreadNum + " " + transactionSenderThreadNum);
-      Thread.sleep(100);
-
+    while (accountSenderThreadNum > 1 && transactionSenderThreadNum > 1) {
       for (TransactionSenderThread thread : transactionSenderThreads) {
         if (!thread.isAlive()) {
           thread.join();
@@ -108,10 +106,11 @@ public class JSONManager {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     long time = System.nanoTime();
-    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_1000000.txt");
+    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_30000.txt");
     System.out.println("LOADING");
     manager.load(transactions -> {
       System.out.println("TRANSACTIONS:" + transactions.size() + "::::");
+      System.out.println("MONEY: " + Float.valueOf(transactions.get(0).money.replace("_", "")));
       System.out.println(transactions);
     }, accounts -> {
       System.out.println("ACCOUNTS:" + accounts.size() + "::::");

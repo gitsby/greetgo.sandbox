@@ -181,12 +181,13 @@ export class ClientListComponent {
   }
 
   renderIn(type: string) {
-    this.httpService.get("/report/render").toPromise().then(res => {
-      alert("Finished")
+    this.httpService.get("/auth/userInfo")
+      .toPromise().then(result => {
+      let name = result.json().name;
+      let url = "/report/render?filter=" + JSON.stringify(this.clientRecordFilter)
+        + "&fileName=" + type + "&fileType=" + type + "&accName=" + name;
+      window.open(this.httpService.url(url))
     });
-    let url = "/report/render?filter=" + JSON.stringify(this.clientRecordFilter)
-      + "&fileName=" + type + "&fileType=" + type;
-    window.open(this.httpService.url(url))
   }
 
   notExistedClient(id: number): Boolean {

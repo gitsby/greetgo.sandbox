@@ -1,7 +1,6 @@
 package kz.greetgo.sandbox.db.test.dao;
 
 import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -23,15 +22,15 @@ public interface ClientTestDao {
     "values(#{client_id},#{number},#{type})")
   void insertNewPhoneDot(PhoneDot phoneDot);
 
-  @Insert("insert into client_account (client_id, money) values (#{id}, #{money})")
+  @Insert("insert into client_account (client_id, money) values (#{client_id}, #{money})")
   void insertNewAccount(ClientAccount account);
 
   // ------------------------------------
   @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, actual) " +
-    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning id")
+    "values (#{name},#{surname},#{patronymic},#{gender},#{birthDate},#{charm}, 1) returning client_id")
   int insertNewClient(ClientDot clientDot);
 
-  @Select("insert into characters (name) values(#{charm}) RETURNING id;")
+  @Select("insert into characters (name) values(#{charm}) RETURNING client_id;")
   int insertNewCharm(String charm);
 
   @Select("select count(*) from client " +
@@ -40,22 +39,25 @@ public interface ClientTestDao {
   Integer getClientCount(ClientRecordFilter filter);
 
 
-  @Select("select * from client where id =#{id} and actual=1")
+  @Select("select * from client where client_id =#{client_id} and actual=1")
   ClientDot getClientDotById(int id);
 
   @Select("select * from client_address where client_id=#{client_id} and actual=1")
   AddressDot getAddressDot(int client_id);
 
+  @Select("select * from client_address where client_id=#{client_id} and actual=1 and type='REG'")
+  AddressDot getRegAddress(int client_id);
+
   @Select("select * from client_address where client_id=#{client_id} and actual=1")
   List<AddressDot> getAddressDots(int clientId);
 
-  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
-  PhoneDot getPhoneDot(int id);
+  @Select("select client_id, number, type from client_phone where client_id=#{client_id} and actual=1 and type='MOBILE'")
+  PhoneDot getMobilePhone(int id);
 
-  @Select("select client_id, number, type from client_phone where client_id=#{id} and actual=1")
+  @Select("select client_id, number, type from client_phone where client_id=#{client_id} and actual=1")
   List<PhoneDot> getPhoneDots(int id);
 
-  @Select("select name from client where id=#{id} and actual=1")
+  @Select("select name from client where client_id=#{client_id} and actual=1")
   String clientExists(int id);
 
   //----------------------------------------

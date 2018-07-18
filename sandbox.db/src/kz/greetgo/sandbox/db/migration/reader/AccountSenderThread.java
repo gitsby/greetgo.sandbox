@@ -3,6 +3,8 @@ package kz.greetgo.sandbox.db.migration.reader;
 import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.processors.AccountProcessor;
 
+import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 
 public class AccountSenderThread extends Thread {
@@ -16,6 +18,12 @@ public class AccountSenderThread extends Thread {
   }
 
   public void run(){
-    processor.sendAccounts(accounts);
+    try {
+      processor.sendAccounts(accounts);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -10,36 +10,40 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class TAR {
+public class ArchiveUtils {
 
   public static void main(String[] args) throws IOException {
-//
-//    File file = new File("C:\\Programs\\from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
-//
-//    InputStream stream = new FileInputStream(file);
-//    TAR.extractTarGZ(stream);
+    ArchiveUtils.extract("from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2");
+  }
 
-    FileInputStream in = new FileInputStream("C:\\Programs\\from_cia_2018-02-21-154929-1-300.xml.tar.bz2");
-    FileOutputStream out = new FileOutputStream("C:\\Programs\\archive.tar");
+  public static void extract(String file) throws IOException {
+    ArchiveUtils.extractBZ2File("build/" + file);
+    ArchiveUtils.unTarFile("build/" + file.replace(".bz2", ""));
+  }
+
+  public static void extractBZ2File(String file) throws IOException {
+    FileInputStream in = new FileInputStream(file);
+    FileOutputStream out = new FileOutputStream(file.replace(".bz2", ""));
+
     BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
-    final byte[] buffer = new byte[1024];
+
+    final byte[] buffer = new byte[8024];
     int n = 0;
     while (-1 != (n = bzIn.read(buffer))) {
       out.write(buffer, 0, n);
     }
+
     out.close();
-    bzIn.close();
-    TAR.unTarFile(new File("C:\\Programs\\archive.tar"), new File("C:\\Programs\\"));
   }
 
-  public static void unTarFile(File tarFile, File destFile) throws IOException {
-    FileInputStream fis = new FileInputStream(tarFile);
+  public static void unTarFile(String fileName) throws IOException {
+    FileInputStream fis = new FileInputStream(new File(fileName));
     TarArchiveInputStream tis = new TarArchiveInputStream(fis);
     TarArchiveEntry tarEntry = null;
 
     // tarIn is a TarArchiveInputStream
     while ((tarEntry = tis.getNextTarEntry()) != null) {
-      File outputFile = new File(destFile + File.separator + tarEntry.getName());
+      File outputFile = new File(fileName.replace(".tar", "") + File.separator + tarEntry.getName());
 
       if (tarEntry.isDirectory()) {
 

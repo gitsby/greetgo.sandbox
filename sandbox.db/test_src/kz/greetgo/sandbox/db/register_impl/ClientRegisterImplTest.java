@@ -1,17 +1,11 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Address;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.db.classes.TestView;
+import kz.greetgo.sandbox.db.helper.DateHelper;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PhoneDot;
@@ -22,22 +16,12 @@ import org.testng.annotations.Test;
 
 import java.sql.Timestamp;
 import java.text.Collator;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
-  // FIXME: 7/10/18 Нужны тесты, которые показывают, что не актуальные записи не берутся
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientRegister> clientRegister;
 
@@ -45,6 +29,37 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> testDaoBeanGetter;
 
   public BeanGetter<ReportRegister> reportRegister;
+
+  @Test
+  public void checkActual() {
+    testDaoBeanGetter.get().deleteAll();
+
+    List<ClientRecord> notActual = getClientRecords(100);
+
+    notActual.sort(Comparator.comparingDouble(c -> c.minBalance));
+
+    testDaoBeanGetter.get().deleteAll();
+
+    List<ClientRecord> actual = getClientRecords(100);
+
+    actual.sort(Comparator.comparingDouble(c -> c.minBalance));
+
+
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "min";
+    clientRecordFilter.paginationPage = 0;
+    clientRecordFilter.sliceNum = 10;
+
+    List<ClientRecord> recordsFromDb = clientRegister.get().getClients(clientRecordFilter);
+
+
+    assertThat(recordsFromDb).hasSize(10);
+
+    for (int i = 0; i < recordsFromDb.size(); i++) {
+      assertThat(recordsFromDb.get(i).id).isNotEqualTo(notActual.get(i).id);
+      assertThat(recordsFromDb.get(i).id).isEqualTo(actual.get(i).id);
+    }
+  }
 
   @Test
   public void checkCharactersNotNull() {
@@ -103,7 +118,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientRecord record = clientRegister.get().save(clientToSave);
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(record.id), record);
     assertWithAddressDot(testDaoBeanGetter.get().getAddressDot(record.id), address);
-    assertWithPhoneDot(testDaoBeanGetter.get().getPhoneDot(record.id), phone);
+    assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(record.id), phone);
   }
 
   @Test
@@ -121,7 +136,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     List<AddressDot> addressDots = testDaoBeanGetter.get().getAddressDots(newClientId);
 
-    // FIXME: 7/10/18 assertThat(details.addresses).hasSameSizeAs(addressDots);
+    assertThat(details.addresses).hasSameSizeAs(addressDots);
 
     for (int i = 0; i < details.addresses.size(); i++) {
       assertThat(details.addresses.get(i).street).isEqualTo(addressDots.get(i).street);
@@ -130,6 +145,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     List<PhoneDot> phoneDots = testDaoBeanGetter.get().getPhoneDots(newClientId);
+
+    assertThat(details.phones).hasSameSizeAs(phoneDots);
+
     for (int i = 0; i < details.phones.size(); i++) {
       assertThat(details.phones.get(i).number).isEqualTo(phoneDots.get(i).number);
       assertThat(details.phones.get(i).type).isEqualTo(phoneDots.get(i).type);
@@ -177,24 +195,24 @@ public class ClientRegisterImplTest extends ParentTestNg {
     editedAddress.type = "REG";
 
     clientToSave.editedAddresses = new ArrayList<>();
-    // FIXME: 7/10/18 Сделай несколько адресов
+
     clientToSave.editedAddresses.add(editedAddress);
 
     Phone phone = new Phone();
     phone.client_id = clientToSave.id;
-    phone.number = testDaoBeanGetter.get().getPhoneDot(clientToSave.id).number;
+    phone.number = testDaoBeanGetter.get().getMobilePhone(clientToSave.id).number;
     phone.editedTo = "777777777";
     phone.type = "MOBILE";
 
     clientToSave.editedPhones = new ArrayList<>();
-    // FIXME: 7/10/18 И несолько телефонов
+
     clientToSave.editedPhones.add(phone);
 
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
 
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(clientToSave.id), clientRecord);
-    assertWithPhoneDot(testDaoBeanGetter.get().getPhoneDot(clientToSave.id), phone);
-    assertWithAddressDot(testDaoBeanGetter.get().getAddressDot(clientRecord.id), editedAddress);
+    assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(clientToSave.id), phone);
+    assertWithAddressDot(testDaoBeanGetter.get().getRegAddress(clientToSave.id), editedAddress);
   }
 
   @Test
@@ -206,9 +224,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void testSortedByFIOAsc() {
 
     List<ClientDot> clientDots = getInsertedClients();
-    // FIXME: 7/10/18 А если patronymic = null
+
     clientDots.sort((o1, o2) ->
-      Collator.getInstance(new Locale("ru", "RU")).compare(o1.surname + o1.name + o1.patronymic, o2.surname + o2.name + o2.patronymic));
+      Collator.getInstance(new Locale("ru", "RU")).compare(createFIO(o1), createFIO(o2)));
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
     clientRecordFilter.columnName = "surname";
@@ -231,13 +249,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientDot> clientDots = getInsertedClients();
     clientDots.sort((o1, o2) ->
       Collator.getInstance(new Locale("ru", "RU")).compare(
-        o2.surname +
-          o2.name +
-          o2.patronymic,
-        // FIXME: 7/10/18 Сделай уже метод, который будет делаит фио из стрингов
-        o1.surname +
-          o1.name +
-          o1.patronymic));
+        createFIO(o2), createFIO(o1)));
 
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
@@ -276,6 +288,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     assertThat(testView.userName).isEqualTo("Test");
+  }
+
+  private String createFIO(ClientDot clientDot) {
+    return clientDot.surname + clientDot.name + ((clientDot.patronymic != null) ? clientDot.patronymic : "");
   }
 
   @Test
@@ -680,24 +696,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
       ClientRecord record = new ClientRecord();
       Date date = dateRandom(2000, 1980);
       record.id = insertClientWithDate(date);
-      record.age = calculateAge(toLocalDate(date), toLocalDate(new Date()));
+      record.age = DateHelper.calculateAge(DateHelper.toLocalDate(date), DateHelper.toLocalDate(new Date()));
       clientRecords.add(record);
     }
 
     return clientRecords;
   }
 
-  public static LocalDate toLocalDate(Date date) {
-    return LocalDate.from(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
-  }
-
-  private int calculateAge(LocalDate birthDate, LocalDate currentDate) {
-    if ((birthDate != null) && (currentDate != null)) {
-      return Period.between(birthDate, currentDate).getYears();
-    } else {
-      return 0;
-    }
-  }
 
   private int insertClientWithDate(Date date) {
     ClientDot clientDot = new ClientDot();
@@ -777,18 +782,31 @@ public class ClientRegisterImplTest extends ParentTestNg {
     addressDot.type = "REG";
     testDaoBeanGetter.get().insertNewAddressDot(addressDot);
 
+    AddressDot fact = new AddressDot();
+    fact.client_id = clientDot.id;
+    fact.flat = RND.str(10);
+    fact.house = RND.str(10);
+    fact.street = RND.str(10);
+    fact.type = "FACT";
+    testDaoBeanGetter.get().insertNewAddressDot(fact);
+
     PhoneDot phoneDot = new PhoneDot();
     phoneDot.type = "MOBILE";
     phoneDot.number = RND.str(10);
     phoneDot.client_id = clientDot.id;
     testDaoBeanGetter.get().insertNewPhoneDot(phoneDot);
 
+    PhoneDot phone2 = new PhoneDot();
+    phone2.type = "WORK";
+    phone2.number = RND.str(10);
+    phone2.client_id = clientDot.id;
+    testDaoBeanGetter.get().insertNewPhoneDot(phone2);
+
     return clientDot.id;
   }
 
   private List<Integer> insertClientsAndGetIds(int num) {
     testDaoBeanGetter.get().deleteAll();
-
 
     List<Integer> ids = new ArrayList<>();
 
