@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.migration;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.classes.TempAccount;
 import kz.greetgo.sandbox.db.classes.TempTransaction;
+import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.migration.reader.json.JSONManager;
 import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
@@ -20,25 +21,30 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class FRSInMigrationTest extends ParentTestNg {
 
-  FRSInMigration frsInMigration = new FRSInMigration();
 
   public BeanGetter<FRSMigrationTestDao> frsDao;
+  public BeanGetter<DbConfig> dbConfig;
+
+  FRSInMigration frsInMigration;
 
   JSONManager jsonManager;
 
   @BeforeMethod
   public void dropTables() throws Exception {
-    frsInMigration.connect();
+    frsInMigration = new FRSInMigration(connectToDatabase());
     frsInMigration.prepareWorker();
 
     frsDao.get().deleteClients();
@@ -52,9 +58,8 @@ public class FRSInMigrationTest extends ParentTestNg {
     frsDao.get().dropAccountTable();
     frsDao.get().dropTransactionTable();
 
-    frsInMigration.closeConnection();
-  }
 
+  }
 
   @Test
   public void testInsertTransactionIntoTemp() throws IOException, InterruptedException {
@@ -212,4 +217,16 @@ public class FRSInMigrationTest extends ParentTestNg {
   private void createTransaction() {
     TransactionFromMigration transaction = new TransactionFromMigration();
   }
+
+  @SuppressWarnings("Duplicates")
+  private Connection connectToDatabase() throws SQLException {
+    String url = dbConfig.get().url();
+    Properties properties = new Properties();
+    properties.setProperty("user", dbConfig.get().username());
+    properties.setProperty("password", dbConfig.get().password());
+    Connection connection = DriverManager.getConnection(url, properties);
+    connection.setAutoCommit(false);
+    return connection;
+  }
+
 }

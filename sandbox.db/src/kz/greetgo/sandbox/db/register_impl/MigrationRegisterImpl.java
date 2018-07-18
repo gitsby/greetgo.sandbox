@@ -61,7 +61,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     while (ciaTempThread.isAlive() || frsThread.isAlive()) ;
 
-
     updateError();
 
     insertCIAIntoReal();
@@ -156,6 +155,8 @@ public class MigrationRegisterImpl implements MigrationRegister {
     properties.setProperty("user", dbConfig.get().username());
     properties.setProperty("password", dbConfig.get().password());
     connection = DriverManager.getConnection(url, properties);
+    connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+    connection.setAutoCommit(false);
   }
 
   private void closeSSH() {

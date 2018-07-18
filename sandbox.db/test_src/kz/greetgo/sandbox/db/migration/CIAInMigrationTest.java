@@ -18,6 +18,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
@@ -42,22 +43,15 @@ public class CIAInMigrationTest extends ParentTestNg {
 
   @BeforeMethod
   public void createTables() throws Exception {
-    inMigration =new CIAInMigration(connectToDatabase());
+    inMigration = new CIAInMigration(connectToDatabase());
     inMigration.prepareWorker();
 
-    dropAllTables();
+    ciaMigrationDao.get().createMigrClientIdColumn();
 
+    dropAllTables();
     ciaMigrationDao.get().createTempClientTable();
     ciaMigrationDao.get().createTempAddressTable();
     ciaMigrationDao.get().createTempPhoneTable();
-  }
-
-  private Connection connectToDatabase() throws SQLException {
-    String url = dbConfig.get().url();
-    Properties properties = new Properties();
-    properties.setProperty("user", dbConfig.get().username());
-    properties.setProperty("password", dbConfig.get().password());
-    return DriverManager.getConnection(url, properties);
   }
 
   @AfterMethod
@@ -141,7 +135,7 @@ public class CIAInMigrationTest extends ParentTestNg {
 
 
   @Test
-  public void testInsertClientIntoReal() throws SQLException, FileNotFoundException, UnsupportedEncodingException {
+  public void testInsertClientIntoReal() throws SQLException, IOException {
     List<ClientFromMigration> clients = createClientXmlFile();
 
     //
@@ -155,8 +149,8 @@ public class CIAInMigrationTest extends ParentTestNg {
 
     while (ciaMigrationDao.get().getTempClients().size() == 0) ;
 
+    inMigration.updateError();
     inMigration.insertTempClientsToReal();
-
     List<ClientDot> clientDots = ciaMigrationDao.get().getClientDots();
 
     assertThat(clientDots).hasSize(2);
@@ -470,4 +464,15 @@ public class CIAInMigrationTest extends ParentTestNg {
     return client;
   }
 
+
+  @SuppressWarnings("Duplicates")
+  private Connection connectToDatabase() throws SQLException {
+    String url = dbConfig.get().url();
+    Properties properties = new Properties();
+    properties.setProperty("user", dbConfig.get().username());
+    properties.setProperty("password", dbConfig.get().password());
+    Connection connection = DriverManager.getConnection(url, properties);
+    connection.setAutoCommit(false);
+    return connection;
+  }
 }

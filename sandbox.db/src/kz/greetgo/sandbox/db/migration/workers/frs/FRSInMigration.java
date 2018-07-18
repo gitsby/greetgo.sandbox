@@ -44,4 +44,5 @@ public class FRSInMigration {
   public void dropTempTables() throws SQLException {
     frs.dropTempTables();
   }
+
 }

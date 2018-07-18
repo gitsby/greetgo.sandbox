@@ -80,4 +80,8 @@ public interface CIAMigrationTestDao {
 
   @Select("select * from client_address order by client_id")
   List<AddressDot> getAddressDots();
+
+  @Update("alter table client\n" +
+    "  add column if not exists migr_client_id varchar(40);\n")
+  void createMigrClientIdColumn();
 }
