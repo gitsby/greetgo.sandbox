@@ -1,6 +1,14 @@
 package kz.greetgo.sandbox.controller.render.impl;
 
-import com.itextpdf.text.*;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -15,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.stream.Stream;
 
-@Bean
+@Bean//FIXME это не бин
 public class ClientRenderImplPdf implements ClientRender {
 
   private static Logger logger = Logger.getLogger(ClientRenderImplPdf.class);
@@ -31,7 +39,7 @@ public class ClientRenderImplPdf implements ClientRender {
 
   @Override
   public void start(String name, Date createdDate) {
-    document = new Document(PageSize.A4, 50,50,50,50);
+    document = new Document(PageSize.A4, 50, 50, 50, 50);
     instance(document);
     document.open();
     setHeader(name, createdDate);
@@ -68,7 +76,7 @@ public class ClientRenderImplPdf implements ClientRender {
     Stream.of("ID", "SURNAME", "NAME", "PATRONYMIC", "AGE", "MIDDLE BALANCE", "MAX BALANCE", "MIN BALANCE")
       .forEach(columnTitle -> {
         PdfPCell header = getCell();
-        header.setBackgroundColor(new BaseColor(46, 77,132));
+        header.setBackgroundColor(new BaseColor(46, 77, 132));
         header.setBorderWidth(1);
         header.setPhrase(new Phrase(columnTitle, getFont(BaseColor.WHITE, 7)));
         table.addCell(header);
@@ -97,9 +105,10 @@ public class ClientRenderImplPdf implements ClientRender {
   }
 
   private static int color = 0;
+
   private BaseColor getBackgroundColor() {
-    if (color++%2==0) return new BaseColor(255, 255,255);
-    else return new BaseColor(240,240,240);
+    if (color++ % 2 == 0) return new BaseColor(255, 255, 255);
+    else return new BaseColor(240, 240, 240);
   }
 
   private PdfPCell getCell() {
@@ -118,6 +127,7 @@ public class ClientRenderImplPdf implements ClientRender {
       out.close();
     } catch (Exception e) {
       logger.error(e);
+      //FIXME нельзя глотать ошибки
     }
   }
 }

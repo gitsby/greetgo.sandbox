@@ -20,7 +20,7 @@ public class TestRender {
   }
 
   private static OutputStream getOutputStream(String fileName) throws FileNotFoundException {
-    File file = new File("build/tmp/"+fileName);
+    File file = new File("build/tmp/" + fileName);
     if (!file.exists()) file.getParentFile().mkdirs();
     return new FileOutputStream(file);
   }
@@ -32,13 +32,13 @@ public class TestRender {
 
   private static void createTestFile(ClientRender render) {
     render.start(RND.str(10), new Date());
-    for (int i=0;i<30; i++) render.append(getRandomClientRecord(i));
+    for (int i = 0; i < 50000; i++) render.append(getRandomClientRecord(i));
     render.finish();
   }
 
   private static ClientRecord getRandomClientRecord(int i) {
     ClientRecord row = new ClientRecord();
-    row.id=i;
+    row.id = i;
     row.surname = RND.str(10);
     row.name = RND.str(10);
     row.patronymic = RND.str(10);

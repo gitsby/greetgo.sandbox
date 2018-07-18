@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Bean
+@Bean//FIXME это не бин
 public class ClientRenderImplXlsx implements ClientRender {
 
   private static Logger logger = Logger.getLogger(ClientRenderImplXlsx.class);
