@@ -1,7 +1,14 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Address;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAccount;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.Phone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.db.classes.TestView;
@@ -16,9 +23,16 @@ import org.testng.annotations.Test;
 
 import java.sql.Timestamp;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+
+//FIXME имя теста должно начинаться с имени тестируемого метода
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
@@ -651,7 +665,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(10);
   }
 
-  @Test
+  @Test//FIXME только один случай пагинации - нужно все
   public void paginationTest() {
     List<ClientRecord> clientRecords = getClientRecords(100);
     clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));

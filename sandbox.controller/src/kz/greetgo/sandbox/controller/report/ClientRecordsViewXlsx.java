@@ -76,7 +76,7 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
       Cell date = dateRow.createCell(0);
       date.setCellValue("Date of report: " + currentDate.toString());
       workbook.write(outputStream);
-    } catch (IOException e) {
+    } catch (IOException e) {//FIXME
     }
   }
 

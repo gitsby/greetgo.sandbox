@@ -2,10 +2,17 @@ package kz.greetgo.sandbox.controller.controller;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.annotations.*;
+import kz.greetgo.mvc.annotations.Json;
+import kz.greetgo.mvc.annotations.Mapping;
+import kz.greetgo.mvc.annotations.MethodFilter;
+import kz.greetgo.mvc.annotations.Par;
+import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.mvc.core.RequestMethod;
 import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -56,7 +63,7 @@ public class ClientController implements Controller {
   @MethodFilter(RequestMethod.GET)
   @Mapping("/charm")
   public List<CharmRecord> getCharms() {
-    return clientRegister.get().charm();
+    return clientRegister.get().charm();//FIXME сделать нормальные имена методов
   }
 
 }
