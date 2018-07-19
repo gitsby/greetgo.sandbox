@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.migration.workers.frs;
 import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -17,7 +18,7 @@ public class FRSInMigration {
     this.connection = connection;
   }
 
-  public void prepareWorker() {
+  public void prepareWorker() throws SQLException {
     frs = new FRSInMigrationWorker(connection);
   }
 
@@ -39,6 +40,10 @@ public class FRSInMigration {
 
   public void sendAccounts(List<NewAccountFromMigration> accounts) throws SQLException, ParseException {
     frs.sendAccounts(accounts);
+  }
+
+  public void updateError() throws IOException, SQLException {
+    frs.updateError();
   }
 
   public void dropTempTables() throws SQLException {

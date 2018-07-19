@@ -125,6 +125,8 @@ public class SSHConnector {
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
     sftp.put("build/error.csv", "/Users/adilbekmailanov/err/");
+    sftp.put("build/error_frs_transaction.csv", "/Users/adilbekmailanov/err/");
+    sftp.put("build/error_frs_account.csv", "/Users/adilbekmailanov/err/");
     sftp.disconnect();
   }
 }

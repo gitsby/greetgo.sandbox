@@ -21,7 +21,7 @@ public class CIAInMigration {
     this.connection = connection;
   }
 
-  public void prepareWorker() {
+  public void prepareWorker() throws SQLException {
     cia = new CIAInMigrationWorker(connection);
   }
 

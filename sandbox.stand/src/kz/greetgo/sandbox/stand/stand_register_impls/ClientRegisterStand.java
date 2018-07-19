@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
+import com.itextpdf.text.DocumentException;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
@@ -11,6 +12,7 @@ import kz.greetgo.sandbox.stand.client_records_report.ClientRecordsReportView;
 import kz.greetgo.sandbox.stand.client_records_report.ClientRecordsViewPdf;
 import kz.greetgo.sandbox.stand.client_records_report.ClientRecordsViewXlsx;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -412,7 +414,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
 
-  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) {
+  public void renderClientList(ClientRecordFilter filter, String userName, String type, OutputStream outputStream) throws DocumentException, IOException {
     System.out.println("STARTED");
 
     ClientRecordsReportView output;

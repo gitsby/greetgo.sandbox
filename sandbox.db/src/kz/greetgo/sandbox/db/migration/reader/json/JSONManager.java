@@ -7,12 +7,17 @@ import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
 import kz.greetgo.sandbox.db.migration.reader.processors.AccountProcessor;
 import kz.greetgo.sandbox.db.migration.reader.processors.TransactionProcessor;
+import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 public class JSONManager {
 
@@ -104,18 +109,29 @@ public class JSONManager {
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(String[] args) throws IOException, InterruptedException, SQLException {
     long time = System.nanoTime();
-    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_30000.txt");
+    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_10000007.txt");
     System.out.println("LOADING");
+    Connection connection;
+    Properties properties = new Properties();
+    properties.setProperty("user", "kayne_sandbox");
+    properties.setProperty("password", "111");
+    connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/kayne_sandbox", properties);
+    connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+    connection.setAutoCommit(false);
+
+
+    FRSInMigration frsInMigration = new FRSInMigration(connection);
+    frsInMigration.prepareWorker();
+    frsInMigration.createTempTables();
+
     manager.load(transactions -> {
-      System.out.println("TRANSACTIONS:" + transactions.size() + "::::");
-      System.out.println("MONEY: " + Float.valueOf(transactions.get(0).money.replace("_", "")));
-      System.out.println(transactions);
+      frsInMigration.sendTransactions(transactions);
     }, accounts -> {
-      System.out.println("ACCOUNTS:" + accounts.size() + "::::");
-      System.out.println(accounts + "\n");
+      frsInMigration.sendAccounts(accounts);
     });
+
     long endTime = System.nanoTime();
     System.out.println("-------------------------------------------------------------------------------");
     System.out.println("Elapsed time: " + ((endTime - time) / 1000000000.0));

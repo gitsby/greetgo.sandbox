@@ -13,7 +13,9 @@ import kz.greetgo.sandbox.db.migration.reader.json.JSONManager;
 import kz.greetgo.sandbox.db.migration.reader.xml.XMLManager;
 import kz.greetgo.sandbox.db.migration.workers.cia.CIAInMigration;
 import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -48,7 +50,13 @@ public class MigrationRegisterImpl implements MigrationRegister {
     downloadFiles();
     unpackFiles();
 
-    Thread ciaTempThread = new Thread(this::insertCIAIntoTemp);
+    Thread ciaTempThread = new Thread(() -> {
+      try {
+        insertCIAIntoTemp();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
     Thread frsThread = new Thread(() -> {
       try {
         insertFRSIntoTemp();
@@ -73,6 +81,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   private void updateError() throws SQLException, IOException, SftpException, JSchException {
     cia.updateError();
+    frs.updateError();
     connector.uploadErrorFile();
   }
 
@@ -119,7 +128,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   }
 
-  private void insertCIAIntoTemp() {
+  private void insertCIAIntoTemp() throws IOException, SAXException, ParserConfigurationException {
     for (String file : files) {
       if (file.contains(".xml")) {
         String xmlFile = file.replace(".tar.bz2", "");

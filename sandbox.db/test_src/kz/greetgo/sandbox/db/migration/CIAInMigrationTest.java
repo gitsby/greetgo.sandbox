@@ -16,7 +16,9 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,6 +46,7 @@ public class CIAInMigrationTest extends ParentTestNg {
   @BeforeMethod
   public void createTables() throws Exception {
     inMigration = new CIAInMigration(connectToDatabase());
+
     inMigration.prepareWorker();
 
     ciaMigrationDao.get().createMigrClientIdColumn();
@@ -70,7 +73,7 @@ public class CIAInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertClientIntoTemp() throws FileNotFoundException, UnsupportedEncodingException {
+  public void testInsertClientIntoTemp() throws IOException, SAXException, ParserConfigurationException {
 
     List<ClientFromMigration> clients = createClientXmlFile();
 
@@ -92,7 +95,7 @@ public class CIAInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertPhoneIntoTemp() throws FileNotFoundException, UnsupportedEncodingException {
+  public void testInsertPhoneIntoTemp() throws IOException, SAXException, ParserConfigurationException {
     List<PhoneFromMigration> phones = createPhones();
 
     //
@@ -114,7 +117,7 @@ public class CIAInMigrationTest extends ParentTestNg {
 
 
   @Test
-  public void testInsertAddressIntoTemp() throws FileNotFoundException, UnsupportedEncodingException {
+  public void testInsertAddressIntoTemp() throws IOException, SAXException, ParserConfigurationException {
     List<AddressFromMigration> addresses = createAddressXml();
 
     //
@@ -135,7 +138,7 @@ public class CIAInMigrationTest extends ParentTestNg {
 
 
   @Test
-  public void testInsertClientIntoReal() throws SQLException, IOException {
+  public void testInsertClientIntoReal() throws SQLException, IOException, ParserConfigurationException, SAXException {
     List<ClientFromMigration> clients = createClientXmlFile();
 
     //
@@ -163,7 +166,7 @@ public class CIAInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertPhoneIntoReal() throws FileNotFoundException, UnsupportedEncodingException, SQLException {
+  public void testInsertPhoneIntoReal() throws IOException, SQLException, SAXException, ParserConfigurationException {
     insertClientIntoTemp();
 
     List<PhoneFromMigration> phones = createPhones();
@@ -194,7 +197,7 @@ public class CIAInMigrationTest extends ParentTestNg {
 
 
   @Test
-  public void testInsertAddressIntoReal() throws FileNotFoundException, UnsupportedEncodingException, SQLException {
+  public void testInsertAddressIntoReal() throws IOException, SQLException, SAXException, ParserConfigurationException {
     insertClientIntoTemp();
 
     List<AddressFromMigration> addresses = createAddressXml();

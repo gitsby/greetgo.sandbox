@@ -30,7 +30,7 @@ public class ClientHandler extends DefaultHandler {
   private boolean isWorkPhone = false;
   private boolean isHomePhone = false;
 
-  public int clientBatchSize = 200;
+  public int clientBatchSize = 1000;
 
   private int threadNum = 0;
 
