@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.db.worker.Worker;
 import org.apache.log4j.Logger;
+import org.fest.util.Files;
 import org.fest.util.Lists;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -16,6 +17,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 @Bean
@@ -49,7 +51,7 @@ public class CIAWorker extends Worker {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
     } catch (SAXException e) {
-      logger.error(e);
+      throw new RuntimeException();
     }
     xmlReader.setContentHandler(new XMLHandler());
   }
@@ -123,7 +125,7 @@ public class CIAWorker extends Worker {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
     logger.info("create csv files end.");
   }
@@ -147,7 +149,7 @@ public class CIAWorker extends Worker {
     try {
       xmlReader.parse(new InputSource(inputStream));
     } catch (Exception e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
     logger.info("load csv files end.");
   }
@@ -165,7 +167,7 @@ public class CIAWorker extends Worker {
         writeTmpClientPhoneCsv(phone);
       }
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -205,8 +207,8 @@ public class CIAWorker extends Worker {
         ()->copy(copyManager, clientAddressCsvFile, clientAddressTmp),
         ()->copy(copyManager, clientPhoneCsvFile, clientPhoneTmp)
       );
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
     }
     logger.info("load csv files to tmp tables end.");
   }
@@ -374,7 +376,7 @@ public class CIAWorker extends Worker {
   }
 
   @Override
-  public File getErrorInFile() {
+  public File writeOutErrorData() {
     logger.info("copy error clients to file.");
     File errors = getFile(getNameWithDate("migrated_cia_errors")+".csv");
     try (Writer writer = getWriter(errors)){
@@ -382,8 +384,8 @@ public class CIAWorker extends Worker {
       copyOut(copyManager, clientTmp, writer);
       copyOut(copyManager, clientAddressTmp, writer);
       copyOut(copyManager, clientPhoneTmp, writer);
-    } catch (Exception e) {
-      logger.error("Copy errors client to file error", e);
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
     }
     logger.info("copy error clients to file finished.");
     return errors;
@@ -401,18 +403,18 @@ public class CIAWorker extends Worker {
   }
 
   @Override
-  public void finish() throws IOException {
-    logger.info("finish method begin...");
+  public void close() throws IOException {
+    logger.info("close method begin...");
 
     clientCsvBw.close();
     clientAddressCsvBw.close();
     clientPhoneCsvBw.close();
 
-    clientCsvFile.delete();
-    clientAddressCsvFile.delete();
-    clientPhoneCsvFile.delete();
+    Files.delete(clientCsvFile);
+    Files.delete(clientAddressCsvFile);
+    Files.delete(clientPhoneCsvFile);
 
-    logger.info("finish method end.");
+    logger.info("close method end.");
   }
 
   class XMLHandler extends DefaultHandler {
@@ -475,7 +477,7 @@ public class CIAWorker extends Worker {
 
     @Override
     public void endElement(String uri, String localName, String qName) {
-      if (qName.equals("client")) upload();
+      if ("client".equals(qName)) upload();
       thisValues = "";
     }
 

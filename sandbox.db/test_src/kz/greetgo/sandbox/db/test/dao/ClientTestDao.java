@@ -29,6 +29,12 @@ public interface ClientTestDao {
                    @Param("description") String description,
                    @Param("energy") Float energy);
 
+  @Insert("INSERT INTO charm(id, name, description, energy) VALUES (#{id}, #{name}, #{description}, #{energy})")
+  void insertCharmWithId(@Param("id") Integer id,
+                   @Param("name") String name,
+                   @Param("description") String description,
+                   @Param("energy") Float energy);
+
   @Insert("INSERT INTO client_address (client, type, street, house, flat) " +
     "VALUES (#{client}, #{type}, #{street}, #{house}, #{flat});")
   void insertClientAddress(@Param("client") Integer client,

@@ -1,22 +1,19 @@
 package kz.greetgo.sandbox.controller.render.impl;
 
-import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import org.apache.log4j.Logger;
+import kz.greetgo.util.RND;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Bean//FIXME это не бин
 public class ClientRenderImplXlsx implements ClientRender {
-
-  // FIXME: 7/18/18 Сделай main в каждом рендер классе отедльно
-
-  private static Logger logger = Logger.getLogger(ClientRenderImplXlsx.class);
 
   private final OutputStream out;
   private Xlsx xlsx;
@@ -71,7 +68,42 @@ public class ClientRenderImplXlsx implements ClientRender {
     try {
       out.close();
     } catch (Exception e) {
-      logger.error(e);
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException(e);
     }
+  }
+
+  public static void main(String[] args) throws FileNotFoundException {
+    createTestFile(new ClientRenderImplXlsx(getOutputStream(getFileName("TEST", "xlsx"))));
+  }
+
+  private static OutputStream getOutputStream(String fileName) throws FileNotFoundException {
+    File file = new File("build/tmp/" + fileName);
+    if (!file.exists()) file.getParentFile().mkdirs();
+    return new FileOutputStream(file);
+  }
+
+  private static String getFileName(String fileName, String format) {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_dd_MM_HH_SS_MM");
+    return String.format("%s_%s.%s", fileName, dateFormat.format(new Date()), format);
+  }
+
+  private static void createTestFile(ClientRender render) {
+    render.start(RND.str(10), new Date());
+    for (int i = 0; i < 50000; i++) render.append(getRandomClientRecord(i));
+    render.finish();
+  }
+
+  private static ClientRecord getRandomClientRecord(int i) {
+    ClientRecord row = new ClientRecord();
+    row.id = i;
+    row.surname = RND.str(10);
+    row.name = RND.str(10);
+    row.patronymic = RND.str(10);
+    row.age = RND.plusInt(60);
+    row.middle_balance = RND.plusInt(10000);
+    row.max_balance = RND.plusInt(10000);
+    row.min_balance = RND.plusInt(10000);
+    return row;
   }
 }

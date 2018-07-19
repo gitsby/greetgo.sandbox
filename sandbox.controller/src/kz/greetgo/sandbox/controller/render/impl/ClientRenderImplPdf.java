@@ -1,32 +1,23 @@
 package kz.greetgo.sandbox.controller.render.impl;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.render.ClientRender;
-import org.apache.log4j.Logger;
+import kz.greetgo.util.RND;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.stream.Stream;
 
-@Bean//FIXME это не бин
 public class ClientRenderImplPdf implements ClientRender {
-
-  private static Logger logger = Logger.getLogger(ClientRenderImplPdf.class);
 
   private OutputStream out;
   private Document document;
@@ -48,8 +39,8 @@ public class ClientRenderImplPdf implements ClientRender {
   private void instance(Document document) {
     try {
       pdfWriter = PdfWriter.getInstance(document, out);
-    } catch (Exception e) {
-      logger.error(e);
+    } catch (DocumentException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -59,7 +50,7 @@ public class ClientRenderImplPdf implements ClientRender {
     try {
       document.add(p);
     } catch (DocumentException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
 
     table = new PdfPTable(8);
@@ -126,8 +117,42 @@ public class ClientRenderImplPdf implements ClientRender {
       pdfWriter.close();
       out.close();
     } catch (Exception e) {
-      logger.error(e);
-      //FIXME если просто throw сделаешь, то MVC обработает ошибку
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException(e);
     }
+  }
+
+  public static void main(String[] args) throws FileNotFoundException {
+    createTestFile(new ClientRenderImplPdf(getOutputStream(getFileName("TEST", "pdf"))));
+  }
+
+  private static OutputStream getOutputStream(String fileName) throws FileNotFoundException {
+    File file = new File("build/tmp/" + fileName);
+    if (!file.exists()) file.getParentFile().mkdirs();
+    return new FileOutputStream(file);
+  }
+
+  private static String getFileName(String fileName, String format) {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_dd_MM_HH_SS_MM");
+    return String.format("%s_%s.%s", fileName, dateFormat.format(new Date()), format);
+  }
+
+  private static void createTestFile(ClientRender render) {
+    render.start(RND.str(10), new Date());
+    for (int i = 0; i < 50000; i++) render.append(getRandomClientRecord(i));
+    render.finish();
+  }
+
+  private static ClientRecord getRandomClientRecord(int i) {
+    ClientRecord row = new ClientRecord();
+    row.id = i;
+    row.surname = RND.str(10);
+    row.name = RND.str(10);
+    row.patronymic = RND.str(10);
+    row.age = RND.plusInt(60);
+    row.middle_balance = RND.plusInt(10000);
+    row.max_balance = RND.plusInt(10000);
+    row.min_balance = RND.plusInt(10000);
+    return row;
   }
 }

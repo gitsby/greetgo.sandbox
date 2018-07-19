@@ -12,4 +12,17 @@ public class ClientDot {
   public GenderEnum gender;
   public Date birthDate;
   public Integer charmId;
+
+  @Override
+  public String toString() {
+    return "ClientDot{" +
+      "id=" + id +
+      ", name='" + name + '\'' +
+      ", surname='" + surname + '\'' +
+      ", patronymic='" + patronymic + '\'' +
+      ", gender=" + gender +
+      ", birthDate=" + birthDate +
+      ", charmId=" + charmId +
+      '}';
+  }
 }

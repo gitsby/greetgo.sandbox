@@ -2,11 +2,15 @@ package kz.greetgo.sandbox.db.core;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.db.worker.Worker;
+import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
+import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
 import liquibase.util.file.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
 
 @Bean
 public class Migration implements Closeable {
@@ -18,39 +22,38 @@ public class Migration implements Closeable {
   private File file;
   private InputStream inputStream;
 
-  public File migrate(Connection connection, File file) throws Exception {
+  public File migrate(Connection connection, File file) throws IOException, SQLException {
     this.connection = connection;
     this.file = file;
     return download();
   }
 
-  private void createInputStream() {
-    try {
-      inputStream = new FileInputStream(file);
-    } catch (FileNotFoundException e) {
-      logger.error(e);
-    }
+  private void createInputStream() throws FileNotFoundException {
+    inputStream = new FileInputStream(file);
   }
 
-  private File download() throws Exception {
+  private File download() throws IOException, SQLException {
 
-    File errorsFile = null;
+    File errorsFile;
     createInputStream();
 
     connection.setAutoCommit(false);
-    switch (getFileFormat(file.getPath())) {
+    switch (Objects.requireNonNull(getFileFormat(file.getPath()))) {
       case "xml":
-        errorsFile = Worker.getCiaWorker(connection, inputStream).execute();
+        try(CIAWorker worker = Worker.getCiaWorker(connection, inputStream)) { errorsFile = worker.execute(); }
         break;
       case "txt":
-        errorsFile = Worker.getFrsWorker(connection, inputStream).execute();
+        try(FRSWorker worker = Worker.getFrsWorker(connection, inputStream)) { errorsFile = worker.execute(); }
+        break;
+      default:
+        throw new RuntimeException("File format not support!");
     }
     connection.setAutoCommit(true);
 
     return errorsFile;
   }
 
-  private static String getFileFormat(String path) {
+  private String getFileFormat(String path) {
     String res = FilenameUtils.getExtension(path);
     if (res.isEmpty()) return null;
     if (res.equals("xml") || res.equals("txt")) return res;

@@ -18,7 +18,7 @@ public class ClientRecordListCallback extends ClientRecordSelectCallback<List<Cl
   @Override
   public void offsetAndLimit() {
     if (filter.offset != null && filter.limit != null) {
-      sql.append("LIMIT ? OFFSET ?");
+      sql.append("LIMIT greatest(0,?) OFFSET greatest(0,?)");
       params.add(filter.limit);
       params.add(filter.offset);
     }
