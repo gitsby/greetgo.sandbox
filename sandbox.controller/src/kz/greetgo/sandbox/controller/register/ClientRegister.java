@@ -15,7 +15,7 @@ public interface ClientRegister {
 
   ClientRecord save(ClientToSave editedClient);
 
-  List<CharmRecord> charm();
+  List<CharmRecord> getCharms();
 
   int getClientCount(ClientRecordFilter clientRecordFilter);
 }

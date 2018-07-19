@@ -63,7 +63,7 @@ public class ClientController implements Controller {
   @MethodFilter(RequestMethod.GET)
   @Mapping("/charm")
   public List<CharmRecord> getCharms() {
-    return clientRegister.get().charm();//FIXME сделать нормальные имена методов
+    return clientRegister.get().getCharms();
   }
 
 }

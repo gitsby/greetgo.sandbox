@@ -309,7 +309,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public List<CharmRecord> charm() {
+  public List<CharmRecord> getCharms() {
     List<CharmRecord> charmRecords = new ArrayList<>();
     for (CharacterDot characterDot : db.get().characterDots) {
       CharmRecord charmRecord = new CharmRecord();

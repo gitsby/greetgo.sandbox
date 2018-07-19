@@ -1,14 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Address;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientAccount;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.Phone;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.db.classes.TestView;
@@ -23,16 +16,9 @@ import org.testng.annotations.Test;
 
 import java.sql.Timestamp;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
-//FIXME имя теста должно начинаться с имени тестируемого метода
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
@@ -45,7 +31,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ReportRegister> reportRegister;
 
   @Test
-  public void checkActual() {
+  public void getClientRecordsCheckActual() {
     testDaoBeanGetter.get().deleteAll();
 
     List<ClientRecord> notActual = getClientRecords(100);
@@ -64,8 +50,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
+    //
     List<ClientRecord> recordsFromDb = clientRegister.get().getClients(clientRecordFilter);
-
+    //
+    //
 
     assertThat(recordsFromDb).hasSize(10);
 
@@ -76,7 +65,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void checkCharactersNotNull() {
+  public void getCharmsNotNull() {
     testDaoBeanGetter.get().deleteAllCharms();
     List<String> charms = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
@@ -85,7 +74,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
       charms.add(charm);
     }
 
-    List<CharmRecord> charmRecords = clientRegister.get().charm();
+    //
+    //
+    List<CharmRecord> charmRecords = clientRegister.get().getCharms();
+    //
+    //
 
     for (int i = 0; i < charmRecords.size(); i++) {
       assertThat(charmRecords.get(i).name).isEqualTo(charms.get(i));
@@ -101,7 +94,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void createNewClient() {
+  public void saveNewClient() {
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = "CHECK12";
     clientToSave.surname = "CHECK12";
@@ -129,16 +122,23 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientToSave.addedAddresses = new ArrayList<>();
     clientToSave.addedAddresses.add(address);
 
+    //
     ClientRecord record = clientRegister.get().save(clientToSave);
+    //
+
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(record.id), record);
     assertWithAddressDot(testDaoBeanGetter.get().getAddressDot(record.id), address);
     assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(record.id), phone);
   }
 
   @Test
-  public void clientDetails() {
+  public void getClientDetails() {
     int newClientId = insertNewClient();
+    //
+    //
     ClientDetails details = clientRegister.get().details(newClientId);
+    //
+    //
 
     ClientDot clientDot = testDaoBeanGetter.get().getClientDotById(newClientId);
 
@@ -169,7 +169,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testCreateClientWithNotExistingGender() {
+  public void saveClientWithNotExistingGender() {
 
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = RND.str(10);
@@ -184,14 +184,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+    //
+    //
     ClientDot dot = testDaoBeanGetter.get().getClientDotById(clientRecord.id);
     assertThat(dot.gender.equals("OTHER")).isTrue();
-    //
-    //
+
   }
 
   @Test
-  public void testEditClient() {
+  public void saveEditedClient() {
     ClientToSave clientToSave = new ClientToSave();
     clientToSave.name = "Neusus";
     clientToSave.surname = "Fiendirus";
@@ -222,7 +223,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     clientToSave.editedPhones.add(phone);
 
+    //
     ClientRecord clientRecord = clientRegister.get().save(clientToSave);
+    //
 
     assertWithClientDot(testDaoBeanGetter.get().getClientDotById(clientToSave.id), clientRecord);
     assertWithPhoneDot(testDaoBeanGetter.get().getMobilePhone(clientToSave.id), phone);
@@ -230,12 +233,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testGetNotExistingClientDetails() {
-    assertThat(testDaoBeanGetter.get().getClientDotById(-100)).isNull();
-  }
-
-  @Test
-  public void testSortedByFIOAsc() {
+  public void getClientsSortedByFIOAsc() {
 
     List<ClientDot> clientDots = getInsertedClients();
 
@@ -247,7 +245,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     clientRecordFilter.paginationPage = 0;
     clientRecordFilter.sliceNum = 10;
 
+    //
     List<ClientRecord> records = clientRegister.get().getClients(clientRecordFilter);
+    //
 
     assertThat(records).hasSameSizeAs(clientDots);
 
@@ -259,7 +259,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByFIODesc() throws Exception {
+  public void getClientsSortedByFIODesc() throws Exception {
     List<ClientDot> clientDots = getInsertedClients();
     clientDots.sort((o1, o2) ->
       Collator.getInstance(new Locale("ru", "RU")).compare(
@@ -304,12 +304,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(testView.userName).isEqualTo("Test");
   }
 
+  private String createFIO(ClientRecord clientRecord) {
+    return clientRecord.surname + clientRecord.name + ((clientRecord.patronymic != null) ? clientRecord.patronymic : "");
+
+  }
+
   private String createFIO(ClientDot clientDot) {
     return clientDot.surname + clientDot.name + ((clientDot.patronymic != null) ? clientDot.patronymic : "");
   }
 
   @Test
-  public void testSortedByMinAsc() throws Exception {
+  public void getClientsSortedByMinAsc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.minBalance));
@@ -353,7 +358,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByMinDesc() throws Exception {
+  public void getClientsSortedByMinDesc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.minBalance));
@@ -397,7 +402,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByMaxAsc() throws Exception {
+  public void getClientsSortedByMaxAsc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.maxBalance));
@@ -439,7 +444,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByMaxDesc() throws Exception {
+  public void getClientsSortedByMaxDesc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.maxBalance));
@@ -482,7 +487,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByTotalAsc() throws Exception {
+  public void getClientsSortedByTotalAsc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
@@ -524,7 +529,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByTotalDesc() throws Exception {
+  public void getClientsSortedByTotalDesc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecords(100);
 
     clientRecords.sort(Comparator.comparingDouble(c -> -c.accBalance));
@@ -568,7 +573,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByAgeAsc() throws Exception {
+  public void getClientsSortedByAgeAsc() throws Exception {
     List<ClientRecord> clientRecords = getClientRecordsWithBirthDate(100);
     clientRecords.sort(Comparator.comparingInt(c -> c.age));
 
@@ -610,7 +615,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  public void testSortedByAgeDesc() throws Exception {
+  public void getClientsSortedByAgeDesc() throws Exception {
 
     List<ClientRecord> clientRecords = getClientRecordsWithBirthDate(100);
     clientRecords.sort(Comparator.comparingInt(c -> -c.age));
@@ -653,20 +658,31 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
-  public void tooBigSliceNum() {
-    clearAndInputClients();
+  public void getClientsBeginingPaginationTest() {
+    List<ClientRecord> clientRecords = getClientRecords(100);
+    clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
 
     ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
-    clientRecordFilter.columnName = "empty";
+    clientRecordFilter.columnName = "total";
     clientRecordFilter.paginationPage = 0;
-    clientRecordFilter.sliceNum = 1000000000;
-    clientRecordFilter.searchName = null;
+    clientRecordFilter.sliceNum = 10;
 
-    assertThat(clientRegister.get().getClients(clientRecordFilter)).hasSize(10);
+    //
+    //
+    List<ClientRecord> recordsFromDB = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    assertThat(recordsFromDB).hasSize(10);
+
+    for (int i = 0; i < recordsFromDB.size(); i++) {
+      assertThat(recordsFromDB.get(i).id).isEqualTo(clientRecords.get(i).id);
+    }
   }
 
-  @Test//FIXME только один случай пагинации - нужно все, их 5
-  public void paginationTest() {
+
+  @Test
+  public void getClientsMiddlePaginationTest() {
     List<ClientRecord> clientRecords = getClientRecords(100);
     clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
 
@@ -688,15 +704,81 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
+  @Test
+  public void getClientsWithSmallOffset() {
+    List<ClientRecord> clientRecords = getClientRecords(100);
+    clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
+
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "total";
+    clientRecordFilter.paginationPage = 99;
+    clientRecordFilter.sliceNum = 1;
+
+    //
+    //
+    List<ClientRecord> recordsFromDB = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+
+    assertThat(recordsFromDB).hasSize(1);
+
+    assertThat(recordsFromDB.get(0).id).isEqualTo(clientRecords.get(99).id);
+  }
 
   @Test
-  public void clientCountIsValid() {
+  public void getClientsWithBigOffsetAndSliceNum() {
+    List<ClientRecord> clientRecords = getClientRecords(100);
+    clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
+
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "total";
+    clientRecordFilter.paginationPage = 10;
+    clientRecordFilter.sliceNum = 100;
+
+    //
+    //
+    List<ClientRecord> recordsFromDB = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+    assertThat(recordsFromDB).hasSize(0);
+  }
+
+  @Test
+  public void getClientsWithEndPagination() {
+    List<ClientRecord> clientRecords = getClientRecords(95);
+    clientRecords.sort(Comparator.comparingDouble(c -> c.accBalance));
+
+    ClientRecordFilter clientRecordFilter = new ClientRecordFilter();
+    clientRecordFilter.columnName = "total";
+    clientRecordFilter.paginationPage = 9;
+    clientRecordFilter.sliceNum = 10;
+
+    //
+    //
+    List<ClientRecord> recordsFromDB = clientRegister.get().getClients(clientRecordFilter);
+    //
+    //
+    assertThat(recordsFromDB).hasSize(5);
+
+    for (int i = 0; i < recordsFromDB.size(); i++) {
+      assertThat(recordsFromDB.get(i).id).isEqualTo(clientRecords.get(i + 90).id);
+    }
+
+  }
+
+
+  @Test
+  public void getClientCountIsValid() {
     clearAndInputClients();
 
     ClientRecordFilter filter = new ClientRecordFilter();
     filter.searchName = "";
 
+    //
+    //
     int clientCount = testDaoBeanGetter.get().getClientCount(filter);
+    //
+    //
 
     assertThat(clientCount).isEqualTo(10);
   }
@@ -716,7 +798,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     return clientRecords;
   }
-
 
   private int insertClientWithDate(Date date) {
     ClientDot clientDot = new ClientDot();
@@ -759,7 +840,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
   public void assertWithClientDot(ClientDot clientDot, ClientRecord clientRecord) {
-
     assertThat(clientRecord.id).isEqualTo(clientDot.id);
     assertThat(clientRecord.name).isEqualTo(clientDot.name);
     assertThat(clientRecord.surname).isEqualTo(clientDot.surname);

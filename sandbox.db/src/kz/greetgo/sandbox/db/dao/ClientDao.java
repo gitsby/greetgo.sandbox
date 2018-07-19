@@ -12,11 +12,11 @@ import java.util.List;
 public interface ClientDao {
 
   // ---------------------------------------
-  @Select("select client_id, name from characters where actual=1")
+  @Select("select id, name from characters where actual=1")
   List<CharmRecord> getCharms();
 
-  @Select("select client.client_id, client.name, client.surname, client.patronymic, client.gender, client.birth_date as birthDate, client.charm\n" +
-    "from client where client.client_id=#{client_id} and actual=1")
+  @Select("select client.id, client.name, client.surname, client.patronymic, client.gender, client.birth_date as birthDate, client.charm\n" +
+    "from client where client.id=#{client_id} and actual=1")
   ClientDetails getClientById(int id);
 
   @Select("select " +
@@ -29,6 +29,6 @@ public interface ClientDao {
 
   // ---------------------------------------
 
-  @Update("update client set actual=0 where client_id=#{client_id}")
+  @Update("update client set actual=0 where id=#{client_id}")
   void deleteClient(int id);
 }
