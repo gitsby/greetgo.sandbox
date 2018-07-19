@@ -20,7 +20,7 @@ public class AddressSenderThread extends Thread {
     try {
       processor.sendAddresses(addresses);
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 }

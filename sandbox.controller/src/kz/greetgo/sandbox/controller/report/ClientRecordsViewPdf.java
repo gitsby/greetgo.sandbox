@@ -31,14 +31,11 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
   }
 
   @Override
-  public void start() {
-    try {
-      document = new Document();
-      PdfWriter.getInstance(document, outputStream);
-      document.open();
-    } catch (DocumentException e) {
-      e.printStackTrace();
-    }
+  public void start() throws DocumentException {
+
+    document = new Document();
+    PdfWriter.getInstance(document, outputStream);
+    document.open();
     Stream.of("ID", "Surname", "Name", "Patronymic", "Age", "Charm", "Total", "Min", "Max")
       .forEach(column -> {
         PdfPCell surname = new PdfPCell(new Phrase(column));

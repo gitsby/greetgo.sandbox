@@ -53,6 +53,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
       try {
         insertFRSIntoTemp();
       } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     });
 

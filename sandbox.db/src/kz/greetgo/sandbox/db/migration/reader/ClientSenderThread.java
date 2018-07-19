@@ -6,21 +6,21 @@ import kz.greetgo.sandbox.db.migration.reader.processors.ClientProcessor;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ClientSenderThread extends Thread{
+public class ClientSenderThread extends Thread {
 
   private ClientProcessor processor;
   private List<ClientFromMigration> clients;
 
-  public ClientSenderThread(ClientProcessor clientProcessor, List<ClientFromMigration> clients){
+  public ClientSenderThread(ClientProcessor clientProcessor, List<ClientFromMigration> clients) {
     this.processor = clientProcessor;
     this.clients = clients;
   }
 
-  public void run(){
+  public void run() {
     try {
       processor.sendClient(clients);
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 }

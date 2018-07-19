@@ -12,16 +12,17 @@ public class PhoneSenderThread extends Thread {
   private List<PhoneFromMigration> phones;
 
 
-  public PhoneSenderThread(PhoneProcessor phoneProcessor, List<PhoneFromMigration> phones){
+  public PhoneSenderThread(PhoneProcessor phoneProcessor, List<PhoneFromMigration> phones) {
     this.processor = phoneProcessor;
     this.phones = phones;
   }
 
-  public void run(){
+  @Override
+  public void run() {
     try {
       processor.sendPhones(phones);
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 }

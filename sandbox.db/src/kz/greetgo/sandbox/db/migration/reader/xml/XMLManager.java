@@ -22,28 +22,20 @@ public class XMLManager {
     filePath = file;
   }
 
-  public void load(ClientProcessor processor, AddressProcessor addressProcessor, PhoneProcessor phoneProcessor) {
+  public void load(ClientProcessor processor, AddressProcessor addressProcessor, PhoneProcessor phoneProcessor) throws ParserConfigurationException, SAXException, IOException {
     SAXParserFactory factory = SAXParserFactory.newInstance();
 
-    try {
-      SAXParser parser = factory.newSAXParser();
-      File file = new File(filePath);
-      handler = new ClientHandler(processor, addressProcessor, phoneProcessor);
-      parser.parse(file, handler);
-    } catch (SAXException e) {
-      e.printStackTrace();
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    SAXParser parser = factory.newSAXParser();
+    File file = new File(filePath);
+    handler = new ClientHandler(processor, addressProcessor, phoneProcessor);
+    parser.parse(file, handler);
   }
 
   public boolean isDone() {
     return false;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException {
     XMLManager xmlManager = new XMLManager("C:\\Programs\\Web\\Greetgo\\from_300.xml");
     final int[] countTimes = {0};
     long startTime = System.nanoTime();

@@ -20,10 +20,8 @@ public class TransactionSenderThread extends Thread {
   public void run() {
     try {
       processor.sendTransactions(transactions);
-    } catch (ParseException e) {
-
-    } catch (SQLException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }

@@ -68,9 +68,9 @@ public class SqlWorker {
 
       return ((3 < diffYears) && (diffYears < 1000));
     } catch (Exception e) {
+      return false;
     }
 
-    return false;
   }
 
 
