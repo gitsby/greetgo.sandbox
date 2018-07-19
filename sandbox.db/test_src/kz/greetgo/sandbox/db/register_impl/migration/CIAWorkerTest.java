@@ -1,6 +1,15 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.AddressTypeEnum;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.GenderEnum;
+import kz.greetgo.sandbox.controller.model.MigrationError;
+import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.model.TMPClient;
+import kz.greetgo.sandbox.controller.model.TMPClientAddress;
+import kz.greetgo.sandbox.controller.model.TMPClientPhone;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.util.RND;
 import org.testng.annotations.AfterMethod;
@@ -90,7 +99,7 @@ public class CIAWorkerTest extends WorkerTest {
     assertThat(tmpClients).hasSize(randomSize);
     assertThat(tmpClients).containsAll(leftTestClients);
 
-    connection.close();
+    connection.close();//FIXME если тест упал, то конект останется открытым
   }
 
   @Test
@@ -100,7 +109,7 @@ public class CIAWorkerTest extends WorkerTest {
     String clientPhoneTmpTableName = getNameWithDate(this.clientPhoneTmpTableName);
 
     Integer randomSize = RND.plusInt(100);
-    List<TestClient> leftTestClients =  getRandomTestClientList(randomSize);
+    List<TestClient> leftTestClients = getRandomTestClientList(randomSize);
 
     {
       toNotMargeList(leftTestClients);
@@ -202,9 +211,11 @@ public class CIAWorkerTest extends WorkerTest {
         margeTestClientList.add(testClient);
         continue;
       }
-      if (testClient.tmpTestClient.patronymic != null) include.tmpTestClient.patronymic = testClient.tmpTestClient.patronymic;
+      if (testClient.tmpTestClient.patronymic != null)
+        include.tmpTestClient.patronymic = testClient.tmpTestClient.patronymic;
       if (testClient.tmpTestClient.surname != null) include.tmpTestClient.surname = testClient.tmpTestClient.surname;
-      if (testClient.tmpTestClient.birthDate != null) include.tmpTestClient.birthDate = testClient.tmpTestClient.birthDate;
+      if (testClient.tmpTestClient.birthDate != null)
+        include.tmpTestClient.birthDate = testClient.tmpTestClient.birthDate;
       if (testClient.tmpTestClient.name != null) include.tmpTestClient.name = testClient.tmpTestClient.name;
       if (testClient.tmpTestClient.gender != null) include.tmpTestClient.gender = testClient.tmpTestClient.gender;
       if (testClient.tmpTestClient.charm != null) include.tmpTestClient.charm = testClient.tmpTestClient.charm;
@@ -292,10 +303,10 @@ public class CIAWorkerTest extends WorkerTest {
     testClients.forEach(testClient -> {
       insertTestTmpClient(testClient.tmpTestClient, clientTmpTableName);
       insertTestTmpClientAddress(testClient.addressFact, clientAddressTmpTableName);
-      insertTestTmpClientAddress(testClient.addressReg,clientAddressTmpTableName);
-      insertTestTmpClientPhone(testClient.homePhone,clientPhoneTmpTableName);
-      insertTestTmpClientPhone(testClient.workPhone,clientPhoneTmpTableName);
-      insertTestTmpClientPhone(testClient.mobilePhone,clientPhoneTmpTableName);
+      insertTestTmpClientAddress(testClient.addressReg, clientAddressTmpTableName);
+      insertTestTmpClientPhone(testClient.homePhone, clientPhoneTmpTableName);
+      insertTestTmpClientPhone(testClient.workPhone, clientPhoneTmpTableName);
+      insertTestTmpClientPhone(testClient.mobilePhone, clientPhoneTmpTableName);
     });
   }
 
@@ -318,12 +329,10 @@ public class CIAWorkerTest extends WorkerTest {
         if (RND.bool()) {
           testClient.name = null;
           testClient.error = MigrationError.CIA.NAME_NOT_FOUND;
-        }
-        else if (RND.bool()) {
+        } else if (RND.bool()) {
           testClient.surname = null;
           testClient.error = MigrationError.CIA.SURNAME_NOT_FOUND;
-        }
-        else if (RND.bool()) {
+        } else if (RND.bool()) {
           testClient.birthDate = null;
           testClient.error = MigrationError.CIA.BIRTH_DATE_NOT_FOUND;
         } else {
@@ -334,7 +343,7 @@ public class CIAWorkerTest extends WorkerTest {
   }
 
   private String getCiaTestFileName() {
-    return getNameWithDate("cia_test")+".xml";
+    return getNameWithDate("cia_test") + ".xml";
   }
 
   private void isContainPhones(TestClient testClient, List<TestTmpClientPhone> tmpClientPhones) {
@@ -357,7 +366,7 @@ public class CIAWorkerTest extends WorkerTest {
       .findFirst().get()).isEqualsToByComparingFields(address);
   }
 
-  private List<TestTmpClientPhone> getTmpClientPhoneList(String cia_id , List<TestTmpClientPhone> tmpClientPhones) {
+  private List<TestTmpClientPhone> getTmpClientPhoneList(String cia_id, List<TestTmpClientPhone> tmpClientPhones) {
     return tmpClientPhones.stream().filter(tmpClientPhone -> tmpClientPhone.client.equals(cia_id)).collect(Collectors.toList());
   }
 
@@ -400,7 +409,7 @@ public class CIAWorkerTest extends WorkerTest {
 
   private List<TestTmpClient> getRandomTestTmpClientList(int count) {
     List<TestTmpClient> testTmpClients = Lists.newArrayList();
-    for (int i = 0 ; i < count; i++) testTmpClients.add(getRandomTmpTestClient());
+    for (int i = 0; i < count; i++) testTmpClients.add(getRandomTmpTestClient());
     return testTmpClients;
   }
 
@@ -430,7 +439,7 @@ public class CIAWorkerTest extends WorkerTest {
     testTmpClient.birthDate = getRandomDate("yyyy-MM-dd");
     testTmpClient.patronymic = RND.str(10);
     testTmpClient.charm = RND.str(10);
-    testTmpClient.gender = RND.bool()?GenderEnum.MALE.name():GenderEnum.FEMALE.name();
+    testTmpClient.gender = RND.bool() ? GenderEnum.MALE.name() : GenderEnum.FEMALE.name();
     return testTmpClient;
   }
 
@@ -492,6 +501,7 @@ public class CIAWorkerTest extends WorkerTest {
     String toXml(String type) {
       return buildPhoneRow(type, number);
     }
+
     private String buildPhoneRow(String name, String value) {
       return "<" + name + ">" + value + "</" + name + ">\n";
     }
@@ -529,8 +539,8 @@ public class CIAWorkerTest extends WorkerTest {
   private static String buildRow(String name, String... vls) {
     StringBuilder sb = new StringBuilder();
     sb.append("<").append(name).append(" ");
-    for (int i = 0; i < vls.length; i+=2)
-      sb.append(vls[i]).append("=\"").append(vls[i+1]).append("\" ");
+    for (int i = 0; i < vls.length; i += 2)
+      sb.append(vls[i]).append("=\"").append(vls[i + 1]).append("\" ");
     return sb.append("/>\n").toString();
   }
 }
