@@ -17,6 +17,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Bean
 public class FRSWorker extends Worker {
@@ -37,13 +38,21 @@ public class FRSWorker extends Worker {
   private String clientAccountTransactionTmp;
   private String transactionTypeTmp;
 
+  private long clientAccountCount = 0;
+  private long clientAccountTransactionCount = 0;
+
+  private long startedAt = System.nanoTime();
+
+  private final AtomicBoolean working = new AtomicBoolean(true);
+  private final AtomicBoolean showStatus = new AtomicBoolean(false);
+
   public FRSWorker(Connection connection, InputStream inputStream) {
     super(connection, inputStream);
     initParser();
   }
 
   @Override
-  public void fillTmpTables() {
+  public synchronized void fillTmpTables() {
     createTmpTables();
     createCsvFiles();
     loadCsvFile();
@@ -129,21 +138,42 @@ public class FRSWorker extends Worker {
 
   private void loadCsvFile() {
     logger.info("load csv files begin...");
-    JSONHandler handler = new JSONHandler();
     try {
-      handler.startDocument();
-      while (jsonParser.nextToken() != null) {
-        handler.element(jsonParser.readValueAsTree());
-      }
-      handler.endDocument();
+      loadCsvFileInner();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     logger.info("load csv files end.");
   }
 
+  private void loadCsvFileInner() throws IOException {
+    JSONHandler handler = new JSONHandler();
+
+    final Thread see = getTimer(working, showStatus);
+    see.start();
+
+    handler.startDocument();
+    while (jsonParser.nextToken() != null) {
+      checkShowStatus();
+      handler.element(jsonParser.readValueAsTree());
+    }
+    handler.endDocument();
+  }
+
+  private void checkShowStatus() {
+    if (showStatus.get()) {
+      showStatus.set(false);
+      long now = System.nanoTime();
+      logger.info(" -- downloaded client_account " + clientAccountCount + " for " + showTime(now, startedAt)
+        + " : " + recordsPerSecond(clientAccountCount, now - startedAt));
+      logger.info(" -- downloaded client_account_transaction " + clientAccountTransactionCount + " for " + showTime(now, startedAt)
+        + " : " + recordsPerSecond(clientAccountTransactionCount, now - startedAt));
+    }
+  }
+
   private void write(TMPClientAccount tmp) {
     try {
+      clientAccountCount++;
       clientAccountCsvBw.write(String.format("%s|\\N|0|%s|%s\n",
         checkIsNull(tmp.clientId), checkIsNull(tmp.registeredAt),
         checkIsNull(tmp.accountNumber)));
@@ -154,6 +184,7 @@ public class FRSWorker extends Worker {
 
   private void write(TMPClientAccountTransaction tmp) {
     try {
+      clientAccountTransactionCount++;
       clientAccountTransactionCsvBw.write(String.format("%s|\\N|%s|%s|%s\n",
         checkIsNull(tmp.money).replace("_", ""), checkIsNull(tmp.finishedAt),
         checkIsNull(tmp.transactionType), checkIsNull(tmp.accountNumber)));
@@ -165,6 +196,7 @@ public class FRSWorker extends Worker {
 
   private void loadCsvFilesToTmpTables() {
     logger.info("load csv files to tmp begin...");
+    working.set(false);
     CopyManager copyManager;
     try {
       flushWriters();
@@ -276,9 +308,9 @@ public class FRSWorker extends Worker {
   public void deleteTmpTables() {
     logger.info("drop tmp tables begin...");
     parallelTasks(
-      () -> exec("DROP TABLE TMP_TABLE", clientAccountTmp),
-      () -> exec("DROP TABLE TMP_TABLE", clientAccountTransactionTmp),
-      () -> exec("DROP TABLE TMP_TABLE", transactionTypeTmp)
+      () -> dropTmpTable(clientAccountTmp),
+      () -> dropTmpTable(clientAccountTransactionTmp),
+      () -> dropTmpTable(transactionTypeTmp)
     );
     logger.info("drop tmp tables end.");
   }

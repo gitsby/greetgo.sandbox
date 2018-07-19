@@ -21,6 +21,6 @@ public class ClientRecord {
       ", middle_balance=" + middle_balance +
       ", max_balance=" + max_balance +
       ", min_balance=" + min_balance +
-      '}';
+      "}\n";
   }
 }

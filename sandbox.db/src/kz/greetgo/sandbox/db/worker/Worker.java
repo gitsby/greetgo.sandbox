@@ -3,18 +3,24 @@ package kz.greetgo.sandbox.db.worker;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
 import org.apache.log4j.Logger;
+import org.fest.util.Files;
 import org.postgresql.copy.CopyManager;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Worker implements WorkerInterface {
 
   private static Logger logger = Logger.getLogger(Worker.class);
+
+  public static final double GIG = 1_000_000_000.0;
 
   protected Connection connection;
   protected InputStream inputStream;
@@ -55,7 +61,7 @@ public abstract class Worker implements WorkerInterface {
     } catch (IOException | SQLException e) {
       throw new RuntimeException(e);
     }
-    file.delete();
+    Files.delete(file);
   }
 
   protected String getNameWithDate(String tableName) {
@@ -89,7 +95,7 @@ public abstract class Worker implements WorkerInterface {
     try (Statement statement = connection.createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -114,7 +120,7 @@ public abstract class Worker implements WorkerInterface {
     try {
       newFile.createNewFile();
     } catch (IOException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
     return newFile;
   }
@@ -146,5 +152,42 @@ public abstract class Worker implements WorkerInterface {
     } catch (SQLException | IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected void dropTmpTable(String tmpTable) {
+    exec("DROP TABLE TMP_TABLE", tmpTable);
+  }
+
+  protected static String recordsPerSecond(long recordCount, long periodInNano) {
+    return formatDecimal((double) recordCount / (double) periodInNano * GIG) + " rec/s";
+  }
+
+  private static String formatDecimal(double decimal) {
+    DecimalFormatSymbols unusualSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+    unusualSymbols.setDecimalSeparator('.');
+    unusualSymbols.setGroupingSeparator(' ');
+
+    String strange = "#,##0.000000";
+    DecimalFormat weirdFormatter = new DecimalFormat(strange, unusualSymbols);
+    weirdFormatter.setGroupingSize(3);
+
+    return weirdFormatter.format(decimal);
+  }
+
+  protected String showTime(long nowNano, long pastNano) {
+    return formatDecimal((double) (nowNano - pastNano) / GIG) + " s";
+  }
+
+  protected Thread getTimer(AtomicBoolean working, AtomicBoolean showStatus) {
+    return new Thread(() -> {
+      while (working.get()) {
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          break;
+        }
+        showStatus.set(true);
+      }
+    });
   }
 }

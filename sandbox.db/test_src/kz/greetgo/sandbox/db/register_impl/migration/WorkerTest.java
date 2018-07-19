@@ -43,9 +43,8 @@ public abstract class WorkerTest extends ParentTestNg {
     try {
       return DriverManager.getConnection(dbConf.get().url(), dbConf.get().username(), dbConf.get().password());
     } catch (SQLException e) {
-      logger.error(e);
+      throw new RuntimeException(e);
     }
-    return null;
   }
 
   List<String> getFrsTmpTableNames() {

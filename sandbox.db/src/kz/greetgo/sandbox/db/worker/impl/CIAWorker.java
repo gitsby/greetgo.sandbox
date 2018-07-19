@@ -19,6 +19,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Bean
 public class CIAWorker extends Worker {
@@ -42,6 +43,13 @@ public class CIAWorker extends Worker {
   private Writer clientPhoneCsvBw;
   private Writer charmCsvBw;
 
+  private long clientCount = 0;
+
+  private long startedAt = System.nanoTime();
+
+  private final AtomicBoolean working = new AtomicBoolean(true);
+  private final AtomicBoolean showStatus = new AtomicBoolean(false);
+
   public CIAWorker(Connection connection, InputStream inputStream) {
     super(connection, inputStream);
     initReader();
@@ -57,7 +65,7 @@ public class CIAWorker extends Worker {
   }
 
   @Override
-  public void fillTmpTables() {
+  public synchronized void fillTmpTables() {
     createTmpTables();
     createCsvFiles();
     loadCsvFile();
@@ -65,7 +73,7 @@ public class CIAWorker extends Worker {
   }
 
   @Override
-  public void margeTmpTables() {
+  public synchronized void margeTmpTables() {
     parallelTasks(
       this::margeCharmTmpTable,
       this::margeClientTmpTable,
@@ -147,15 +155,31 @@ public class CIAWorker extends Worker {
   private void loadCsvFile() {
     logger.info("load csv files begin...");
     try {
-      xmlReader.parse(new InputSource(inputStream));
+      loadCsvFileInner();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     logger.info("load csv files end.");
   }
 
+  private void loadCsvFileInner() throws IOException, SAXException {
+    final Thread see = getTimer(working, showStatus);
+    see.start();
+    xmlReader.parse(new InputSource(inputStream));
+  }
+
+  private void checkShowStatus() {
+    if (showStatus.get()) {
+      showStatus.set(false);
+      long now = System.nanoTime();
+      logger.info(" -- downloaded client " + clientCount + " for " + showTime(now, startedAt)
+        + " : " + recordsPerSecond(clientCount, now - startedAt));
+    }
+  }
+
   private void write(TMPClient tmpClient, List<TMPClientAddress> tmpClientAddresses, List<TMPClientPhone> tmpClientPhones) {
     try {
+      clientCount++;
       writeTmpCharmCsv(tmpClient.charm);
       writeTmpClientCsv(tmpClient);
       for (TMPClientAddress tmpClientAddress : tmpClientAddresses) {
@@ -195,7 +219,7 @@ public class CIAWorker extends Worker {
 
   private void loadCsvFilesToTmpTables(){
     logger.info("load csv files to tmp tables begin...");
-
+    working.set(false);
     CopyManager copyManager;
     try {
       flushWriters();
@@ -395,9 +419,9 @@ public class CIAWorker extends Worker {
   public void deleteTmpTables() {
     logger.info("drop tmp tables to tables begin...");
     parallelTasks(
-      () -> exec("DROP TABLE TMP_TABLE", clientTmp),
-      () -> exec("DROP TABLE TMP_TABLE", clientAddressTmp),
-      () -> exec("DROP TABLE TMP_TABLE", clientPhoneTmp)
+      () -> dropTmpTable(clientTmp),
+      () -> dropTmpTable(clientAddressTmp),
+      () -> dropTmpTable(clientPhoneTmp)
     );
     logger.info("drop tmp tables to tables end.");
   }
@@ -483,6 +507,7 @@ public class CIAWorker extends Worker {
 
     private void upload() {
       write(tmpClient, tmpClientAddresses, tmpClientPhones);
+      checkShowStatus();
 
       tmpClient = new TMPClient();
       tmpClientAddresses = Lists.newArrayList();
