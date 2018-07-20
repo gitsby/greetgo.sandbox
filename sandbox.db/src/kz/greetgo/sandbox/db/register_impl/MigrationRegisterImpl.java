@@ -95,12 +95,12 @@ public class MigrationRegisterImpl implements MigrationRegister {
     connector.uploadErrorFile();
   }
 
-  private void dropTempTables() throws SQLException {
+  private void dropTempTables() throws Exception {
     cia.dropTempTables();
-    cia.closeConnection();
+    cia.close();
 
     frs.dropTempTables();
-    frs.closeStatements();
+    frs.close();
   }
 
 

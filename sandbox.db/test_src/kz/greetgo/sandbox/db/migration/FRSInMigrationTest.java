@@ -55,10 +55,10 @@ public class FRSInMigrationTest extends ParentTestNg {
   }
 
   @AfterMethod
-  public void createTables() throws SQLException {
+  public void createTables() throws Exception {
     frsDao.get().dropAccountTable();
     frsDao.get().dropTransactionTable();
-    frsInMigration.closeStatements();
+    frsInMigration.close();
     connection.close();
   }
 

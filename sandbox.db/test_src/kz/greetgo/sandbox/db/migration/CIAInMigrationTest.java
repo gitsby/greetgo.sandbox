@@ -57,10 +57,10 @@ public class CIAInMigrationTest extends ParentTestNg {
   }
 
   @AfterMethod
-  public void resetDb() throws SQLException {
+  public void resetDb() throws Exception {
 
     dropAllTables();
-    inMigration.closeConnection();
+    inMigration.close();
     connection.close();
   }
 

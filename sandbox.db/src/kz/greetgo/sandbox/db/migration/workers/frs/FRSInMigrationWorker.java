@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class FRSInMigrationWorker extends SqlWorker {
+public class FRSInMigrationWorker extends SqlWorker implements AutoCloseable {
 
   public PreparedStatement accountsStatement;
   public PreparedStatement transactionStatement;
@@ -108,7 +108,9 @@ public class FRSInMigrationWorker extends SqlWorker {
     connection.commit();
   }
 
-  public void closeStatements() throws SQLException {
+
+  @Override
+  public void close() throws Exception {
     transactionStatement.close();
     accountsStatement.close();
   }

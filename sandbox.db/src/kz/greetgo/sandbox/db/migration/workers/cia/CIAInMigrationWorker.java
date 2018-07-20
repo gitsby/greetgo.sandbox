@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class CIAInMigrationWorker extends SqlWorker {
+public class CIAInMigrationWorker extends SqlWorker implements AutoCloseable{
 
   public PreparedStatement clientsStatement;
   public PreparedStatement phoneStatement;
@@ -175,7 +175,8 @@ public class CIAInMigrationWorker extends SqlWorker {
     connection.commit();
   }
 
-  public void closeConnection() throws SQLException {
+  @Override
+  public void close() throws Exception {
 
     addressStatement.close();
     clientsStatement.close();
