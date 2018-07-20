@@ -8,10 +8,9 @@ import kz.greetgo.sandbox.db.core.BeanConfigCore;
 import kz.greetgo.sandbox.db.dao.postgres.BeanConfigPostgresDao;
 import kz.greetgo.sandbox.db.register_impl.BeanConfigRegisterImpl;
 import kz.greetgo.sandbox.db.util.BeanConfigUtil;
-import kz.greetgo.sandbox.db.worker.BeanConfigWorker;
 
 @BeanConfig
 @BeanScanner
 @Include({BeanConfigRegisterImpl.class, BeanConfigPostgresDao.class,
-  BeanConfigControllers.class, BeanConfigCore.class, BeanConfigUtil.class, BeanConfigWorker.class})
+  BeanConfigControllers.class, BeanConfigCore.class, BeanConfigUtil.class})
 public class BeanConfigAll {}

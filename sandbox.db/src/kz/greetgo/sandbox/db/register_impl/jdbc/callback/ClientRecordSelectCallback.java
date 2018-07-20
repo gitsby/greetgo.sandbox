@@ -23,7 +23,7 @@ public abstract class ClientRecordSelectCallback<ConnectionReturnType> extends C
 
   @Override
   public void join() {
-    sql.append("LEFT JOIN client_account ON client_account.client=client.id AND client_account.actual=1 ");
+    sql.append("LEFT JOIN client_account ON client_account.client=client.id AND client_account.actual=1 AND client.actual=1 ");
   }
 
   @Override

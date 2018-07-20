@@ -219,7 +219,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void getRecord() {
 
     ClientFilter emptyFilter = getClientFilter(0, 10);
-    List<ClientDot> leftDots = getRandomClientDotList(100);
+    List<ClientDot> leftDots = insertClient(100);
 
     //
     //
@@ -232,7 +232,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     for (int i = 0; i < clientRecordList.size(); i++) {
       ClientRecord expected = fromDot(leftDots.get(i));
-      assertThat(clientRecordList.get(i)).isEqualsToByComparingFields(expected);
+      assertThat(clientRecordList.get(i).id).isEqualTo(expected.id);
     }
   }
 
@@ -243,9 +243,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return filter;
   }
 
-  private List<ClientDot> getRandomClientDotList(int count) {
+  private List<ClientDot> insertClient(int count) {
     List<ClientDot> leftDots = new ArrayList<>();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < count; i++) {
       ClientDot dot = generateRandomClientDot();
       leftDots.add(dot);
       insertClient(dot);
@@ -257,32 +257,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test()
   public void getRecords_pagination_1() {
-    inNClient(0, 10, 100);
-  }
-
-  @Test()
-  public void getRecords_pagination_2() {
-    inNClient(10, 55, 100);
-  }
-
-  @Test()
-  public void getRecords_pagination_3() {
-    inNClient(10, 95, 100);
-  }
-
-  @Test()
-  public void getRecords_pagination_4() {
-    inNClient(110, 0, 100);
-  }
-
-  @Test()
-  public void getRecords_pagination_5() {
-    inNClient(5, -5,20);
-  }
-
-  private void inNClient(int limit, int offset, int clientSize) {
-    ClientFilter filter = getClientFilter(limit, offset);
-    List<ClientDot> leftDots = getRandomClientDotList(clientSize);
+    ClientFilter filter = getClientFilter(20, 0);
+    List<ClientDot> leftDots = insertClient(50);
 
     //
     //
@@ -292,22 +268,88 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    assertThat(clientRecordList).hasSize(getExpectedSize(filter.offset, filter.limit, leftDots.size()));
+    assertThat(clientRecordList).hasSize(20);
 
     int j = 0;
-    for (int i = filter.offset<0?0:filter.offset; i < clientRecordList.size()+filter.offset; i++) {
+    for (int i = 0; i < 20; i++)
+      assertThat(clientRecordList.get(j++).id).isEqualTo(leftDots.get(i).id);
+  }
+
+  @Test()
+  public void getRecords_pagination_2() {
+    ClientFilter filter = getClientFilter(10, 20);
+    List<ClientDot> leftDots = insertClient(50);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(filter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList).hasSize(10);
+
+    int j = 0;
+    for (int i = 20; i < 30; i++) {
       assertThat(clientRecordList.get(j++).id).isEqualTo(leftDots.get(i).id);
     }
   }
 
-  private int getExpectedSize(int offset, int limit, int maxSize) {
-    if (limit < 0) limit = 0;
-    if (offset < 0) offset = 0;
-    if (limit > maxSize || offset + limit > maxSize) return maxSize - offset;
-    if (offset > maxSize) return 0;
-    return limit;
+  @Test()
+  public void getRecords_pagination_3() {
+    ClientFilter filter = getClientFilter(15, 5);
+    List<ClientDot> leftDots = insertClient(10);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(filter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList).hasSize(5);
+
+    int j = 0;
+    for (int i = 5; i < 10; i++)
+      assertThat(clientRecordList.get(j++).id).isEqualTo(leftDots.get(i).id);
   }
 
+  @Test()
+  public void getRecords_pagination_4() {
+    ClientFilter filter = getClientFilter(15, 10);
+    insertClient(10);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(filter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList).isEmpty();
+  }
+
+  @Test()
+  public void getRecords_pagination_5() {
+    ClientFilter filter = getClientFilter(5, -5);
+    List<ClientDot> leftDots = insertClient(10);
+
+    //
+    //
+    //
+    List<ClientRecord> clientRecordList = clientRegister.get().getRecords(filter);
+    //
+    //
+    //
+
+    assertThat(clientRecordList).hasSize(5);
+
+    int j = 0;
+    for (int i = 0; i < 5; i++) assertThat(clientRecordList.get(j++).id).isEqualTo(leftDots.get(i).id);
+  }
 
   enum FioEnum {
     SURNAME, NAME, PATRONYMIC
@@ -524,14 +566,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(resultCharmRecords).hasSize(randomSize);
 
     for (int i = 0; i < randomSize; i++)
-      isEqual(resultCharmRecords.get(i), charmRecords.get(i));
-  }
-
-  private void isEqual(CharmRecord cr1, CharmRecord cr2) {
-    assertThat(cr1.id).isEqualTo(cr2.id);
-    assertThat(cr1.energy).isEqualTo(cr2.energy);
-    assertThat(cr1.description).isEqualTo(cr2.description);
-    assertThat(cr1.name).isEqualTo(cr2.name);
+      assertThat(resultCharmRecords.get(i).id).isEqualTo(charmRecords.get(i).id);
   }
 
   class TestRender implements ClientRender {

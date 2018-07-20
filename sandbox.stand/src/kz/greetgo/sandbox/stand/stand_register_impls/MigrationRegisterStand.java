@@ -6,7 +6,5 @@ import kz.greetgo.sandbox.controller.register.MigrationRegister;
 @Bean
 public class MigrationRegisterStand implements MigrationRegister  {
   @Override
-  public void start() {
-    System.out.println("TEST");
-  }
+  public void start() {}
 }

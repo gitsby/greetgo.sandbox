@@ -1,8 +1,10 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
 import kz.greetgo.util.RND;
+import org.fest.util.Files;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -10,7 +12,6 @@ import org.testng.collections.Lists;
 
 import java.io.File;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -37,21 +38,19 @@ public class FRSWorkerTest extends WorkerTest {
     Integer randomSize = RND.plusInt(100);
     List<TestClientAccount> leftTestClientAccounts = getRandomTestClientAccounts(randomSize);
 
-    Connection connection = getConnection();
     InputStream inputStream = getInputStream(getFrsTestFileName(), getFrsString(leftTestClientAccounts));
 
     //
     //
     //
-    getFrsWorker(connection, inputStream).fillTmpTables();
+    try (FRSWorker frsWorker = getFrsWorker(getConnection(), inputStream)) {
+      frsWorker.fillTmpTables();
+    }
     //
     //
     //
 
     checkInTmpTables(leftTestClientAccounts);
-
-    inputStream.close();
-    connection.close();
   }
 
   @Test
@@ -62,26 +61,21 @@ public class FRSWorkerTest extends WorkerTest {
     Integer randomSize = RND.plusInt(100);
     List<TestClientAccount> leftTestClientAccounts = getRandomTestClientAccounts(randomSize);
 
-    {
-      toErrorList(leftTestClientAccounts);
-      insertToTmpTables(leftTestClientAccounts, clientAccountTmpTableName, clientAccountTransactionTmpTableName);
+    toErrorList(leftTestClientAccounts);
+    insertToTmpTables(leftTestClientAccounts, clientAccountTmpTableName, clientAccountTransactionTmpTableName);
+
+    //
+    //
+    //
+    try (FRSWorker frsWorker = getFrsWorker(getConnection(), null)) {
+      frsWorker.setTmpTableNames(clientAccountTmpTableName, clientAccountTransactionTmpTableName, null);
+      frsWorker.validTmpTables();
     }
-
-    Connection connection = getConnection();
-
-    //
-    //
-    //
-    FRSWorker frsWorker = getFrsWorker(connection, null);
-    frsWorker.setTmpTableNames(clientAccountTmpTableName, clientAccountTransactionTmpTableName, null);
-    frsWorker.validTmpTables();
     //
     //
     //
 
     checkInTmpTables(leftTestClientAccounts);
-
-    connection.close();
   }
 
   @Test
@@ -92,18 +86,16 @@ public class FRSWorkerTest extends WorkerTest {
     Integer randomSize = RND.plusInt(100);
     List<TestClientAccount> leftTestClientAccounts = getRandomTestClientAccounts(randomSize);
 
-
     toNotMargeList(leftTestClientAccounts);
     insertToTmpTables(leftTestClientAccounts, clientAccountTmpTableName, clientAccountTransactionTmpTableName);
 
-    Connection connection = getConnection();
-
     //
     //
     //
-    FRSWorker frsWorker = getFrsWorker(connection, null);
-    frsWorker.setTmpTableNames(clientAccountTmpTableName, clientAccountTransactionTmpTableName, null);
-    frsWorker.margeTmpTables();
+    try (FRSWorker frsWorker = getFrsWorker(getConnection(), null)) {
+      frsWorker.setTmpTableNames(clientAccountTmpTableName, clientAccountTransactionTmpTableName, null);
+      frsWorker.margeTmpTables();
+    }
     //
     //
     //
@@ -112,7 +104,6 @@ public class FRSWorkerTest extends WorkerTest {
     removeInvalidClientAccounts(leftTestClientAccounts);
     checkInTmpTables(leftTestClientAccounts);
 
-    connection.close();
   }
 
   @Test
@@ -120,9 +111,7 @@ public class FRSWorkerTest extends WorkerTest {
     Integer randomSize = RND.plusInt(10);
     String randomCiaId = RND.str(10);
 
-    {
-      migrationDao.get().insertEmptyClient(randomCiaId);
-    }
+    migrationDao.get().insertEmptyClient(randomCiaId);
 
     List<TestClientAccount> leftTestClientAccounts = getRandomTestClientAccounts(randomSize);
     leftTestClientAccounts.forEach(testClientAccount -> testClientAccount.tmpClientAccount.clientId = randomCiaId);
@@ -130,13 +119,16 @@ public class FRSWorkerTest extends WorkerTest {
     toNotMargeList(leftTestClientAccounts);
     toErrorList(leftTestClientAccounts);
 
-    Connection connection = getConnection();
     File tmpFile = createTmpFile(getFrsTestFileName(), getFrsString(leftTestClientAccounts));
 
     //
     //
     //
-    migration.get().migrate(connection, tmpFile);
+    try (Migration migration = new Migration()) {
+      migration.migrate(getConnection(), tmpFile);
+    } finally {
+      Files.delete(tmpFile);
+    }
     //
     //
     //
@@ -146,8 +138,7 @@ public class FRSWorkerTest extends WorkerTest {
 
     checkInTables(leftTestClientAccounts);
 
-    tmpFile.delete();
-    connection.close();
+    org.fest.util.Files.delete(tmpFile);
   }
 
   private List<TestClientAccount>  removeInvalidClientAccounts(List<TestClientAccount> leftTestClientAccounts) {
@@ -223,13 +214,6 @@ public class FRSWorkerTest extends WorkerTest {
 
     List<TestTmpClientAccount> tmpClientAccounts = getTestTmpClientAccounts(getTmpClientAccountTableName(getFrsTmpTableNames()));
     List<TestTmpClientAccountTransaction> tmpClientAccountTransactions = getClientAccountsTransactions(getClientAccountTransactionsTableName(frsTmpTableNames));
-
-    System.out.println(leftTestClientAccounts);
-    System.out.println();
-    System.out.println();
-    System.out.println();
-    System.out.println(tmpClientAccounts);
-    System.out.println(tmpClientAccountTransactions);
 
     assertThat(tmpClientAccounts).hasSize(leftTestClientAccounts.size());
     assertThat(tmpClientAccountTransactions).hasSize(getAccountTransactionsSize(leftTestClientAccounts));
@@ -392,11 +376,6 @@ public class FRSWorkerTest extends WorkerTest {
         ", \"account_number\":\"" + accountNumber + '\"' +
         ", \"type\":\"new_account\"" +
         "}\n";
-    }
-
-    @Override
-    public String toString() {
-      return toJson();
     }
   }
 

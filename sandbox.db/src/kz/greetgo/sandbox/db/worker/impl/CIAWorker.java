@@ -1,13 +1,9 @@
 package kz.greetgo.sandbox.db.worker.impl;
 
-import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.db.worker.Worker;
 import org.apache.log4j.Logger;
-import org.fest.util.Files;
 import org.fest.util.Lists;
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -19,11 +15,11 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Bean
 public class CIAWorker extends Worker {
 
-  private static Logger logger = Logger.getLogger(CIAWorker.class);
+  private static Logger logger = Logger.getLogger("migration");
 
   private XMLReader xmlReader;
 
@@ -42,6 +38,13 @@ public class CIAWorker extends Worker {
   private Writer clientPhoneCsvBw;
   private Writer charmCsvBw;
 
+  private long clientCount = 0;
+
+  private long startedAt = System.nanoTime();
+
+  private final AtomicBoolean working = new AtomicBoolean(true);
+  private final AtomicBoolean showStatus = new AtomicBoolean(false);
+
   public CIAWorker(Connection connection, InputStream inputStream) {
     super(connection, inputStream);
     initReader();
@@ -51,69 +54,66 @@ public class CIAWorker extends Worker {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
     } catch (SAXException e) {
-      throw new RuntimeException();
+      logger.error(e);
     }
     xmlReader.setContentHandler(new XMLHandler());
   }
 
   @Override
-  public void fillTmpTables() {
+  public synchronized void fillTmpTables() {
     createTmpTables();
     createCsvFiles();
-    loadCsvFile();
+    fillCsvFile();
     loadCsvFilesToTmpTables();
   }
 
   @Override
-  public void margeTmpTables() {
-    parallelTasks(
-      this::margeCharmTmpTable,
-      this::margeClientTmpTable,
-      this::margeClientAddressTmpTable,
-      this::margeClientPhoneTmpTable
-    );
+  public synchronized void margeTmpTables() {
+    margeCharmTmpTable();
+    margeClientTmpTable();
+    margeClientAddressTmpTable();
+    margeClientPhoneTmpTable();
   }
 
   @Override
   public void validTmpTables() {
-    logger.info("validate tmp tables begin...");
+    logger.info("Validate of tmp tables begin...");
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.SURNAME_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND surname IS NULL;", clientTmp);
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.NAME_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND \"name\" IS NULL;", clientTmp);
     exec("UPDATE TMP_TABLE SET error='"+MigrationError.CIA.BIRTH_DATE_NOT_FOUND+'\'' +
       "WHERE error IS NULL AND birth_date IS NULL;", clientTmp);
-    logger.info("validate tmp tables end.");
+    logger.info("Validate of tmp tables end.");
   }
 
   @Override
   public void migrateTmpTables() {
     migrateClientTmpTable();
-    parallelTasks(
-      this::migrateClientAddressTable,
-      this::migrateClientPhoneTmpTable
-    );
+    migrateClientAddressTable();
+    migrateClientPhoneTmpTable();
   }
 
   private void createTmpTables() {
-    logger.info("create tmp tables begin...");
+    logger.info("Create of tmp tables begin...");
     setTmpTableNames();
     exec("CREATE TABLE TMP_TABLE (name VARCHAR(255))", charmTmp);
     exec("CREATE TABLE TMP_TABLE (id VARCHAR(255), error VARCHAR(255), surname VARCHAR(255), name VARCHAR(255), patronymic VARCHAR(255), gender VARCHAR(255), birth_date varchar(255), charm VARCHAR(255))", clientTmp);
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255), error VARCHAR(255), type VARCHAR(255), street VARCHAR(255), house VARCHAR(255), flat VARCHAR(255))", clientAddressTmp);
     exec("CREATE TABLE TMP_TABLE (client VARCHAR(255), error VARCHAR(255), type VARCHAR(255), number VARCHAR(255))", clientPhoneTmp);
-    logger.info("create tmp tables end.");
+    logger.info("Create of tmp tables end.");
   }
 
   private void setTmpTableNames() {
     setTmpTableNames(
+      getNameWithDate("cia_migration_charm"),
       getNameWithDate("cia_migration_client"),
       getNameWithDate("cia_migration_client_address"),
       getNameWithDate("cia_migration_client_phone"));
   }
 
-  public void setTmpTableNames(String clientTmp, String clientAddressTmp, String clientPhoneTmp) {
-    this.charmTmp = getNameWithDate("cia_migration_charm");
+  public void setTmpTableNames(String charmTmp, String clientTmp, String clientAddressTmp, String clientPhoneTmp) {
+    this.charmTmp = charmTmp;
     this.clientTmp = clientTmp;
     this.clientAddressTmp = clientAddressTmp;
     this.clientPhoneTmp = clientPhoneTmp;
@@ -125,7 +125,7 @@ public class CIAWorker extends Worker {
       createFiles();
       createWriters();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
     logger.info("create csv files end.");
   }
@@ -144,18 +144,34 @@ public class CIAWorker extends Worker {
     clientPhoneCsvBw = getWriter(clientPhoneCsvFile);
   }
 
-  private void loadCsvFile() {
-    logger.info("load csv files begin...");
+  private void fillCsvFile() {
+    logger.info("Fill csv files begin...");
     try {
-      xmlReader.parse(new InputSource(inputStream));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+      loadCsvFileInner();
+    } catch (SAXException | IOException e) {
+      logger.error(e);
     }
-    logger.info("load csv files end.");
+    logger.info("Fill csv files end.");
+  }
+
+  private void loadCsvFileInner() throws IOException, SAXException {
+    final Thread see = getTimer(working, showStatus);
+    see.start();
+    xmlReader.parse(new InputSource(inputStream));
+  }
+
+  private void checkShowStatus() {
+    if (showStatus.get()) {
+      showStatus.set(false);
+      long now = System.nanoTime();
+      logger.info(" -- downloaded client " + clientCount + " for " + showTime(now, startedAt)
+        + " : " + recordsPerSecond(clientCount, now - startedAt));
+    }
   }
 
   private void write(TMPClient tmpClient, List<TMPClientAddress> tmpClientAddresses, List<TMPClientPhone> tmpClientPhones) {
     try {
+      clientCount++;
       writeTmpCharmCsv(tmpClient.charm);
       writeTmpClientCsv(tmpClient);
       for (TMPClientAddress tmpClientAddress : tmpClientAddresses) {
@@ -167,7 +183,7 @@ public class CIAWorker extends Worker {
         writeTmpClientPhoneCsv(phone);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
   }
 
@@ -194,21 +210,16 @@ public class CIAWorker extends Worker {
   }
 
   private void loadCsvFilesToTmpTables(){
-    logger.info("load csv files to tmp tables begin...");
-
-    CopyManager copyManager;
+    logger.info("Load of csv files to tmp tables begin...");
+    working.set(false);
     try {
       flushWriters();
-      copyManager = new CopyManager((BaseConnection) connection);
-
-      parallelTasks(
-        ()->copy(copyManager, charmCsvFile, charmTmp),
-        ()->copy(copyManager, clientCsvFile, clientTmp),
-        ()->copy(copyManager, clientAddressCsvFile, clientAddressTmp),
-        ()->copy(copyManager, clientPhoneCsvFile, clientPhoneTmp)
-      );
-    } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
+      copy(getCopyManager(), charmCsvFile, charmTmp);
+      copy(getCopyManager(), clientCsvFile, clientTmp);
+      copy(getCopyManager(), clientAddressCsvFile, clientAddressTmp);
+      copy(getCopyManager(), clientPhoneCsvFile, clientPhoneTmp);
+    } catch (IOException e) {
+      logger.error(e);
     }
     logger.info("load csv files to tmp tables end.");
   }
@@ -224,12 +235,12 @@ public class CIAWorker extends Worker {
     if (charmTmp != null) {
       exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", charmTmp);
       exec("SELECT DISTINCT name INTO TMP_TABLE FROM conductor_TMP_TABLE GROUP BY name;", charmTmp);
-      backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", charmTmp));
+      exec("DROP TABLE conductor_TMP_TABLE", charmTmp);
     }
   }
 
   private void margeClientTmpTable() {
-    logger.info("marge client tmp tables begin...");
+    logger.info("Merger of clients in tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientTmp);
     exec("SELECT DISTINCT " +
       "  id, " +
@@ -277,13 +288,13 @@ public class CIAWorker extends Worker {
       "             END DESC NULLS LAST " +
       "    ) AS charm " +
       "INTO TMP_TABLE FROM conductor_TMP_TABLE", clientTmp);
-    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientTmp));
+    exec("DROP TABLE conductor_TMP_TABLE", clientTmp);
 
-    logger.info("marge client tmp tables end.");
+    logger.info("Merger of clients in tmp tables end.");
   }
 
   private void margeClientAddressTmpTable() {
-    logger.info("marge client address tmp tables begin...");
+    logger.info("Merger of client addresses in tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientAddressTmp);
     exec("SELECT DISTINCT " +
       "  client, \"type\", " +
@@ -311,12 +322,12 @@ public class CIAWorker extends Worker {
       "    ) AS flat " +
       "INTO TMP_TABLE " +
       "FROM conductor_TMP_TABLE;", clientAddressTmp);
-    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientAddressTmp));
-    logger.info("fuse client address tmp tables end.");
+    exec("DROP TABLE conductor_TMP_TABLE", clientAddressTmp);
+    logger.info("Merger of client addresses in tmp tables end.");
   }
 
   private void margeClientPhoneTmpTable() {
-    logger.info("fuse client phone tmp tables begin...");
+    logger.info("Merger of client phones in tmp tables begin...");
     exec("ALTER TABLE TMP_TABLE RENAME TO conductor_TMP_TABLE", clientPhoneTmp);
     exec("SELECT DISTINCT " +
       "  client, \"type\", error, " +
@@ -329,12 +340,12 @@ public class CIAWorker extends Worker {
       "    ) AS number " +
       "INTO TMP_TABLE " +
       "FROM conductor_TMP_TABLE;", clientPhoneTmp);
-    backgroundTasks(()->exec("DROP TABLE conductor_TMP_TABLE", clientPhoneTmp));
-    logger.info("fuse client phone tmp tables end.");
+    exec("DROP TABLE conductor_TMP_TABLE", clientPhoneTmp);
+    logger.info("Merger of client phones in tmp tables end.");
   }
 
   private void migrateClientTmpTable() {
-    logger.info("migrate client tmp table begin...");
+    logger.info("Migrate of client from tmp table to real begin...");
     exec("INSERT INTO charm(name, description, energy) " +
       "SELECT \"name\", '', 1.0 FROM TMP_TABLE WHERE \"name\" IS NOT NULL AND \"name\" NOT IN (SELECT name FROM charm);", charmTmp);
 
@@ -350,11 +361,11 @@ public class CIAWorker extends Worker {
         "charm_id=EXCLUDED.charm_id," +
         "cia_id=EXCLUDED.cia_id;",
       clientTmp);
-    logger.info("migrate client tmp table end.");
+    logger.info("Migrate of client from tmp table to real end.");
   }
 
   private void migrateClientAddressTable() {
-    logger.info("migrate client address tmp table begin...");
+    logger.info("Migrate of client addresses from tmp table to real begin...");
     exec("INSERT INTO client_address(client, type, street, house, flat) " +
       "SELECT id, t2.type, t2.street, t2.house, t2.flat FROM TMP_TABLE t2 " +
       "INNER JOIN client ON t2.client=client.cia_id " +
@@ -362,59 +373,63 @@ public class CIAWorker extends Worker {
       "street=EXCLUDED.street," +
       "house=EXCLUDED.house," +
       "flat=EXCLUDED.flat;", clientAddressTmp);
-    logger.info("migrate client address tmp table end.");
+    logger.info("Migrate client address tmp table end.");
   }
 
   private void migrateClientPhoneTmpTable() {
-    logger.info("migrate client phone tmp table begin...");
+    logger.info("Migrate client phone tmp table begin...");
     exec("INSERT INTO client_phone(client, type, number) " +
       "SELECT id, t2.type, t2.number FROM TMP_TABLE t2 " +
       "INNER JOIN client ON client.cia_id=t2.client " +
       "WHERE t2.error IS NULL ON CONFLICT(client, type) DO UPDATE SET " +
       "number=EXCLUDED.number;", clientPhoneTmp);
-    logger.info("migrate client phone tmp table end.");
+    logger.info("Migrate of client phone from tmp table to real end.");
   }
 
   @Override
   public File writeOutErrorData() {
-    logger.info("copy error clients to file.");
+    logger.info("Copy errors from client tmp table to file begin...");
     File errors = getFile(getNameWithDate("migrated_cia_errors")+".csv");
     try (Writer writer = getWriter(errors)){
-      CopyManager copyManager = new CopyManager((BaseConnection) connection);
-      copyOut(copyManager, clientTmp, writer);
-      copyOut(copyManager, clientAddressTmp, writer);
-      copyOut(copyManager, clientPhoneTmp, writer);
-    } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
+      copyOut(getCopyManager(), clientTmp, writer);
+      copyOut(getCopyManager(), clientAddressTmp, writer);
+      copyOut(getCopyManager(), clientPhoneTmp, writer);
+    } catch (IOException e) {
+      logger.error(e);
     }
-    logger.info("copy error clients to file finished.");
+    logger.info("Copy errors from client tmp table to file end.");
     return errors;
   }
 
   @Override
   public void deleteTmpTables() {
-    logger.info("drop tmp tables to tables begin...");
-    parallelTasks(
-      () -> exec("DROP TABLE TMP_TABLE", clientTmp),
-      () -> exec("DROP TABLE TMP_TABLE", clientAddressTmp),
-      () -> exec("DROP TABLE TMP_TABLE", clientPhoneTmp)
-    );
-    logger.info("drop tmp tables to tables end.");
+    logger.info("Drop tmp tables begin...");
+    dropTmpTable(charmTmp);
+    dropTmpTable(clientTmp);
+    dropTmpTable(clientAddressTmp);
+    dropTmpTable(clientPhoneTmp);
+    logger.info("Drop tmp tables end.");
   }
 
   @Override
-  public void close() throws IOException {
-    logger.info("close method begin...");
+  public void close() {
+    logger.info("Close method begin...");
 
-    clientCsvBw.close();
-    clientAddressCsvBw.close();
-    clientPhoneCsvBw.close();
+    closeWriter(clientCsvBw);
+    closeWriter(clientAddressCsvBw);
+    closeWriter(clientPhoneCsvBw);
 
-    Files.delete(clientCsvFile);
-    Files.delete(clientAddressCsvFile);
-    Files.delete(clientPhoneCsvFile);
+    deleteFile(clientCsvFile);
+    deleteFile(clientAddressCsvFile);
+    deleteFile(clientPhoneCsvFile);
 
-    logger.info("close method end.");
+    try {
+      connection.close();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    logger.info("Close method end.");
   }
 
   class XMLHandler extends DefaultHandler {
@@ -483,6 +498,7 @@ public class CIAWorker extends Worker {
 
     private void upload() {
       write(tmpClient, tmpClientAddresses, tmpClientPhones);
+      checkShowStatus();
 
       tmpClient = new TMPClient();
       tmpClientAddresses = Lists.newArrayList();

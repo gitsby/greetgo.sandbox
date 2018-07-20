@@ -8,5 +8,6 @@ public class MigrationError {
   }
   public static final class FRS {
     public static final String ACCOUNT_NUMBER_NOT_FOUND="Не указан номер счета !";
+    public static final String CLIENT_NOT_FOUND = "Клиент не найден !";
   }
 }

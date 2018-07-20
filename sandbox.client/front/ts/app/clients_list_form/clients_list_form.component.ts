@@ -194,7 +194,7 @@ export class ClientsListFormComponent implements AfterViewInit {
   }
 
   migrate() {
-    alert("migration");
+    alert("Migration start !");
     this.httpService.get("/migration/start").toPromise().then();
   }
 }
