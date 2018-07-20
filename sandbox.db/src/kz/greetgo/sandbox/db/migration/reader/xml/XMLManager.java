@@ -37,8 +37,5 @@ public class XMLManager {
     parser.parse(file, handler);
   }
 
-  public boolean isDone() {
-    return false;
-  }
 
 }
