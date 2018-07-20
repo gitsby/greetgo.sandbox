@@ -214,7 +214,6 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void saveClientAddress(Integer client, ClientAddress saveClientAddress) {
-    System.out.println(client);
     if (saveClientAddress.client == null) {
       saveClientAddress.client = client;
       db.get().addresses.add(new ClientAddressDot(saveClientAddress));

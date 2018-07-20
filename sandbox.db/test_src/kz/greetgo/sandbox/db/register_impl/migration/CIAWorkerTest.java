@@ -1,8 +1,10 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.util.RND;
+import org.fest.util.Files;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -10,7 +12,6 @@ import org.testng.collections.Lists;
 
 import java.io.File;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -41,25 +42,23 @@ public class CIAWorkerTest extends WorkerTest {
     Integer randomSize = RND.plusInt(100);
     List<TestClient> leftTestClients = getRandomTestClientList(randomSize);
 
-    Connection connection = getConnection();
     InputStream tmpCsvFileInputStream = getInputStream(getCiaTestFileName(), getCiaString(leftTestClients));
 
     //
     //
     //
-    CIAWorker worker = getCiaWorker(connection, tmpCsvFileInputStream);
-    worker.fillTmpTables();
+    try (CIAWorker ciaWorker = getCiaWorker(getConnection(), tmpCsvFileInputStream)) {
+      ciaWorker.fillTmpTables();
+    }
     //
     //
     //
 
     checkInTmpTables(leftTestClients);
-
-    connection.close();
   }
 
   @Test
-  public void validTmpTables() throws Exception {
+  public void validTmpTables() {
     String clientTmpTableName = getNameWithDate(this.clientTmpTableName);
 
     Integer randomSize = RND.plusInt(100);
@@ -71,14 +70,13 @@ public class CIAWorkerTest extends WorkerTest {
       leftTestClients.forEach(testClient -> insertTestTmpClient(testClient, clientTmpTableName));
     }
 
-    Connection connection = getConnection();
-
     //
     //
     //
-    CIAWorker ciaWorker = getCiaWorker(connection, null);
-    ciaWorker.setTmpTableNames(clientTmpTableName, null, null);
-    ciaWorker.validTmpTables();
+    try (CIAWorker ciaWorker = getCiaWorker(getConnection(), null)) {
+      ciaWorker.setTmpTableNames(null, clientTmpTableName, null, null);
+      ciaWorker.validTmpTables();
+    }
     //
     //
     //
@@ -90,11 +88,10 @@ public class CIAWorkerTest extends WorkerTest {
     assertThat(tmpClients).hasSize(randomSize);
     assertThat(tmpClients).containsAll(leftTestClients);
 
-    connection.close();
   }
 
   @Test
-  public void margeTmpTables() throws Exception {
+  public void margeTmpTables() {
     String clientTmpTableName = getNameWithDate(this.clientTmpTableName);
     String clientAddressTmpTableName = getNameWithDate(this.clientAddressTmpTableName);
     String clientPhoneTmpTableName = getNameWithDate(this.clientPhoneTmpTableName);
@@ -107,21 +104,18 @@ public class CIAWorkerTest extends WorkerTest {
       insertToTmpTables(leftTestClients, clientTmpTableName, clientAddressTmpTableName, clientPhoneTmpTableName);
     }
 
-    Connection connection = getConnection();
-
     //
     //
     //
-    CIAWorker ciaWorker = getCiaWorker(connection, null);
-    ciaWorker.setTmpTableNames(clientTmpTableName, clientAddressTmpTableName, clientPhoneTmpTableName);
-    ciaWorker.margeTmpTables();
+    try (CIAWorker ciaWorker = getCiaWorker(getConnection(), null)) {
+      ciaWorker.setTmpTableNames(null, clientTmpTableName, clientAddressTmpTableName, clientPhoneTmpTableName);
+      ciaWorker.margeTmpTables();
+    }
     //
     //
     //
 
     checkInTmpTables(margeList(leftTestClients));
-
-    connection.close();
   }
 
   @Test
@@ -134,13 +128,16 @@ public class CIAWorkerTest extends WorkerTest {
       toErrorList(leftTestClients.stream().map(testClient -> testClient.tmpTestClient).collect(Collectors.toList()));
     }
 
-    Connection connection = getConnection();
     File tmpFile = createTmpFile(getCiaTestFileName(), getCiaString(leftTestClients));
 
     //
     //
     //
-    migration.get().migrate(connection, tmpFile);
+    try (Migration migration = new Migration()) {
+      migration.migrate(getConnection(), tmpFile);
+    } finally {
+      Files.delete(tmpFile);
+    }
     //
     //
     //
@@ -149,9 +146,6 @@ public class CIAWorkerTest extends WorkerTest {
     leftTestClients = removeInvalidClients(leftTestClients);
 
     checkInTables(leftTestClients);
-
-    tmpFile.delete();
-    connection.close();
   }
 
   private List<TestClient> removeInvalidClients(List<TestClient> leftTestClients) {

@@ -16,7 +16,6 @@ import kz.greetgo.sandbox.db.test.util.TestsBeanContainerCreator;
 public class RecreateDb {
   public static void main(String[] args) throws Exception {
     TestsBeanContainer bc = TestsBeanContainerCreator.create();
-
     bc.dbWorker().recreateAll();
   }
 }

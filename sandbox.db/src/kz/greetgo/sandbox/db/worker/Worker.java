@@ -5,6 +5,7 @@ import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
 import org.apache.log4j.Logger;
 import org.fest.util.Files;
 import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 
 import java.io.*;
 import java.sql.Connection;
@@ -13,12 +14,15 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Worker implements WorkerInterface {
 
-  private static Logger logger = Logger.getLogger(Worker.class);
+  private static Logger logger = Logger.getLogger("migration");
 
   public static final double GIG = 1_000_000_000.0;
 
@@ -48,7 +52,7 @@ public abstract class Worker implements WorkerInterface {
     long end = System.nanoTime();
     Calendar c = new GregorianCalendar();
     c.setTime(new Date(end-start));
-    logger.info(String.format("----- FINISH AT: %d n/s -----", end-start));
+    logger.info(String.format("----- FINISH AT: %s -----", showTime(end, start)));
     File error = writeOutErrorData();
     deleteTmpTables();
     return error;
@@ -59,7 +63,7 @@ public abstract class Worker implements WorkerInterface {
     try(FileReader reader = new FileReader(file)) {
       copyManager.copyIn(r(copyQuery, tmp), reader);
     } catch (IOException | SQLException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
     Files.delete(file);
   }
@@ -85,7 +89,10 @@ public abstract class Worker implements WorkerInterface {
   protected File createFile(String name) throws IOException {
     String tmp = "build/tmp/";
     File file = new File(tmp+name);
-    if (!file.exists()) { new File(file.getParent()).mkdirs(); }
+    if (!file.exists())
+      //noinspection ResultOfMethodCallIgnored
+      new File(file.getParent()).mkdirs();
+    //noinspection ResultOfMethodCallIgnored
     file.createNewFile();
     return file;
   }
@@ -95,7 +102,7 @@ public abstract class Worker implements WorkerInterface {
     try (Statement statement = connection.createStatement()) {
       statement.execute(executingSql);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
   }
 
@@ -116,46 +123,29 @@ public abstract class Worker implements WorkerInterface {
 
   protected File getFile(String name) {
     File newFile = new File("build/out_files/"+name);
-    if (!newFile.exists()) newFile.getParentFile().mkdirs();
+    if (!newFile.exists())
+      //noinspection ResultOfMethodCallIgnored
+      newFile.getParentFile().mkdirs();
     try {
+      //noinspection ResultOfMethodCallIgnored
       newFile.createNewFile();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
     return newFile;
-  }
-
-  protected void parallelTasks(Runnable... runnableList) {
-    for (Thread thread : startTasks(runnableList)) {
-      try {
-        thread.join();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  protected void backgroundTasks(Runnable... runnableList) {
-    startTasks(runnableList);
-  }
-
-  private List<Thread> startTasks(Runnable[] runnableList) {
-    List<Thread> threadList = new ArrayList<>();
-    for (Runnable aRunnableList : runnableList) threadList.add(new Thread(aRunnableList));
-    threadList.forEach(Thread::start);
-    return threadList;
   }
 
   protected void copyOut(CopyManager copyManager, String tmp, Writer writer) {
     try {
       copyManager.copyOut(r("COPY (SELECT * FROM TMP_TABLE WHERE error IS NOT NULL) TO STDOUT WITH NULL ''", tmp), writer);
     } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
+      logger.error(e);
     }
   }
 
   protected void dropTmpTable(String tmpTable) {
-    exec("DROP TABLE TMP_TABLE", tmpTable);
+    if (tmpTable == null) return;
+    exec("DROP TABLE IF EXISTS TMP_TABLE", tmpTable);
   }
 
   protected static String recordsPerSecond(long recordCount, long periodInNano) {
@@ -189,5 +179,29 @@ public abstract class Worker implements WorkerInterface {
         showStatus.set(true);
       }
     });
+  }
+
+  protected CopyManager getCopyManager() {
+    try {
+      return new CopyManager((BaseConnection) connection);
+    } catch (SQLException e) {
+      logger.error(e);
+    }
+    return null;
+  }
+
+  protected void closeWriter(Writer writer) {
+    if (writer == null) return;
+    try {
+      writer.close();
+    } catch (IOException e) {
+      logger.error(e);
+    }
+  }
+
+  protected void deleteFile(File file) {
+    if (file == null) return;
+    if (!file.exists()) return;
+    Files.delete(file);
   }
 }

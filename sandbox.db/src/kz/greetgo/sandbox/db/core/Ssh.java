@@ -62,16 +62,16 @@ public class Ssh implements Closeable {
 
   private File rename(File file, String newName) {
     String newNamePath = file.getParent() + "/" + newName;
-    try {
-      sftpChannel.rename(file.getPath(), newNamePath);
-    } catch (SftpException e) {
-      throw new RuntimeException(e);
-    }
+    rename(file.getPath(), newNamePath);
     return new File(newNamePath);
   }
 
-  private File renameToMigrated(File file) {
-    return rename(file, "migrated_"+file.getName());
+  private void rename(String from, String to) {
+    try {
+      sftpChannel.rename(from, to);
+    } catch (SftpException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -108,7 +108,7 @@ public class Ssh implements Closeable {
   }
 
   private boolean isMigrated(String fileName) {
-    return fileName.substring(0, 8).equals("migrated");
+    return "migration".equals(fileName.substring(0, 9)) || "migrated".equals(fileName.substring(0, 8));
   }
 
   public List<File> loadMigrationFiles() {
@@ -116,12 +116,16 @@ public class Ssh implements Closeable {
     try {
       List<File> notMigratedFiles = getNotMigratedFiles();
       for (File file : notMigratedFiles) {
-        filesForMigration.add(load(renameToMigrated(file)));
+        filesForMigration.add(load(renameToMigration(file)));
       }
     } catch (SftpException e) {
       throw new RuntimeException(e);
     }
     return filesForMigration;
+  }
+
+  private File renameToMigration(File file) {
+    return rename(file, "migration_"+file.getName());
   }
 
   public void uploadFile(File errors) {
@@ -131,5 +135,9 @@ public class Ssh implements Closeable {
       throw new RuntimeException(e);
     }
     Files.delete(errors);
+  }
+
+  public void renameToMigrated(String fileName) {
+    rename(getMigrationFolder()+fileName, getMigrationFolder()+"migrated_"+fileName);
   }
 }

@@ -2,13 +2,11 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.DbConfig;
-import kz.greetgo.sandbox.db.core.Migration;
 import kz.greetgo.sandbox.db.test.dao.MigrationTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.sandbox.db.worker.Worker;
 import kz.greetgo.sandbox.db.worker.impl.CIAWorker;
 import kz.greetgo.sandbox.db.worker.impl.FRSWorker;
-import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,12 +22,10 @@ import java.util.stream.Collectors;
 
 public abstract class WorkerTest extends ParentTestNg {
 
-  private static final Logger logger = Logger.getLogger("test");
   private static final String DIR = "build/out_files/";
 
   public BeanGetter<MigrationTestDao> migrationDao;
   public BeanGetter<DbConfig> dbConf;
-  public BeanGetter<Migration> migration;
 
   CIAWorker getCiaWorker(Connection connection, InputStream inputStream) {
     return Worker.getCiaWorker(connection, inputStream);
@@ -74,7 +70,9 @@ public abstract class WorkerTest extends ParentTestNg {
 
   File createTmpFile(String name, String text) throws Exception {
     File file = new File(DIR + name);
-    if (!file.exists()) file.getParentFile().mkdirs();
+    if (!file.exists())
+      //noinspection ResultOfMethodCallIgnored
+      file.getParentFile().mkdirs();
     try (PrintWriter out = new PrintWriter(file, "UTF-8")) {
       out.println(text);
     }

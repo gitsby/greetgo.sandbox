@@ -27,8 +27,8 @@
     </layout>
   </appender>
 
-  <appender name="REGISTER" class="org.apache.log4j.RollingFileAppender">
-    <param name="File" value="${user.home}/sandbox.d/logs/callback.log"/>
+  <appender name="MIGRATION" class="org.apache.log4j.RollingFileAppender">
+    <param name="File" value="${user.home}/sandbox.d/logs/migration.log"/>
     <param name="Threshold" value="INFO"/>
     <param name="Append" value="true"/>
     <param name="MaxFileSize" value="100MB"/>
@@ -39,8 +39,8 @@
     </layout>
   </appender>
 
-  <appender name="SERVER" class="org.apache.log4j.RollingFileAppender">
-    <param name="File" value="${user.home}/sandbox.d/logs/server.log"/>
+  <appender name="ARCHIVER" class="org.apache.log4j.RollingFileAppender">
+    <param name="File" value="${user.home}/sandbox.d/logs/archiver.log"/>
     <param name="Threshold" value="INFO"/>
     <param name="Append" value="true"/>
     <param name="MaxFileSize" value="100MB"/>
@@ -51,9 +51,14 @@
     </layout>
   </appender>
 
-  <category name="kz.greetgo.sandbox.db.worker.impl" additivity="true">
-    <priority value="TRACE"/>
-    <!--<appender-ref ref="CONSOLE"/>-->
+  <category name="migration" additivity="true">
+    <priority value="INFO"/>
+    <appender-ref ref="MIGRATION"/>
+  </category>
+
+  <category name="archiver" additivity="true">
+    <priority value="INFO"/>
+    <appender-ref ref="MIGRATION"/>
   </category>
 
   <category name="callback" additivity="true">
