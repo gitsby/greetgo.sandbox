@@ -8,7 +8,7 @@ import java.util.Date;
 
 public interface ClientRecordsReportView {
 
-  void start();
+  void start() throws DocumentException;
 
   void appendRow(ClientRecordRow clientRecord);
 

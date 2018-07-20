@@ -16,13 +16,16 @@ public interface FRSMigrationTestDao {
     "finished_at timestamp," +
     "account_number varchar(100), " +
     "money float, " +
-    "transaction_type varchar(200));")
+    "transaction_type varchar(200)," +
+    "  error varchar(100)" +
+    ");")
   void createTempTransactionTable();
 
   @Update("create table if not exists temp_account (\n" +
     "  account_number varchar(100),\n" +
     "  client_id      varchar(40),\n" +
-    "  registered_at  timestamp\n" +
+    "  registered_at  timestamp,\n" +
+    "  error varchar(100)" +
     ");")
   void createTempAccountTable();
 
@@ -45,8 +48,6 @@ public interface FRSMigrationTestDao {
   @Select("insert into client_account (client_id, number) values(#{client_id},'1') returning id")
   int insertClientAccount1(int client_id);
 
-  @Select("insert into client_account (client_id, number) values(#{client_id},'2') returning id")
-  int insertClientAccount2(int client_id);
 
   @Select("select * from client_account_transaction where account=#{id}")
   List<ClientTransactionDot> getTransactionsFromReal(int id);
@@ -60,4 +61,15 @@ public interface FRSMigrationTestDao {
   @Delete("delete from client where migr_client_id notnull")
   void deleteClients();
 
+  @Update("create table if not exists temp_client ( \n" +
+    "          created_at timestamp not null ,\n" +
+    "          client_id varchar(40) primary key,  \n" +
+    "          name varchar(30), \n" +
+    "          surname varchar(30), \n" +
+    "          patronymic varchar(30), \n" +
+    "          gender varchar(10), \n" +
+    "          birth_date date, \n" +
+    "          charm varchar(15), \n" +
+    "          error text);")
+  void createTempClientTable();
 }

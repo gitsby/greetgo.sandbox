@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.client_queries;
 
+import com.itextpdf.text.DocumentException;
 import kz.greetgo.sandbox.controller.model.ClientRecordFilter;
 import kz.greetgo.sandbox.controller.model.ClientRecordRow;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
@@ -14,7 +15,7 @@ public class ClientRecordsRender extends ClientRecordsView<Void> {
 
   private ClientRecordsReportView view;
 
-  public ClientRecordsRender(ClientRecordFilter filter, ClientRecordsReportView view) {
+  public ClientRecordsRender(ClientRecordFilter filter, ClientRecordsReportView view) throws DocumentException {
     super(filter, new SQL(), new ArrayList<>());
     this.view = view;
     view.start();

@@ -1,24 +1,50 @@
 package kz.greetgo.sandbox.db.migration.workers.cia;
 
-import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
 import kz.greetgo.sandbox.db.migration.workers.SqlWorker;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 
-public class CIAInMigrationWorker extends SqlWorker {
+public class CIAInMigrationWorker extends SqlWorker implements AutoCloseable{
 
-  public CIAInMigrationWorker(Connection connection) {
+  public PreparedStatement clientsStatement;
+  public PreparedStatement phoneStatement;
+  public PreparedStatement addressStatement;
+
+  public CIAInMigrationWorker(Connection connection) throws SQLException {
     super(connection);
+    clientsStatement = connection.prepareStatement("insert into temp_client(client_id, name, surname, patronymic, gender, charm, birth_date,created_at)" +
+      "values(?,?,?,?,?,?,?,?) on conflict (client_id)\n" +
+      "  do update\n" +
+      "    set\n" +
+      "      surname    = case when EXCLUDED.surname notnull\n" +
+      "        then EXCLUDED.surname end,\n" +
+      "      name       = case when EXCLUDED.name notnull\n" +
+      "        then EXCLUDED.name end,\n" +
+      "      patronymic = EXCLUDED.patronymic,\n" +
+      "      birth_date = case when EXCLUDED.birth_date notnull\n" +
+      "        then EXCLUDED.birth_date end,\n" +
+      "      gender     = case when EXCLUDED.gender notnull\n" +
+      "        then EXCLUDED.gender end,\n" +
+      "      charm      = case when EXCLUDED.charm notnull\n" +
+      "        then EXCLUDED.charm end;");
+    phoneStatement = connection.prepareStatement("insert into temp_phone (client_id, number, type) values(?,?,?)");
+
+    addressStatement = connection.prepareStatement("insert into temp_address(client_id,street, house, flat, type) values(?,?,?,?,?) on conflict (client_id, type)\n" +
+      "  do update\n" +
+      "    set street = case when EXCLUDED.street notnull and EXCLUDED.street != ''\n" +
+      "      then EXCLUDED.street end,\n" +
+      "      flat = case when EXCLUDED.flat notnull and EXCLUDED.flat != ''\n" +
+      "        then EXCLUDED.flat end,\n" +
+      "      house = case when EXCLUDED.house notnull and EXCLUDED.house != ''\n" +
+      "        then EXCLUDED.house end");
+
   }
 
   public void createTempTables() throws SQLException {
@@ -36,7 +62,8 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("create table if not exists temp_phone(" +
       "client_id varchar(40)," +
       "number varchar(30)," +
-      "type varchar(10));");
+      "type varchar(10))," +
+      "error varchar(50);");
 
     exec("create table if not exists temp_address (\n" +
       "  client_id varchar(40),\n" +
@@ -54,11 +81,14 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("alter table client\n" +
       "  add column if not exists migr_client_id varchar(40);\n");
 
+    connection.commit();
+
     exec("insert into characters (name) select charm\n" +
       "                              from temp_client\n" +
       "                              where charm notnull\n" +
       "                              group by charm;");
 
+    connection.commit();
 
     exec("insert into\n" +
       "  client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
@@ -75,6 +105,7 @@ public class CIAInMigrationWorker extends SqlWorker {
 
 
     connection.commit();
+
   }
 
   public void insertIntoPhone() throws SQLException {
@@ -84,7 +115,7 @@ public class CIAInMigrationWorker extends SqlWorker {
       "    temp_phone.number,\n" +
       "    temp_phone.type\n" +
       "  from client, temp_phone\n" +
-      "  where client.migr_client_id = temp_phone.client_id;");
+      "  where client.migr_client_id = temp_phone.client_id and error isnull;");
     connection.commit();
   }
 
@@ -97,7 +128,7 @@ public class CIAInMigrationWorker extends SqlWorker {
       "    temp_address.house,\n" +
       "    temp_address.flat\n" +
       "  from client, temp_address\n" +
-      "  where client.migr_client_id = temp_address.client_id;");
+      "  where client.migr_client_id = temp_address.client_id and error isnull;");
     connection.commit();
   }
 
@@ -109,76 +140,9 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("drop table temp_client");
     exec("drop table temp_phone");
     exec("drop table temp_address");
+
     connection.commit();
 
-  }
-
-  public void sendClient(List<ClientFromMigration> clients) throws SQLException {
-    PreparedStatement statement = connection.prepareStatement("insert into temp_client(client_id, name, surname, patronymic, gender, charm, birth_date,created_at)" +
-      "values(?,?,?,?,?,?,?,?) on conflict (client_id)\n" +
-      "  do update\n" +
-      "    set\n" +
-      "      surname    = case when EXCLUDED.surname notnull\n" +
-      "        then EXCLUDED.surname end,\n" +
-      "      name       = case when EXCLUDED.name notnull\n" +
-      "        then EXCLUDED.name end,\n" +
-      "      patronymic = EXCLUDED.patronymic,\n" +
-      "      birth_date = case when EXCLUDED.birth_date notnull\n" +
-      "        then EXCLUDED.birth_date end,\n" +
-      "      gender     = case when EXCLUDED.gender notnull\n" +
-      "        then EXCLUDED.gender end,\n" +
-      "      charm      = case when EXCLUDED.charm notnull\n" +
-      "        then EXCLUDED.charm end;");
-    for (int i = 0; i < clients.size(); i++) {
-      ClientFromMigration client = clients.get(i);
-
-      Date date = null;
-
-      if (isValidFormat("yyyy-MM-dd", client.birth)) {
-        date = formatDate(client.birth);
-      }
-
-      batchInsert(statement, client.client_id, client.name, client.surname, client.patronymic, client.gender, client.charm, date, client.timestamp);
-    }
-
-    statement.executeBatch();
-    connection.commit();
-  }
-
-  public void sendAddresses(List<AddressFromMigration> addressFromMigrations) throws SQLException {
-    PreparedStatement statement = connection.prepareStatement("insert into temp_address(client_id,street, house, flat, type) values(?,?,?,?,?) on conflict (client_id, type)\n" +
-      "  do update\n" +
-      "    set street = case when EXCLUDED.street notnull and EXCLUDED.street != ''\n" +
-      "      then EXCLUDED.street end,\n" +
-      "      flat = case when EXCLUDED.flat notnull and EXCLUDED.flat != ''\n" +
-      "        then EXCLUDED.flat end,\n" +
-      "      house = case when EXCLUDED.house notnull and EXCLUDED.house != ''\n" +
-      "        then EXCLUDED.house end");
-    for (int i = 0; i < addressFromMigrations.size(); i++) {
-
-      AddressFromMigration address = addressFromMigrations.get(i);
-      batchInsert(statement, address.client_id, address.street, address.house, address.flat, address.type);
-      if (i % 500 == 0) {
-        statement.executeBatch();
-      }
-    }
-    statement.executeBatch();
-    connection.commit();
-  }
-
-  public void sendPhones(List<PhoneFromMigration> phones) throws SQLException {
-    PreparedStatement statement = connection.prepareStatement("insert into temp_phone (client_id, number, type) values(?,?,?)");
-    for (int i = 0; i < phones.size(); i++) {
-      PhoneFromMigration phone = phones.get(i);
-
-      batchInsert(statement, phone.client_id, phone.number, phone.type);
-      if (i % 500 == 0) {
-        statement.executeBatch();
-      }
-    }
-    statement.executeBatch();
-    statement.close();
-    connection.commit();
   }
 
   public void updateError() throws SQLException, IOException {
@@ -195,9 +159,28 @@ public class CIAInMigrationWorker extends SqlWorker {
       "            when gender isnull or TRIM(gender) = ''\n" +
       "              then 'Invalid gender;'\n" +
       "            end;\n");
+    exec("update temp_phone set error='No number' where number isnull;");
+
+    exec("update temp_address set error='No street' where street isnull;");
+    exec("update temp_address set error='No house' where house isnull;");
+    exec("update temp_address set error='No flat' where flat isnull;");
+    connection.commit();
+    new File("build").mkdirs();
+
     CopyManager copyManager = new CopyManager((BaseConnection) connection);
-    copyManager.copyOut("COPY (select * from temp_client where error!='' and error notnull) to STDOUT ", new PrintWriter("build/error.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_client where error notnull) to STDOUT ", new PrintWriter("build/error_client.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_address where error notnull) to STDOUT ", new PrintWriter("build/error_address.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_phone where error notnull) to STDOUT ", new PrintWriter("build/error_phone.csv", "UTF-8"));
 
     connection.commit();
+  }
+
+  @Override
+  public void close() throws Exception {
+
+    addressStatement.close();
+    clientsStatement.close();
+    phoneStatement.close();
+
   }
 }
