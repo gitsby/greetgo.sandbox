@@ -1,8 +1,5 @@
 package kz.greetgo.sandbox.db.migration.workers.cia;
 
-import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
 import kz.greetgo.sandbox.db.migration.workers.SqlWorker;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -11,16 +8,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 
 public class CIAInMigrationWorker extends SqlWorker {
 
-  PreparedStatement clientsStatement;
-  PreparedStatement phoneStatement;
-  PreparedStatement addressStatement;
+  public PreparedStatement clientsStatement;
+  public PreparedStatement phoneStatement;
+  public PreparedStatement addressStatement;
 
   public CIAInMigrationWorker(Connection connection) throws SQLException {
     super(connection);
@@ -67,7 +62,8 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("create table if not exists temp_phone(" +
       "client_id varchar(40)," +
       "number varchar(30)," +
-      "type varchar(10));");
+      "type varchar(10))," +
+      "error varchar(50);");
 
     exec("create table if not exists temp_address (\n" +
       "  client_id varchar(40),\n" +
@@ -85,11 +81,14 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("alter table client\n" +
       "  add column if not exists migr_client_id varchar(40);\n");
 
+    connection.commit();
+
     exec("insert into characters (name) select charm\n" +
       "                              from temp_client\n" +
       "                              where charm notnull\n" +
       "                              group by charm;");
 
+    connection.commit();
 
     exec("insert into\n" +
       "  client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
@@ -106,6 +105,7 @@ public class CIAInMigrationWorker extends SqlWorker {
 
 
     connection.commit();
+
   }
 
   public void insertIntoPhone() throws SQLException {
@@ -115,7 +115,7 @@ public class CIAInMigrationWorker extends SqlWorker {
       "    temp_phone.number,\n" +
       "    temp_phone.type\n" +
       "  from client, temp_phone\n" +
-      "  where client.migr_client_id = temp_phone.client_id;");
+      "  where client.migr_client_id = temp_phone.client_id and error isnull;");
     connection.commit();
   }
 
@@ -128,7 +128,7 @@ public class CIAInMigrationWorker extends SqlWorker {
       "    temp_address.house,\n" +
       "    temp_address.flat\n" +
       "  from client, temp_address\n" +
-      "  where client.migr_client_id = temp_address.client_id;");
+      "  where client.migr_client_id = temp_address.client_id and error isnull;");
     connection.commit();
   }
 
@@ -141,57 +141,8 @@ public class CIAInMigrationWorker extends SqlWorker {
     exec("drop table temp_phone");
     exec("drop table temp_address");
 
-    addressStatement.close();
-    clientsStatement.close();
-    phoneStatement.close();
-
     connection.commit();
 
-  }
-
-  public void sendClient(List<ClientFromMigration> clients) throws SQLException {
-    for (int i = 0; i < clients.size(); i++) {
-      ClientFromMigration client = clients.get(i);
-
-      Date date = null;
-
-      if (isValidFormat("yyyy-MM-dd", client.birth)) {
-        date = formatDate(client.birth);
-      }
-
-      batchInsert(clientsStatement, client.client_id, client.name, client.surname, client.patronymic, client.gender, client.charm, date, client.timestamp);
-      if (i % 500 == 0) {
-        clientsStatement.executeBatch();
-      }
-    }
-
-    clientsStatement.executeBatch();
-    connection.commit();
-  }
-
-  public void sendAddresses(List<AddressFromMigration> addressFromMigrations) throws SQLException {
-    for (int i = 0; i < addressFromMigrations.size(); i++) {
-      AddressFromMigration address = addressFromMigrations.get(i);
-      batchInsert(addressStatement, address.client_id, address.street, address.house, address.flat, address.type);
-      if (i % 500 == 0) {
-        addressStatement.executeBatch();
-      }
-    }
-    addressStatement.executeBatch();
-    connection.commit();
-  }
-
-  public void sendPhones(List<PhoneFromMigration> phones) throws SQLException {
-    for (int i = 0; i < phones.size(); i++) {
-      PhoneFromMigration phone = phones.get(i);
-
-      batchInsert(phoneStatement, phone.client_id, phone.number, phone.type);
-      if (i % 500 == 0) {
-        phoneStatement.executeBatch();
-      }
-    }
-    phoneStatement.executeBatch();
-    connection.commit();
   }
 
   public void updateError() throws SQLException, IOException {
@@ -208,11 +159,27 @@ public class CIAInMigrationWorker extends SqlWorker {
       "            when gender isnull or TRIM(gender) = ''\n" +
       "              then 'Invalid gender;'\n" +
       "            end;\n");
+    exec("update temp_phone set error='No number' where number isnull;");
+
+    exec("update temp_address set error='No street' where street isnull;");
+    exec("update temp_address set error='No house' where house isnull;");
+    exec("update temp_address set error='No flat' where flat isnull;");
+    connection.commit();
     new File("build").mkdirs();
 
     CopyManager copyManager = new CopyManager((BaseConnection) connection);
-    copyManager.copyOut("COPY (select * from temp_client where error!='' and error notnull) to STDOUT ", new PrintWriter("build/error.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_client where error notnull) to STDOUT ", new PrintWriter("build/error_client.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_address where error notnull) to STDOUT ", new PrintWriter("build/error_address.csv", "UTF-8"));
+    copyManager.copyOut("COPY (select * from temp_phone where error notnull) to STDOUT ", new PrintWriter("build/error_phone.csv", "UTF-8"));
 
     connection.commit();
+  }
+
+  public void closeConnection() throws SQLException {
+
+    addressStatement.close();
+    clientsStatement.close();
+    phoneStatement.close();
+
   }
 }

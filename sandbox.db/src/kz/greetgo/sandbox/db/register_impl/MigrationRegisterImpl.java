@@ -11,8 +11,9 @@ import kz.greetgo.sandbox.db.migration.archiver.ArchiveUtils;
 import kz.greetgo.sandbox.db.migration.connection.SSHConnector;
 import kz.greetgo.sandbox.db.migration.reader.json.JSONManager;
 import kz.greetgo.sandbox.db.migration.reader.xml.XMLManager;
-import kz.greetgo.sandbox.db.migration.workers.cia.CIAInMigration;
-import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
+import kz.greetgo.sandbox.db.migration.workers.cia.CIAInMigrationWorker;
+import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigrationWorker;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,59 +31,67 @@ public class MigrationRegisterImpl implements MigrationRegister {
   public BeanGetter<SSHConfig> sshConfig;
   public BeanGetter<DbConfig> dbConfig;
 
-  CIAInMigration cia;
-  FRSInMigration frs;
+  CIAInMigrationWorker cia;
+  FRSInMigrationWorker frs;
 
   Connection connection;
   SSHConnector connector;
 
   List<String> files;
 
+  public Logger logger = Logger.getLogger(getClass());
+
+
   @Override
   public void migrate() throws Exception {
     connectToDatabase();
-
-    cia = new CIAInMigration(connection);
-    frs = new FRSInMigration(connection);
+    logger.info("Connected to database");
+    cia = new CIAInMigrationWorker(connection);
+    frs = new FRSInMigrationWorker(connection);
 
     connectSSH();
+
+    logger.info("Connected to SSH Server");
     prepareCIAFRS();
 
+    logger.info("Created temp tables");
+
     downloadFiles();
+    logger.info("Files download complete");
+
+
+    logger.info("Unpacking started");
     unpackFiles();
 
-    Thread ciaTempThread = new Thread(() -> {
-      try {
-        insertCIAIntoTemp();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
-    Thread frsThread = new Thread(() -> {
-      try {
-        insertFRSIntoTemp();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
+    logger.info("Inserting cia to temp started");
+    insertCIAIntoTemp();
 
-    ciaTempThread.start();
-    frsThread.start();
+    logger.info("Inserting frs to temp started");
+    insertFRSIntoTemp();
 
-    while (ciaTempThread.isAlive() || frsThread.isAlive()) ;
-
+    logger.info("Updating errors");
     updateError();
 
+    logger.info("Inserting cia into real");
     insertCIAIntoReal();
+
+    logger.info("Inserting frs into real");
     insertFRSIntoReal();
 
     dropTempTables();
-    closeSSH();
+    close();
   }
 
   private void updateError() throws SQLException, IOException, SftpException, JSchException {
+
+    logger.info("Updating cia errors");
     cia.updateError();
+    logger.info("Updating cia errors completed");
+
+    logger.info("Updating frs errors");
     frs.updateError();
+    logger.info("Updating frs errors completed");
+
     connector.uploadErrorFile();
   }
 
@@ -90,19 +100,28 @@ public class MigrationRegisterImpl implements MigrationRegister {
     cia.closeConnection();
 
     frs.dropTempTables();
-    cia.closeConnection();
+    frs.closeStatements();
   }
 
 
   private void insertFRSIntoReal() throws SQLException {
-    frs.insertTempAccounts();
-    frs.insertTempTransactions();
+
+    logger.info("Inserting temp_accounts into real");
+    frs.insertIntoAccount();
+
+    logger.info("Inserting temp_transactions into real");
+    frs.insertIntoTransaction();
   }
 
   private void insertCIAIntoReal() throws SQLException {
-    cia.insertTempClientsToReal();
-    cia.insertTempAddressToReal();
-    cia.insertTempPhone();
+    logger.info("Inserting temp_client into real");
+    cia.insertIntoClient();
+
+    logger.info("Inserting temp_address into real");
+    cia.insertIntoAddress();
+
+    logger.info("Inserting temp_phone into real");
+    cia.insertIntoPhone();
   }
 
   private void connectSSH() throws Exception {
@@ -112,10 +131,8 @@ public class MigrationRegisterImpl implements MigrationRegister {
   }
 
   private void prepareCIAFRS() throws Exception {
-    cia.prepareWorker();
     cia.createTempTables();
 
-    frs.prepareWorker();
     frs.createTempTables();
   }
 
@@ -123,6 +140,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     connector.sendCommand("cd test/; ls");
     files = connector.recData();
     for (String file : files) {
+      logger.info("Downloading file:" + file);
       connector.downloadFile(file);
     }
 
@@ -131,30 +149,28 @@ public class MigrationRegisterImpl implements MigrationRegister {
   private void insertCIAIntoTemp() throws IOException, SAXException, ParserConfigurationException {
     for (String file : files) {
       if (file.contains(".xml")) {
+        logger.info("Loading CIA file:" + file);
         String xmlFile = file.replace(".tar.bz2", "");
         XMLManager xmlManager = new XMLManager("build/" + xmlFile + "/build/out_files/" + xmlFile);
-        xmlManager.load(cia::sendClient,
-          cia::sendAddresses,
-          cia::sendPhones
-        );
+        xmlManager.load(connection, cia.clientsStatement, cia.phoneStatement, cia.addressStatement);
       }
     }
   }
 
   private void unpackFiles() throws IOException {
     for (String file : files) {
+      logger.info("Unpacking file:" + file);
       ArchiveUtils.extract(file);
     }
   }
 
-  private void insertFRSIntoTemp() throws IOException, InterruptedException {
+  private void insertFRSIntoTemp() throws IOException, ParseException, SQLException {
     for (String file : files) {
       if (file.contains(".txt")) {
         String txtFile = file.replace(".tar.bz2", "");
-
+        logger.info("Loading FRS file:" + file);
         JSONManager manager = new JSONManager("build/" + txtFile + "/build/out_files/" + txtFile);
-        manager.load(transactions -> frs.sendTransactions(transactions),
-          accounts -> frs.sendAccounts(accounts));
+        manager.load(connection, frs.accountsStatement, frs.transactionStatement);
       }
     }
   }
@@ -169,8 +185,9 @@ public class MigrationRegisterImpl implements MigrationRegister {
     connection.setAutoCommit(false);
   }
 
-  private void closeSSH() {
+  private void close() throws SQLException {
     connector.close();
+    connection.close();
   }
 
 }

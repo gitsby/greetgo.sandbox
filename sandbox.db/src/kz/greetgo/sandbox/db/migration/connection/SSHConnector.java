@@ -64,7 +64,8 @@ public class SSHConnector {
     while (readByte != 0xffffffff) {
 
       builder.append((char) readByte);
-      if (builder.toString().contains(".bz2")) {
+
+      if (builder.toString().contains(".bz2") && !builder.toString().contains("[downloaded]")) {
         content.add(builder.toString().replace("\n", ""));
         builder = new StringBuilder();
       }
@@ -124,7 +125,9 @@ public class SSHConnector {
   public void uploadErrorFile() throws JSchException, SftpException {
     ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
     sftp.connect();
-    sftp.put("build/error.csv", "/Users/adilbekmailanov/err/");
+    sftp.put("build/error_client.csv", "/Users/adilbekmailanov/err/");
+    sftp.put("build/error_phone.csv", "/Users/adilbekmailanov/err/");
+    sftp.put("build/error_address.csv", "/Users/adilbekmailanov/err/");
     sftp.put("build/error_frs_transaction.csv", "/Users/adilbekmailanov/err/");
     sftp.put("build/error_frs_account.csv", "/Users/adilbekmailanov/err/");
     sftp.disconnect();

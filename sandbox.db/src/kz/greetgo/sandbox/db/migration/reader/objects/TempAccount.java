@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.migration.reader.objects;
 
-public class NewAccountFromMigration {
+public class TempAccount {
 
   public String account_number;
   public String registered_at;

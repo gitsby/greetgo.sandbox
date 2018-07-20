@@ -1,60 +1,57 @@
 package kz.greetgo.sandbox.db.migration.reader.xml;
 
-import kz.greetgo.sandbox.db.migration.reader.AddressSenderThread;
-import kz.greetgo.sandbox.db.migration.reader.ClientSenderThread;
-import kz.greetgo.sandbox.db.migration.reader.PhoneSenderThread;
-import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.processors.AddressProcessor;
-import kz.greetgo.sandbox.db.migration.reader.processors.ClientProcessor;
-import kz.greetgo.sandbox.db.migration.reader.processors.PhoneProcessor;
+import kz.greetgo.sandbox.db.helper.DateHelper;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempAddress;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempClient;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempPhone;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 public class ClientHandler extends DefaultHandler {
 
-  private ClientFromMigration client;
+  private TempClient client;
 
-  private ClientProcessor processor;
-  private PhoneProcessor phoneProcessor;
-  private AddressProcessor addressProcessor;
 
   private boolean isMobilePhone = false;
   private boolean isWorkPhone = false;
   private boolean isHomePhone = false;
 
-  public int clientBatchSize = 1000;
+  public static final int CLIENT_BATCH_SIZE = 1000;
 
   private int threadNum = 0;
 
-  private List<ClientFromMigration> clients = new LinkedList<>();
+  private Connection connection;
+  private PreparedStatement clientsStatement;
+  private PreparedStatement phoneStatement;
+  private PreparedStatement addressStatement;
 
-  private List<PhoneFromMigration> phones = new LinkedList<>();
+  private List<TempPhone> phones = new LinkedList<>();
 
-  private List<AddressFromMigration> addresses = new LinkedList<>();
+  private List<TempAddress> addresses = new LinkedList<>();
 
-  private List<ClientSenderThread> clientSenderThreads = new LinkedList<>();
-  private List<PhoneSenderThread> phoneSenderThreads = new LinkedList<>();
-  private List<AddressSenderThread> addressSenderThreads = new LinkedList<>();
-
-  public ClientHandler(ClientProcessor processor, AddressProcessor addressProcessor, PhoneProcessor phoneProcessor) {
-    this.processor = processor;
-    this.addressProcessor = addressProcessor;
-    this.phoneProcessor = phoneProcessor;
+  public ClientHandler(Connection connection, PreparedStatement clientsStatement, PreparedStatement phoneStatement, PreparedStatement addressStatement) {
+    this.connection = connection;
+    this.clientsStatement = clientsStatement;
+    this.phoneStatement = phoneStatement;
+    this.addressStatement = addressStatement;
   }
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
     if ("client".equals(qName)) {
-      client = new ClientFromMigration();
-      client.error = new StringBuilder();
+      client = new TempClient();
+      client.error = "";
       client.timestamp = new Timestamp(new Date().getTime());
       client.client_id = attributes.getValue(0);
     }
@@ -90,7 +87,7 @@ public class ClientHandler extends DefaultHandler {
     }
 
     if (("fact".equals(qName) || "register".equals(qName))) {
-      AddressFromMigration address = new AddressFromMigration();
+      TempAddress address = new TempAddress();
       address.client_id = client.client_id;
       address.street = attributes.getValue("street");
       address.house = attributes.getValue("house");
@@ -104,7 +101,7 @@ public class ClientHandler extends DefaultHandler {
   public void characters(char ch[], int start, int length) {
 
     if (isMobilePhone) {
-      PhoneFromMigration phone = new PhoneFromMigration();
+      TempPhone phone = new TempPhone();
       phone.number = new String(ch, start, length);
       phone.client_id = client.client_id;
       phone.type = "MOBILE";
@@ -113,7 +110,7 @@ public class ClientHandler extends DefaultHandler {
       isMobilePhone = false;
     }
     if (isWorkPhone) {
-      PhoneFromMigration phone = new PhoneFromMigration();
+      TempPhone phone = new TempPhone();
       phone.number = new String(ch, start, length);
       phone.client_id = client.client_id;
       phone.type = "WORKING";
@@ -122,7 +119,7 @@ public class ClientHandler extends DefaultHandler {
       isWorkPhone = false;
     }
     if (isHomePhone) {
-      PhoneFromMigration phone = new PhoneFromMigration();
+      TempPhone phone = new TempPhone();
       phone.number = new String(ch, start, length);
       phone.client_id = client.client_id;
       phone.type = "HOME";
@@ -133,68 +130,93 @@ public class ClientHandler extends DefaultHandler {
     }
   }
 
+  int batchSize = 0;
+
   @Override
   public void endElement(String uri, String localName, String qName) {
     if (client != null) {
       if (qName.equals("client")) {
-        clients.add(client);
-        if (clients.size() > clientBatchSize) {
+        batchSize++;
+
+        try {
           sendClient();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
 
       } else if (qName.equals("cia")) {
-        System.out.println();
-        sendClient();
+        try {
+          executeBatches();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }
 
-  private void sendClient() {
-    threadNum++;
-    joinDeadThreads();
+  private void sendClient() throws SQLException {
+    java.sql.Date date = null;
 
-    List<ClientFromMigration> fromMigrations = new LinkedList<>(clients);
+    if (isValidFormat("yyyy-MM-dd", client.birth)) {
+      date = formatDate(client.birth);
+    }
+    batchInsert(clientsStatement, client.client_id, client.name, client.surname, client.patronymic, client.gender, client.charm, date, client.timestamp);
 
-    clientSenderThreads.add(new ClientSenderThread(processor, fromMigrations));
-    clientSenderThreads.get(clientSenderThreads.size() - 1).start();
+    for (int i = 0; i < addresses.size(); i++) {
+      TempAddress address = addresses.get(i);
+      batchInsert(addressStatement, address.client_id, address.street, address.house, address.flat, address.type);
+    }
 
-    List<AddressFromMigration> addressFromMigr = new LinkedList<>(addresses);
-    addressSenderThreads.add(new AddressSenderThread(addressProcessor, addressFromMigr));
-    addressSenderThreads.get(addressSenderThreads.size() - 1).start();
+    for (int i = 0; i < phones.size(); i++) {
+      TempPhone phone = phones.get(i);
+      batchInsert(phoneStatement, phone.client_id, phone.number, phone.type);
+    }
 
-    List<PhoneFromMigration> phonesFromMigr = new LinkedList<>(phones);
-
-    phoneSenderThreads.add(new PhoneSenderThread(phoneProcessor, phonesFromMigr));
-    phoneSenderThreads.get(phoneSenderThreads.size() - 1).start();
-
-    clients = new LinkedList<>();
-    addresses = new LinkedList<>();
-    phones = new LinkedList<>();
+    if (batchSize > CLIENT_BATCH_SIZE) {
+      executeBatches();
+    }
+    phones = new ArrayList<>();
+    addresses = new ArrayList<>();
   }
 
-  private void joinDeadThreads() {
-    while (threadNum > 1) {
-      for (ClientSenderThread thread : clientSenderThreads) {
-        if (!thread.isAlive()) {
-          clientSenderThreads.remove(thread);
-          break;
-        }
-      }
+  private void executeBatches() throws SQLException {
+    clientsStatement.executeBatch();
+    addressStatement.executeBatch();
+    phoneStatement.executeBatch();
+    connection.commit();
+    batchSize = 0;
+  }
 
-      for (AddressSenderThread thread : addressSenderThreads) {
-        if (!thread.isAlive()) {
-          addressSenderThreads.remove(thread);
-          break;
-        }
-      }
-
-      for (PhoneSenderThread thread : phoneSenderThreads) {
-        if (!thread.isAlive()) {
-          phoneSenderThreads.remove(thread);
-          threadNum--;
-          break;
-        }
-      }
+  private void batchInsert(PreparedStatement statement, Object... params) throws SQLException {
+    for (int i = 0; i < params.length; i++) {
+      statement.setObject(i + 1, params[i]);
     }
+    statement.addBatch();
+  }
+
+  public java.sql.Date formatDate(String birth) {
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+    try {
+      Date date = format.parse(birth);
+      return new java.sql.Date(date.getTime());
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  public boolean isValidFormat(String format, String value) {
+    SimpleDateFormat form = new SimpleDateFormat(format);
+    Date currentDate = new Date();
+
+    try {
+      Date birthDate = form.parse(value);
+      int diffYears = DateHelper.calculateAge(DateHelper.toLocalDate(birthDate), DateHelper.toLocalDate(currentDate));
+
+      return ((3 < diffYears) && (diffYears < 1000));
+    } catch (Exception e) {
+      return false;
+    }
+
   }
 }

@@ -7,10 +7,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Date;
 import java.util.Random;
 
@@ -79,7 +76,8 @@ public class ClientRecordsViewXlsx implements ClientRecordsReportView {
   }
 
   public static void main(String[] args) throws IOException {
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test1.xlsx");
+    new File("build").mkdirs();
+    FileOutputStream fileOutputStream = new FileOutputStream("build/test1.xlsx");
     ClientRecordsViewXlsx xlsx = new ClientRecordsViewXlsx(fileOutputStream);
     xlsx.start();
     Random random = new Random();

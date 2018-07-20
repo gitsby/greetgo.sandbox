@@ -1,8 +1,8 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.db.migration.reader.objects.AddressFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.ClientFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.PhoneFromMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempAddress;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempClient;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempPhone;
 import kz.greetgo.sandbox.db.stand.model.AddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PhoneDot;
@@ -27,10 +27,20 @@ public interface CIAMigrationTestDao {
     "          error text);")
   void createTempClientTable();
 
+  @Select("insert into characters (name) values ('TestCharm') returning id;")
+  int insertNewCharm();
+
+  @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
+    "values ('TEST', 'TEST', 'TEST', 'TEST', current_date, #{charm_id}, '1') returning id;")
+  int insertNewClient1(int charm_id);
+
+  @Select("insert into client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
+    "values ('TEST', 'TEST', 'TEST', 'TEST', current_date, #{charm_id}, '2') returning id;")
+  int insertNewClient2(int charm_id);
 
   @Insert("insert into temp_client(client_id, name, surname, patronymic, gender, birth_date, charm,created_at) " +
     "values(#{client_id}, #{name}, #{surname}, #{patronymic}, #{gender}, current_date, #{charm},current_timestamp)")
-  void insertTempClient(ClientFromMigration client);
+  void insertTempClient(TempClient client);
 
   @Update("drop table if exists temp_client")
   void dropTempClientTable();
@@ -58,13 +68,13 @@ public interface CIAMigrationTestDao {
   void dropTempAddressTable();
 
   @Select("select * from temp_client")
-  List<ClientFromMigration> getTempClients();
+  List<TempClient> getTempClients();
 
   @Select("select * from temp_phone")
-  List<PhoneFromMigration> getTempPhones();
+  List<TempPhone> getTempPhones();
 
   @Select("select * from temp_address order by client_id asc")
-  List<AddressFromMigration> getTempAddresses();
+  List<TempAddress> getTempAddresses();
 
   @Select("select * from client order by migr_client_id")
   List<ClientDot> getClientDots();
@@ -78,7 +88,7 @@ public interface CIAMigrationTestDao {
   @Select("select * from client_phone")
   List<PhoneDot> getPhonesFromReal();
 
-  @Select("select * from client_address order by client_id")
+  @Select("select * from client_address order by client_id asc, type asc")
   List<AddressDot> getAddressDots();
 
   @Update("alter table client\n" +

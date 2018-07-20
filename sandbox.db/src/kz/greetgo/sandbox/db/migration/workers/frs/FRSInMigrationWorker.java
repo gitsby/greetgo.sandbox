@@ -1,7 +1,5 @@
 package kz.greetgo.sandbox.db.migration.workers.frs;
 
-import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
 import kz.greetgo.sandbox.db.migration.workers.SqlWorker;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -12,13 +10,11 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.List;
 
 public class FRSInMigrationWorker extends SqlWorker {
 
-  PreparedStatement accountsStatement;
-  PreparedStatement transactionStatement;
+  public PreparedStatement accountsStatement;
+  public PreparedStatement transactionStatement;
 
   public FRSInMigrationWorker(Connection connection) throws SQLException {
     super(connection);
@@ -27,48 +23,21 @@ public class FRSInMigrationWorker extends SqlWorker {
 
   }
 
-  public void prepare() throws SQLException {
+  public void createTempTables() throws SQLException {
     exec("create table if not exists temp_transaction(" +
       "finished_at timestamp," +
       "account_number varchar(100), " +
       "money float, " +
-      "transaction_type varchar(200));");
+      "transaction_type varchar(200)," +
+      "error varchar(100));");
 
     exec("create table if not exists temp_account (\n" +
       "  account_number varchar(100),\n" +
       "  client_id      varchar(40),\n" +
-      "  registered_at  timestamp\n" +
-      "  error varchar(100)," +
+      "  registered_at  timestamp,\n" +
+      "  error varchar(100)" +
       ");");
 
-    connection.commit();
-  }
-
-
-  public void sendTransactions(List<TransactionFromMigration> transactions) throws SQLException, ParseException {
-    for (int i = 0; i < transactions.size(); i++) {
-      TransactionFromMigration transactionFromMigration = transactions.get(i);
-      batchInsert(transactionStatement, transactionFromMigration.account_number,
-        Float.valueOf(transactions.get(0).money.replace("_", ""))
-        , transactionFromMigration.transaction_type
-        , timeStampFromString(transactionFromMigration.finished_at.replace("T", " ")));
-
-      if (i % 1000 == 0) {
-        transactionStatement.executeBatch();
-      }
-    }
-
-    transactionStatement.executeBatch();
-    connection.commit();
-  }
-
-  public void sendAccounts(List<NewAccountFromMigration> accounts) throws SQLException, ParseException {
-    for (int i = 0; i < accounts.size(); i++) {
-      NewAccountFromMigration acc = accounts.get(i);
-      batchInsert(accountsStatement, acc.account_number, acc.client_id, timeStampFromString(acc.registered_at.replace("T", " ")));
-    }
-
-    accountsStatement.executeBatch();
     connection.commit();
   }
 
@@ -78,19 +47,7 @@ public class FRSInMigrationWorker extends SqlWorker {
   }
 
   public void updateError() throws SQLException, IOException {
-    exec("update temp_account\n" +
-      "set error = 'No account number;'\n" +
-      "where account_number = 'null' or account_number isnull';");
-
-    exec("update temp_account\n" +
-      "set error = 'No client_id'\n" +
-      "where client_id not in (select temp_client.client_id\n" +
-      "                        from temp_client);");
-
-    exec("update temp_transaction\n" +
-      "set error = 'No account number;'\n" +
-      "where account_number not in (select temp_account.account_number\n" +
-      "                             from temp_account);");
+    exec("update temp_account set error='No account_number' where account_number isnull");
 
     exec("update temp_transaction\n" +
       "set error = 'No transaction type;'\n" +
@@ -108,35 +65,21 @@ public class FRSInMigrationWorker extends SqlWorker {
 
   public void insertIntoAccount() throws SQLException {
 
-    exec("insert into client (name, surname, patronymic, gender, birth_date, charm, migr_client_id)\n" +
-      "  select\n" +
-      "    'NoAcc',\n" +
-      "    'NoAcc',\n" +
-      "    'NoAcc',\n" +
-      "    'NoAcc',\n" +
-      "    current_date,\n" +
-      "    (select id\n" +
-      "     from characters\n" +
-      "     limit 1),\n" +
-      "    temp_account.client_id\n" +
-      "  from temp_account\n" +
-      "  where temp_account.error='No account number;';");
-
     exec("insert into client_account (client_id, registered_at, number)\n" +
       "  select\n" +
       "    client.id,\n" +
       "    temp_account.registered_at,\n" +
       "    temp_account.account_number\n" +
       "  from temp_account, client\n" +
-      "  where temp_account.client_id = client.migr_client_id;");
+      "  where temp_account.client_id = client.migr_client_id and error isnull;");
     connection.commit();
   }
 
   public void insertIntoTransaction() throws SQLException {
-    exec("insert into transaction_type (name) select temp_transaction.transaction_type\n" +
-      "                                    from temp_transaction\n" +
-      "                                    where transaction_type notnull and transaction_type != 'null'\n" +
-      "                                    group by temp_transaction.transaction_type;");
+    exec("insert into transaction_type (name)\n" +
+      "  select temp_transaction.transaction_type\n" +
+      "  from temp_transaction where transaction_type!='null'\n" +
+      "  group by temp_transaction.transaction_type;");
 
     exec("insert into client_account_transaction (account, money, finished_at, type)\n" +
       "  select\n" +
@@ -165,4 +108,8 @@ public class FRSInMigrationWorker extends SqlWorker {
     connection.commit();
   }
 
+  public void closeStatements() throws SQLException {
+    transactionStatement.close();
+    accountsStatement.close();
+  }
 }

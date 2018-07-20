@@ -1,13 +1,11 @@
 package kz.greetgo.sandbox.db.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.db.classes.TempAccount;
-import kz.greetgo.sandbox.db.classes.TempTransaction;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.migration.reader.json.JSONManager;
-import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
-import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempAccount;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempTransaction;
+import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigrationWorker;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientTransactionDot;
 import kz.greetgo.sandbox.db.test.dao.FRSMigrationTestDao;
@@ -25,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,19 +33,21 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class FRSInMigrationTest extends ParentTestNg {
 
-
   public BeanGetter<FRSMigrationTestDao> frsDao;
   public BeanGetter<DbConfig> dbConfig;
 
-  FRSInMigration frsInMigration;
+  Connection connection;
+
+  FRSInMigrationWorker frsInMigration;
 
   JSONManager jsonManager;
 
   @BeforeMethod
   public void dropTables() throws Exception {
-    frsInMigration = new FRSInMigration(connectToDatabase());
-    frsInMigration.prepareWorker();
+    connection = connectToDatabase();
+    frsInMigration = new FRSInMigrationWorker(connection);
 
+    frsDao.get().createTempClientTable();
     frsDao.get().deleteClients();
     frsDao.get().createTempAccountTable();
     frsDao.get().createTempTransactionTable();
@@ -57,23 +58,18 @@ public class FRSInMigrationTest extends ParentTestNg {
   public void createTables() throws SQLException {
     frsDao.get().dropAccountTable();
     frsDao.get().dropTransactionTable();
-
-
+    frsInMigration.closeStatements();
+    connection.close();
   }
 
   @Test
-  public void testInsertTransactionIntoTemp() throws IOException, InterruptedException {
-    List<TransactionFromMigration> transactions = createTransactions();
+  public void testInsertTransactionIntoTemp() throws IOException, ParseException, SQLException {
+    List<TempTransaction> transactions = createTransactions();
 
     jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(tr -> {
-      frsInMigration.sendTransactions(tr);
-    }, accounts -> {
-    });
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
-    while (frsDao.get().getTempTransactions().size() == 0) ;
-
-    List<TempTransaction> transactionsFromMigration = frsDao.get().getTempTransactions();
+    List<kz.greetgo.sandbox.db.classes.TempTransaction> transactionsFromMigration = frsDao.get().getTempTransactions();
 
     assertThat(transactionsFromMigration).hasSameSizeAs(transactions);
 
@@ -84,19 +80,47 @@ public class FRSInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertAccountIntoTemp() throws IOException, InterruptedException {
-    List<NewAccountFromMigration> accounts = createAccounts();
+  public void testAccountErrorNotExistingClientId() throws IOException, SQLException, ParseException {
+    TempAccount account = createAcccountWithNotExistingClientId();
+    jsonManager = new JSONManager("build/test_frs.txt");
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+
+    frsInMigration.updateError();
+
+
+    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
+    assertThat(tempAccounts).hasSize(1);
+
+    assertThat(tempAccounts.get(0).error).isEqualTo("No client_id");
+  }
+
+  @Test
+  public void testAccountErrorNoNumber() throws IOException, SQLException, ParseException {
+    TempAccount account = createAccountWithNullNumber();
+    jsonManager = new JSONManager("build/test_frs.txt");
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+
+    frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
+
+    frsInMigration.updateError();
+
+
+    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
+    assertThat(tempAccounts).hasSize(1);
+
+    assertThat(tempAccounts.get(0).error).isEqualTo("No account number;");
+
+  }
+
+  @Test
+  public void testInsertAccountIntoTemp() throws IOException, ParseException, SQLException {
+    List<TempAccount> accounts = createAccounts();
 
     jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(tr -> {
-    }, accs -> {
-      frsInMigration.sendAccounts(accs);
-    });
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
 
-    while (frsDao.get().getTempAccounts().size() == 0) ;
-
-    List<TempAccount> tempAccounts = frsDao.get().getTempAccounts();
+    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
 
     assertThat(tempAccounts).hasSameSizeAs(accounts);
 
@@ -108,23 +132,21 @@ public class FRSInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertAccountIntoReal() throws IOException, InterruptedException, SQLException {
-    List<NewAccountFromMigration> accounts = createAccounts();
+  public void testInsertAccountIntoReal() throws IOException, SQLException, ParseException {
+    List<TempAccount> accounts = createAccounts();
 
     jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(tr -> {
-    }, accs -> {
-      frsInMigration.sendAccounts(accs);
-    });
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
-    while (frsDao.get().getTempAccounts().size() == 0) ;
 
     frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
 
-    frsInMigration.insertTempAccounts();
+    frsInMigration.updateError();
+    frsInMigration.insertIntoAccount();
+
     List<ClientAccountDot> accountDots = frsDao.get().getAccountDots();
 
-    assertThat(accountDots).hasSameSizeAs(accounts);
+    assertThat(accountDots).hasSize(1);
 
     for (int i = 0; i < accountDots.size(); i++) {
       assertThat(accountDots.get(i).number).isEqualTo(accounts.get(i).account_number);
@@ -133,21 +155,18 @@ public class FRSInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertTransactionIntoReal() throws IOException, InterruptedException, SQLException {
-    List<TransactionFromMigration> transactions = createTransactions();
+  public void testInsertTransactionIntoReal() throws IOException, SQLException, ParseException {
+    List<TempTransaction> transactions = createTransactions();
 
     jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(tr -> {
-      frsInMigration.sendTransactions(tr);
-    }, accounts -> {
-    });
+    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
-    while (frsDao.get().getTempTransactions().size() == 0) ;
 
     int clientId = frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
     int accId = frsDao.get().insertClientAccount1(clientId);
 
-    frsInMigration.insertTempTransactions();
+    frsInMigration.updateError();
+    frsInMigration.insertIntoTransaction();
 
     List<ClientTransactionDot> transactionDots = frsDao.get().getTransactionsFromReal(accId);
 
@@ -159,18 +178,44 @@ public class FRSInMigrationTest extends ParentTestNg {
     }
   }
 
-  private List<NewAccountFromMigration> createAccounts() throws FileNotFoundException, UnsupportedEncodingException {
+  private TempAccount createAccountWithNullNumber() throws FileNotFoundException, UnsupportedEncodingException {
     PrintWriter writer = new PrintWriter("build/test_frs.txt", "UTF-8");
-    List<NewAccountFromMigration> accounts = new ArrayList<>();
 
-    NewAccountFromMigration account = new NewAccountFromMigration();
+    TempAccount account = new TempAccount();
+    account.client_id = "1";
+    account.account_number = null;
+    account.registered_at = new Timestamp(new Date().getTime()).toString();
+
+    writer.println(account.toJson());
+    writer.close();
+    return account;
+  }
+
+  private TempAccount createAcccountWithNotExistingClientId() throws FileNotFoundException, UnsupportedEncodingException {
+    PrintWriter writer = new PrintWriter("build/test_frs.txt", "UTF-8");
+
+    TempAccount account = new TempAccount();
+    account.client_id = "10";
+    account.account_number = "1";
+    account.registered_at = new Timestamp(new Date().getTime()).toString();
+
+    writer.println(account.toJson());
+    writer.close();
+    return account;
+  }
+
+  private List<TempAccount> createAccounts() throws FileNotFoundException, UnsupportedEncodingException {
+    PrintWriter writer = new PrintWriter("build/test_frs.txt", "UTF-8");
+    List<TempAccount> accounts = new ArrayList<>();
+
+    TempAccount account = new TempAccount();
     account.client_id = "1";
     account.registered_at = new Timestamp(new Date().getTime()).toString();
     account.account_number = "1";
     writer.println(account.toJson());
     accounts.add(account);
 
-    NewAccountFromMigration account1 = new NewAccountFromMigration();
+    TempAccount account1 = new TempAccount();
     account1.client_id = "2";
     account1.registered_at = new Timestamp(new Date().getTime()).toString();
     account1.account_number = "2";
@@ -180,10 +225,10 @@ public class FRSInMigrationTest extends ParentTestNg {
     return accounts;
   }
 
-  private List<TransactionFromMigration> createTransactions() throws FileNotFoundException, UnsupportedEncodingException {
+  private List<TempTransaction> createTransactions() throws FileNotFoundException, UnsupportedEncodingException {
     PrintWriter writer = new PrintWriter("build/test_frs.txt", "UTF-8");
-    List<TransactionFromMigration> transactions = new ArrayList<>();
-    TransactionFromMigration transaction = new TransactionFromMigration();
+    List<TempTransaction> transactions = new ArrayList<>();
+    TempTransaction transaction = new TempTransaction();
     transaction.finished_at = new Timestamp(new Date().getTime()).toString();
     transaction.money = "+100000";
     transaction.account_number = "1";
@@ -192,7 +237,7 @@ public class FRSInMigrationTest extends ParentTestNg {
     transactions.add(transaction);
     writer.println(transaction.toJson());
 
-    TransactionFromMigration transaction1 = new TransactionFromMigration();
+    TempTransaction transaction1 = new TempTransaction();
     transaction1.finished_at = new Timestamp(new Date().getTime()).toString();
     transaction1.money = "+100000";
     transaction1.account_number = "2";
@@ -204,18 +249,14 @@ public class FRSInMigrationTest extends ParentTestNg {
     return transactions;
   }
 
-  private TransactionFromMigration getRandomTransaction() {
-    TransactionFromMigration transaction = new TransactionFromMigration();
+  private TempTransaction getRandomTransaction() {
+    TempTransaction transaction = new TempTransaction();
     transaction.money = RND.plusDouble(30, 10) + "";
     transaction.account_number = RND.str(20);
     transaction.finished_at = new Timestamp(new Date().getTime()) + "";
     transaction.type = RND.str(10);
     transaction.transaction_type = RND.str(10);
     return transaction;
-  }
-
-  private void createTransaction() {
-    TransactionFromMigration transaction = new TransactionFromMigration();
   }
 
   @SuppressWarnings("Duplicates")

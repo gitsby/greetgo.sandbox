@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.migration.reader.objects;
 
-public class TransactionFromMigration {
+public class TempTransaction {
   public String finished_at;
   public String account_number;
   public String money;

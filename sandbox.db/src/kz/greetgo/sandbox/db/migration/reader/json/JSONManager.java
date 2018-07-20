@@ -1,139 +1,85 @@
 package kz.greetgo.sandbox.db.migration.reader.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kz.greetgo.sandbox.db.migration.reader.AccountSenderThread;
-import kz.greetgo.sandbox.db.migration.reader.TransactionSenderThread;
-import kz.greetgo.sandbox.db.migration.reader.objects.NewAccountFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.objects.TransactionFromMigration;
-import kz.greetgo.sandbox.db.migration.reader.processors.AccountProcessor;
-import kz.greetgo.sandbox.db.migration.reader.processors.TransactionProcessor;
-import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigration;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempAccount;
+import kz.greetgo.sandbox.db.migration.reader.objects.TempTransaction;
+import kz.greetgo.sandbox.db.migration.workers.frs.FRSInMigrationWorker;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 public class JSONManager {
 
   private String filePath;
 
-  private List<TransactionSenderThread> transactionSenderThreads = new LinkedList<>();
-  private List<AccountSenderThread> accountSenderThreads = new LinkedList<>();
+  private int accountBatch = 0;
+  private int transactionBatch = 0;
 
   public JSONManager(String filePath) {
     this.filePath = filePath;
   }
 
-  private int accountSenderThreadNum = 0;
-  private int transactionSenderThreadNum = 0;
 
-
-  private List<NewAccountFromMigration> accounts;
-  private List<TransactionFromMigration> transactions;
-
-  public void load(TransactionProcessor transactionProcessor, AccountProcessor accountProcessor) throws IOException, InterruptedException {
+  public void load(Connection connection, PreparedStatement accountStatement, PreparedStatement transactionStatement) throws IOException, ParseException, SQLException {
     BufferedReader reader = new BufferedReader(new FileReader(filePath));
     String current;
-
-    transactions = new LinkedList<>();
-    accounts = new LinkedList<>();
 
     while ((current = reader.readLine()) != null) {
       ObjectMapper mapper = new ObjectMapper();
 
-      joinDeadThreads();
-
       if (current.contains("new_account")) {
-        NewAccountFromMigration mapped = mapper.readValue(current, NewAccountFromMigration.class);
-        accounts.add(mapped);
+        TempAccount account = mapper.readValue(current, TempAccount.class);
+        batchInsert(accountStatement, account.account_number, account.client_id, timeStampFromString(account.registered_at.replace("T", " ")));
+        accountBatch++;
       } else {
-        TransactionFromMigration mapped = mapper.readValue(current, TransactionFromMigration.class);
-        transactions.add(mapped);
+        TempTransaction transaction = mapper.readValue(current, TempTransaction.class);
+        batchInsert(transactionStatement, transaction.account_number,
+          Float.valueOf(transaction.money.replace("_", ""))
+          , transaction.transaction_type
+          , timeStampFromString(transaction.finished_at.replace("T", " ")));
+        transactionBatch++;
       }
 
-      if (transactions.size() >= 1000) {
-        sendTransactions(transactionProcessor);
+      if (accountBatch > 10000) {
+        accountBatch = 0;
+        accountStatement.executeBatch();
+        connection.commit();
       }
-      if (accounts.size() >= 1000) {
-        sendAccounts(accountProcessor);
+      if (transactionBatch > 10000) {
+        transactionBatch = 0;
+        transactionStatement.executeBatch();
+        connection.commit();
       }
+
     }
+    accountStatement.executeBatch();
+    transactionStatement.executeBatch();
+    connection.commit();
     reader.close();
-    sendTransactions(transactionProcessor);
-    sendAccounts(accountProcessor);
-    joinDeadThreads();
   }
 
-  private void sendTransactions(TransactionProcessor transactionProcessor) {
-    transactionSenderThreadNum++;
-    List<TransactionFromMigration> transactionsFromMigration = new LinkedList<>(transactions);
-    transactionSenderThreads.add(new TransactionSenderThread(transactionProcessor, transactionsFromMigration));
-    transactionSenderThreads.get(transactionSenderThreads.size() - 1).start();
-    transactions = new LinkedList<>();
-  }
-
-  private void sendAccounts(AccountProcessor accountProcessor) {
-    accountSenderThreadNum++;
-    List<NewAccountFromMigration> accountsFromMigration = new LinkedList<>(accounts);
-    accountSenderThreads.add(new AccountSenderThread(accountProcessor, accountsFromMigration));
-    accountSenderThreads.get(accountSenderThreads.size() - 1).start();
-    accounts = new LinkedList<>();
-  }
-
-
-  private void joinDeadThreads() throws InterruptedException {
-    while (accountSenderThreadNum > 1 && transactionSenderThreadNum > 1) {
-      for (TransactionSenderThread thread : transactionSenderThreads) {
-        if (!thread.isAlive()) {
-          thread.join();
-          transactionSenderThreads.remove(thread);
-          transactionSenderThreadNum--;
-          break;
-        }
-      }
-
-      for (AccountSenderThread thread : accountSenderThreads) {
-        if (!thread.isAlive()) {
-          thread.join();
-          accountSenderThreads.remove(thread);
-          accountSenderThreadNum--;
-          break;
-        }
-      }
+  private void batchInsert(PreparedStatement statement, Object... params) throws SQLException {
+    for (int i = 0; i < params.length; i++) {
+      statement.setObject(i + 1, params[i]);
     }
+    statement.addBatch();
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException, SQLException {
-    long time = System.nanoTime();
-    JSONManager manager = new JSONManager("C:\\Programs\\Web\\Greetgo\\from_frs_10000007.txt");
-    System.out.println("LOADING");
-    Connection connection;
-    Properties properties = new Properties();
-    properties.setProperty("user", "kayne_sandbox");
-    properties.setProperty("password", "111");
-    connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/kayne_sandbox", properties);
-    connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-    connection.setAutoCommit(false);
+  private Timestamp timeStampFromString(String date) throws ParseException {
+    SimpleDateFormat dateFormat = new SimpleDateFormat(
+      "yyyy-MM-dd hh:mm:ss.SSS");
 
+    Date parsedTimeStamp = dateFormat.parse(date);
 
-    FRSInMigration frsInMigration = new FRSInMigration(connection);
-    frsInMigration.prepareWorker();
-    frsInMigration.createTempTables();
+    Timestamp timestamp = new Timestamp(parsedTimeStamp.getTime());
 
-    manager.load(transactions -> {
-      frsInMigration.sendTransactions(transactions);
-    }, accounts -> {
-      frsInMigration.sendAccounts(accounts);
-    });
-
-    long endTime = System.nanoTime();
-    System.out.println("-------------------------------------------------------------------------------");
-    System.out.println("Elapsed time: " + ((endTime - time) / 1000000000.0));
+    return timestamp;
   }
+
 }

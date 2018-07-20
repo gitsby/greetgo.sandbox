@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.util.RND;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -59,7 +60,8 @@ public class ClientRecordsViewPdf implements ClientRecordsReportView {
   }
 
   public static void main(String[] args) throws FileNotFoundException, DocumentException {
-    FileOutputStream fileOutputStream = new FileOutputStream("C:\\Programs\\test1.pdf");
+    new File("build").mkdirs();
+    FileOutputStream fileOutputStream = new FileOutputStream("build/test1.pdf");
     ClientRecordsViewPdf pdf = new ClientRecordsViewPdf(fileOutputStream);
 
     pdf.start();
