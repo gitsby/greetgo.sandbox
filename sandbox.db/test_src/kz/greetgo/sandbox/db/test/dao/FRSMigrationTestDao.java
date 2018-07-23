@@ -72,4 +72,8 @@ public interface FRSMigrationTestDao {
     "          charm varchar(15), \n" +
     "          error text);")
   void createTempClientTable();
+
+  @Update("alter table client\n" +
+    "  add column if not exists migr_client_id varchar(40);\n")
+  void createMigrClientIdColumn();
 }
