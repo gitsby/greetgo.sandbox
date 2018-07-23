@@ -48,7 +48,7 @@ public interface CIAMigrationTestDao {
   @Update("create table if not exists temp_phone(" +
     "client_id varchar(40)," +
     "number varchar(30)," +
-    "type varchar(10));")
+    "type varchar(10), error varchar(100));")
   void createTempPhoneTable();
 
   @Update("drop table if exists temp_phone")
@@ -59,7 +59,7 @@ public interface CIAMigrationTestDao {
     "  street    varchar(100),\n" +
     "  flat      varchar(100),\n" +
     "  house     varchar(100),\n" +
-    "  type      varchar(10),\n" +
+    "  type      varchar(10),error varchar(100),\n" +
     "  PRIMARY KEY (client_id, type)\n" +
     ");")
   void createTempAddressTable();
@@ -85,7 +85,7 @@ public interface CIAMigrationTestDao {
   @Delete("delete from characters")
   void deleteFromCharms();
 
-  @Select("select * from client_phone")
+  @Select("select * from client_phone order by client_id, type desc")
   List<PhoneDot> getPhonesFromReal();
 
   @Select("select * from client_address order by client_id asc, type asc")

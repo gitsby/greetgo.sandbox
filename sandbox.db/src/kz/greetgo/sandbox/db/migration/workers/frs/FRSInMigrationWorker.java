@@ -47,7 +47,7 @@ public class FRSInMigrationWorker extends SqlWorker implements AutoCloseable {
   }
 
   public void updateError() throws SQLException, IOException {
-    exec("update temp_account set error='No account_number' where account_number isnull");
+    exec("update temp_account set error='No account number;' where account_number isnull or account_number='null'");
 
     exec("update temp_transaction\n" +
       "set error = 'No transaction type;'\n" +

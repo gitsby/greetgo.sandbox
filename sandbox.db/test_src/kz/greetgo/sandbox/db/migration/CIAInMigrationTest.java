@@ -38,15 +38,9 @@ public class CIAInMigrationTest extends ParentTestNg {
 
   public BeanGetter<DbConfig> dbConfig;
   public BeanGetter<CIAMigrationTestDao> ciaMigrationDao;
-  public Connection connection;
-  CIAInMigrationWorker inMigration;
-
-  XMLManager xmlManager;
 
   @BeforeMethod
-  public void createTables() throws Exception {
-    connection = connectToDatabase();
-    inMigration = new CIAInMigrationWorker(connection);
+  public void createTables() {
 
     ciaMigrationDao.get().createMigrClientIdColumn();
 
@@ -56,13 +50,6 @@ public class CIAInMigrationTest extends ParentTestNg {
     ciaMigrationDao.get().createTempPhoneTable();
   }
 
-  @AfterMethod
-  public void resetDb() throws Exception {
-
-    dropAllTables();
-    inMigration.close();
-    connection.close();
-  }
 
   private void dropAllTables() {
     ciaMigrationDao.get().deleteFromCharms();
@@ -73,155 +60,178 @@ public class CIAInMigrationTest extends ParentTestNg {
   }
 
   @Test
-  public void testInsertClientIntoTemp() throws IOException, SAXException, ParserConfigurationException {
+  public void testInsertClientIntoTemp() throws IOException, SAXException, ParserConfigurationException, SQLException {
 
-    List<TempClient> clients = createClientXmlFile();
+    try(Connection connection = connectToDatabase()){
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      List<TempClient> clients = createClientXmlFile();
 
-    //
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
+      //
+      //
+      XMLManager xmlManager  = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
 
-    List<TempClient> tempClients = ciaMigrationDao.get().getTempClients();
+      List<TempClient> tempClients = ciaMigrationDao.get().getTempClients();
 
-    assertThat(tempClients).hasSize(3);
-    assertClients(clients, tempClients);
+      assertThat(tempClients).hasSize(3);
+      assertClients(clients, tempClients);
+    }
   }
 
   @Test
-  public void testInsertPhoneIntoTemp() throws IOException, SAXException, ParserConfigurationException {
-    List<TempPhone> phones = createPhones();
+  public void testInsertPhoneIntoTemp() throws IOException, SAXException, ParserConfigurationException, SQLException {
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      List<TempPhone> phones = createPhones();
 
-    //
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
+      //
+      //
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
 
 
-    List<TempPhone> tempPhones = ciaMigrationDao.get().getTempPhones();
+      List<TempPhone> tempPhones = ciaMigrationDao.get().getTempPhones();
 
-    assertThat(tempPhones).hasSameSizeAs(phones);
-    assertPhones(phones, tempPhones);
+      assertThat(tempPhones).hasSameSizeAs(phones);
+      assertPhones(phones, tempPhones);
+    }
   }
 
   @Test
   public void testClientErrorWithoutName() throws IOException, SAXException, ParserConfigurationException, SQLException {
-    TempClient clientWithoutName = createClientWithoutName();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      TempClient clientWithoutName = createClientWithoutName();
 
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
 
 
-    inMigration.updateError();
-    List<TempClient> clients = ciaMigrationDao.get().getTempClients();
+      inMigration.updateError();
+      List<TempClient> clients = ciaMigrationDao.get().getTempClients();
 
-    assertThat(clients).hasSize(1);
+      assertThat(clients).hasSize(1);
 
-    assertThat(clients.get(0).error).isEqualTo("Invalid name;");
-    assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
-    assertThat(clients.get(0).name).isEqualTo("");
+      assertThat(clients.get(0).error).isEqualTo("Invalid name;");
+      assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
+      assertThat(clients.get(0).name).isEqualTo("");
+    }
   }
 
   @Test
   public void testClientErrorWithoutSurname() throws IOException, SAXException, ParserConfigurationException, SQLException {
-    TempClient clientWithoutName = createClientWithoutSurname();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      TempClient clientWithoutName = createClientWithoutSurname();
 
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
 
-    inMigration.updateError();
-    List<TempClient> clients = ciaMigrationDao.get().getTempClients();
+      inMigration.updateError();
+      List<TempClient> clients = ciaMigrationDao.get().getTempClients();
 
-    assertThat(clients).hasSize(1);
+      assertThat(clients).hasSize(1);
 
-    assertThat(clients.get(0).error).isEqualTo("Invalid surname;");
-    assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
-    assertThat(clients.get(0).surname).isEqualTo("");
+      assertThat(clients.get(0).error).isEqualTo("Invalid surname;");
+      assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
+      assertThat(clients.get(0).surname).isEqualTo("");
+    }
   }
 
   @Test
   public void testClientErrorWithoutBirth() throws IOException, SAXException, ParserConfigurationException, SQLException {
-    TempClient clientWithoutName = createClientWithoutBirth();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      TempClient clientWithoutName = createClientWithoutBirth();
 
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
 
-    inMigration.updateError();
-    List<TempClient> clients = ciaMigrationDao.get().getTempClients();
+      inMigration.updateError();
+      List<TempClient> clients = ciaMigrationDao.get().getTempClients();
 
-    assertThat(clients).hasSize(1);
+      assertThat(clients).hasSize(1);
 
-    assertThat(clients.get(0).error).isEqualTo("Invalid birth date;");
-    assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
-    assertThat(clients.get(0).birth).isNull();
+      assertThat(clients.get(0).error).isEqualTo("Invalid birth date;");
+      assertThat(clients.get(0).client_id).isEqualTo(clientWithoutName.client_id);
+      assertThat(clients.get(0).birth).isNull();
+    }
   }
 
   @Test
-  public void testInsertAddressIntoTemp() throws IOException, SAXException, ParserConfigurationException {
-    List<TempAddress> addresses = createAddressXml();
+  public void testInsertAddressIntoTemp() throws IOException, SAXException, ParserConfigurationException, SQLException {
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      List<TempAddress> addresses = createAddressXml();
 
-    //
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
+      //
+      //
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
 
-    List<TempAddress> tempAddress = ciaMigrationDao.get().getTempAddresses();
+      List<TempAddress> tempAddress = ciaMigrationDao.get().getTempAddresses();
 
-    assertThat(tempAddress).hasSameSizeAs(addresses);
-    assertAddresses(addresses, tempAddress);
+      assertThat(tempAddress).hasSameSizeAs(addresses);
+      assertAddresses(addresses, tempAddress);
+    }
   }
 
 
   @Test
   public void testInsertClientIntoReal() throws SQLException, IOException, ParserConfigurationException, SAXException {
-    List<TempClient> clients = createClientXmlFile();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      List<TempClient> clients = createClientXmlFile();
 
-    //
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
+      //
+      //
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
 
-    inMigration.updateError();
-    inMigration.insertIntoClient();
-    List<ClientDot> clientDots = ciaMigrationDao.get().getClientDots();
+      inMigration.updateError();
+      inMigration.insertIntoClient();
+      List<ClientDot> clientDots = ciaMigrationDao.get().getClientDots();
 
-    assertThat(clientDots).hasSize(2);
-    for (int i = 0; i < clientDots.size(); i++) {
-      assertThat(clientDots.get(i).name).isEqualTo(clients.get(i).name);
-      assertThat(clientDots.get(i).surname).isEqualTo(clients.get(i).surname);
-      assertThat(clientDots.get(i).patronymic).isEqualTo(clients.get(i).patronymic);
+      assertThat(clientDots).hasSize(2);
+      for (int i = 0; i < clientDots.size(); i++) {
+        assertThat(clientDots.get(i).name).isEqualTo(clients.get(i).name);
+        assertThat(clientDots.get(i).surname).isEqualTo(clients.get(i).surname);
+        assertThat(clientDots.get(i).patronymic).isEqualTo(clients.get(i).patronymic);
+      }
     }
-
   }
 
   @Test
   public void testInsertPhoneIntoReal() throws IOException, SQLException, SAXException, ParserConfigurationException {
-    insertClients();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      insertClients();
 
-    List<TempPhone> phones = createPhones();
+      List<TempPhone> phones = createPhones();
 
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
-    inMigration.insertIntoPhone();
+      //
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
+      inMigration.insertIntoPhone();
 
 
-    List<PhoneDot> phoneDots = ciaMigrationDao.get().getPhonesFromReal();
+      List<PhoneDot> phoneDots = ciaMigrationDao.get().getPhonesFromReal();
 
-    assertThat(phoneDots).hasSameSizeAs(phones);
-    for (int i = 0; i < phoneDots.size(); i++) {
-      assertThat(phoneDots.get(i).number).isEqualTo(phones.get(i).number);
-      assertThat(phoneDots.get(i).type).isEqualTo(phones.get(i).type);
+      assertThat(phoneDots).hasSameSizeAs(phones);
+      for (int i = 0; i < phoneDots.size(); i++) {
+        assertThat(phoneDots.get(i).number).isEqualTo(phones.get(i).number);
+        assertThat(phoneDots.get(i).type).isEqualTo(phones.get(i).type);
+      }
     }
 
   }
@@ -229,27 +239,30 @@ public class CIAInMigrationTest extends ParentTestNg {
 
   @Test
   public void testInsertAddressIntoReal() throws IOException, SQLException, SAXException, ParserConfigurationException {
-    insertClients();
+    try(Connection connection = connectToDatabase()) {
+      CIAInMigrationWorker inMigration = new CIAInMigrationWorker(connection);
+      insertClients();
 
-    List<TempAddress> addresses = createAddressXml();
+      List<TempAddress> addresses = createAddressXml();
 
-    //
-    //
-    xmlManager = new XMLManager("build/test_cia.xml");
-    xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
-    //
-    //
-    inMigration.insertIntoAddress();
+      //
+      //
+      XMLManager xmlManager = new XMLManager("build/test_cia.xml");
+      xmlManager.load(connection, inMigration.clientsStatement, inMigration.phoneStatement, inMigration.addressStatement);
+      //
+      //
+      inMigration.insertIntoAddress();
 
-    List<AddressDot> addressDots = ciaMigrationDao.get().getAddressDots();
+      List<AddressDot> addressDots = ciaMigrationDao.get().getAddressDots();
 
-    assertThat(addressDots).hasSize(4);
+      assertThat(addressDots).hasSize(4);
 
-    for (int i = 0; i < addressDots.size(); i++) {
-      assertThat(addressDots.get(i).flat).isEqualTo(addresses.get(i).flat);
-      assertThat(addressDots.get(i).house).isEqualTo(addresses.get(i).house);
-      assertThat(addressDots.get(i).street).isEqualTo(addresses.get(i).street);
-      assertThat(addressDots.get(i).type).isEqualTo(addresses.get(i).type);
+      for (int i = 0; i < addressDots.size(); i++) {
+        assertThat(addressDots.get(i).flat).isEqualTo(addresses.get(i).flat);
+        assertThat(addressDots.get(i).house).isEqualTo(addresses.get(i).house);
+        assertThat(addressDots.get(i).street).isEqualTo(addresses.get(i).street);
+        assertThat(addressDots.get(i).type).isEqualTo(addresses.get(i).type);
+      }
     }
   }
 

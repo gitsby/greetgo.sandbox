@@ -36,17 +36,9 @@ public class FRSInMigrationTest extends ParentTestNg {
   public BeanGetter<FRSMigrationTestDao> frsDao;
   public BeanGetter<DbConfig> dbConfig;
 
-  Connection connection;
-
-  FRSInMigrationWorker frsInMigration;
-
-  JSONManager jsonManager;
-
   @BeforeMethod
   public void dropTables() throws Exception {
-    connection = connectToDatabase();
-    frsInMigration = new FRSInMigrationWorker(connection);
-
+    frsDao.get().createMigrClientIdColumn();
     frsDao.get().createTempClientTable();
     frsDao.get().deleteClients();
     frsDao.get().createTempAccountTable();
@@ -58,123 +50,127 @@ public class FRSInMigrationTest extends ParentTestNg {
   public void createTables() throws Exception {
     frsDao.get().dropAccountTable();
     frsDao.get().dropTransactionTable();
-    frsInMigration.close();
-    connection.close();
   }
 
   @Test
   public void testInsertTransactionIntoTemp() throws IOException, ParseException, SQLException {
-    List<TempTransaction> transactions = createTransactions();
+    try (Connection connection = connectToDatabase()) {
+      FRSInMigrationWorker frsInMigration = new FRSInMigrationWorker(connection);
 
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+      List<TempTransaction> transactions = createTransactions();
 
-    List<kz.greetgo.sandbox.db.classes.TempTransaction> transactionsFromMigration = frsDao.get().getTempTransactions();
+      JSONManager jsonManager = new JSONManager("build/test_frs.txt");
+      jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
-    assertThat(transactionsFromMigration).hasSameSizeAs(transactions);
+      List<kz.greetgo.sandbox.db.classes.TempTransaction> transactionsFromMigration = frsDao.get().getTempTransactions();
 
-    for (int i = 0; i < transactionsFromMigration.size(); i++) {
-      assertThat(transactionsFromMigration.get(i).account_number).isEqualTo(transactions.get(i).account_number);
-      assertThat(transactionsFromMigration.get(i).finished_at.toString()).isEqualTo(transactions.get(i).finished_at);
+      assertThat(transactionsFromMigration).hasSameSizeAs(transactions);
+
+      for (int i = 0; i < transactionsFromMigration.size(); i++) {
+        assertThat(transactionsFromMigration.get(i).account_number).isEqualTo(transactions.get(i).account_number);
+        assertThat(transactionsFromMigration.get(i).finished_at.toString()).isEqualTo(transactions.get(i).finished_at);
+      }
     }
-  }
 
-  @Test
-  public void testAccountErrorNotExistingClientId() throws IOException, SQLException, ParseException {
-    TempAccount account = createAcccountWithNotExistingClientId();
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
-
-    frsInMigration.updateError();
-
-
-    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
-    assertThat(tempAccounts).hasSize(1);
-
-    assertThat(tempAccounts.get(0).error).isEqualTo("No client_id");
   }
 
   @Test
   public void testAccountErrorNoNumber() throws IOException, SQLException, ParseException {
-    TempAccount account = createAccountWithNullNumber();
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+    try (Connection connection = connectToDatabase()) {
+      FRSInMigrationWorker frsInMigration = new FRSInMigrationWorker(connection);
 
-    frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
+      TempAccount account = createAccountWithNullNumber();
+      JSONManager jsonManager = new JSONManager("build/test_frs.txt");
+      jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
-    frsInMigration.updateError();
+      frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
+
+      frsInMigration.updateError();
 
 
-    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
-    assertThat(tempAccounts).hasSize(1);
+      List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
+      assertThat(tempAccounts).hasSize(1);
 
-    assertThat(tempAccounts.get(0).error).isEqualTo("No account number;");
+      assertThat(tempAccounts.get(0).error).isEqualTo("No account number;");
+    }
 
   }
 
   @Test
-  public void testInsertAccountIntoTemp() throws IOException, ParseException, SQLException {
-    List<TempAccount> accounts = createAccounts();
+  public void testInsertAccountIntoTemp() throws IOException, SQLException, ParseException {
+    try (Connection connection = connectToDatabase()) {
+      FRSInMigrationWorker frsInMigration = new FRSInMigrationWorker(connection);
 
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+      List<TempAccount> accounts = createAccounts();
+
+      JSONManager jsonManager = new JSONManager("build/test_frs.txt");
+      jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
 
-    List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
+      List<kz.greetgo.sandbox.db.classes.TempAccount> tempAccounts = frsDao.get().getTempAccounts();
 
-    assertThat(tempAccounts).hasSameSizeAs(accounts);
+      assertThat(tempAccounts).hasSameSizeAs(accounts);
 
-    for (int i = 0; i < tempAccounts.size(); i++) {
-      assertThat(tempAccounts.get(i).client_id).isEqualTo(accounts.get(i).client_id);
-      assertThat(tempAccounts.get(i).registered_at.toString()).isEqualTo(accounts.get(i).registered_at);
-      assertThat(tempAccounts.get(i).account_number).isEqualTo(accounts.get(i).account_number);
+      for (int i = 0; i < tempAccounts.size(); i++) {
+        assertThat(tempAccounts.get(i).client_id).isEqualTo(accounts.get(i).client_id);
+        assertThat(tempAccounts.get(i).registered_at.toString()).isEqualTo(accounts.get(i).registered_at);
+        assertThat(tempAccounts.get(i).account_number).isEqualTo(accounts.get(i).account_number);
+      }
     }
   }
 
   @Test
   public void testInsertAccountIntoReal() throws IOException, SQLException, ParseException {
-    List<TempAccount> accounts = createAccounts();
+    try (Connection connection = connectToDatabase()) {
+      FRSInMigrationWorker frsInMigration = new FRSInMigrationWorker(connection);
 
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+      List<TempAccount> accounts = createAccounts();
+
+      JSONManager jsonManager = new JSONManager("build/test_frs.txt");
+      jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
 
-    frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
+      frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
 
-    frsInMigration.updateError();
-    frsInMigration.insertIntoAccount();
+      frsInMigration.updateError();
+      frsInMigration.insertIntoAccount();
 
-    List<ClientAccountDot> accountDots = frsDao.get().getAccountDots();
+      List<ClientAccountDot> accountDots = frsDao.get().getAccountDots();
 
-    assertThat(accountDots).hasSize(1);
+      assertThat(accountDots).hasSize(1);
 
-    for (int i = 0; i < accountDots.size(); i++) {
-      assertThat(accountDots.get(i).number).isEqualTo(accounts.get(i).account_number);
-      assertThat(accountDots.get(i).registered_at.toString()).isEqualTo(accounts.get(i).registered_at);
+      for (int i = 0; i < accountDots.size(); i++) {
+        assertThat(accountDots.get(i).number).isEqualTo(accounts.get(i).account_number);
+        assertThat(accountDots.get(i).registered_at.toString()).isEqualTo(accounts.get(i).registered_at);
+      }
     }
   }
 
   @Test
   public void testInsertTransactionIntoReal() throws IOException, SQLException, ParseException {
-    List<TempTransaction> transactions = createTransactions();
+    try (Connection connection = connectToDatabase()) {
+      FRSInMigrationWorker frsInMigration = new FRSInMigrationWorker(connection);
 
-    jsonManager = new JSONManager("build/test_frs.txt");
-    jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
+      List<TempTransaction> transactions = createTransactions();
+
+      JSONManager jsonManager = new JSONManager("build/test_frs.txt");
+      jsonManager.load(connection, frsInMigration.accountsStatement, frsInMigration.transactionStatement);
 
 
-    int clientId = frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
-    int accId = frsDao.get().insertClientAccount1(clientId);
+      int clientId = frsDao.get().insertNewClient(frsDao.get().insertNewCharm());
+      int accId = frsDao.get().insertClientAccount1(clientId);
 
-    frsInMigration.updateError();
-    frsInMigration.insertIntoTransaction();
+      frsInMigration.updateError();
+      frsInMigration.insertIntoTransaction();
 
-    List<ClientTransactionDot> transactionDots = frsDao.get().getTransactionsFromReal(accId);
+      List<ClientTransactionDot> transactionDots = frsDao.get().getTransactionsFromReal(accId);
 
-    assertThat(transactionDots).hasSize(1);
+      assertThat(transactionDots).hasSize(1);
 
-    for (int i = 0; i < transactionDots.size(); i++) {
-      assertThat(transactionDots.get(i).money).isEqualTo(Double.valueOf(transactions.get(i).money));
-      assertThat(transactionDots.get(i).finished_at.toString()).isEqualTo(transactions.get(i).finished_at);
+      for (int i = 0; i < transactionDots.size(); i++) {
+        assertThat(transactionDots.get(i).money).isEqualTo(Double.valueOf(transactions.get(i).money));
+        assertThat(transactionDots.get(i).finished_at.toString()).isEqualTo(transactions.get(i).finished_at);
+      }
     }
   }
 
