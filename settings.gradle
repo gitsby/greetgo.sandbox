@@ -5,3 +5,5 @@ include 'sandbox.stand:db'
 include 'sandbox.db'
 include 'sandbox.server'
 include 'sandbox.server:war'
+include 'sandbox.migration'
+
