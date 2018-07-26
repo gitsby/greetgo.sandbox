@@ -58,11 +58,12 @@ public abstract class LocalTmpSessionFactory implements BeanReplacer, HasAfterIn
         dataSource = DbLoggingProxyFactory.create(dataSource, new DbLoggingProxyFactory.AbstractSqlViewer() {
             final Logger logger = Logger.getLogger("DIRECT_SQL");
             @Override
+
             protected void logTrace(String message) {
                 if (logger.isTraceEnabled()) logger.trace(message);
             }
         });
-
+            int  test = 1;
         jdbcSandbox = new JdbcSandbox(dataSource, transactionManager);
 
         Environment environment = new Environment(databaseEnvironmentId(), transactionFactory, dataSource);

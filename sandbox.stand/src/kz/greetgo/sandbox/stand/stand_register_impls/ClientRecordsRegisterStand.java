@@ -223,16 +223,17 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
         // TODO: высвободить ресурсы
         OutputStream out;
+
         Date date = new Date();
         client = authRegister.get().getUserInfo(client).accountName;
         String filename =client+"_"+date.getTime();
 
         // TODO: null safe
-        if(reportType.equals("PDF")){
+        if("PDF".equals(reportType)){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportClientRecordsView = new ReportClientRecordsViewPdf(out);
-        }else if(reportType.equals("XLSX")){
+        }else if("XLSX".equals(reportType)){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
