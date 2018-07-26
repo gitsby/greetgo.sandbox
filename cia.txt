@@ -1,0 +1,51 @@
+<cia>
+  <client id="0-B9N-HT-PU-04wolRBPzj"> <!-- 1 -->
+    <surname value="Р“RРЅРЁР±7gDn1"/>
+    <workPhone>+7-385-253-53-56</workPhone>
+    <address>
+      <fact street="RС†Р’WAР°EkMРєС‘РЅkOР·Р”fР¶Р“Рє" house="RРџ" flat="hР"/>
+      <register street="РҐfРђРKР»FС‰СЃiС…Р”Р—СЂPРіWР—dР­" house="Рѕz" flat="Р Р‘"/>
+    </address>
+    <birth value="1995-07-07"/>
+    <patronymic value="  "/>
+    <charm value="Р©lР’OpР¤pРЄРРЁ"/>
+    <gender value="FEMALE"/>
+    <homePhone>+7-878-241-63-94</homePhone>
+    <name value="WCРTР‘РЇ7С‰РђРѕ"/>
+    <workPhone>+7-418-204-55-17</workPhone>
+    <workPhone>+7-922-435-88-49</workPhone>
+  </client>
+  <client id="0-B9N-HT-PU-04wolRBPzj"> <!-- 2 -->
+    <name value="NIfРўDС‚СѓРЇkРў"/>
+    <charm value="Р‘РћРЁРҐС‹5UРЄРњР—"/>
+    <patronymic value="РЈР”С‚Р®С†Рљp5РЃР›Р°Р№l"/>
+    <homePhone>+7-568-155-69-48 РІРЅ. 8929</homePhone>
+    <mobilePhone>+7-345-524-77-87 РІРЅ. 8884</mobilePhone>
+    <gender value="MALE"/>
+    <address>
+      <fact street="SР№Р±ByРЃvEРЃzРѕnYРјuGIСЋСЂРҐ" house="Ph" flat="РѕС‹"/>
+      <register street="wРІlogР‘gР§Р©fР 4zkСЃRbDР¶Р¶" house="SС†" flat="Р©Рµ"/>
+    </address>
+    <birth value="1966-03-10"/>
+    <workPhone>+7-663-920-15-23 РІРЅ. 3649</workPhone>
+    <surname value="Р•DС„Р·EСѓР§СЊ57"/>
+  </client>
+  <client id="2-MFR-HN-2X-LPT6Ex2SPW"> <!-- 3 -->
+    <workPhone>+7-982-113-87-52</workPhone>
+    <gender value="MALE"/>
+    <mobilePhone>+7-219-877-56-03</mobilePhone>
+    <mobilePhone>+7-565-258-17-28</mobilePhone>
+    <patronymic value="РЃWР›2СЏ1РљР¬РћLAР¤СЉ"/>
+    <name value="2РІС†РЅwРєРџnРЈРё"/>
+    <birth value="1941-07-23"/>
+    <address>
+      <fact street="Z6lС‚C8lС†Р”РєIYv6Р­РњXpxР°" house="Рљb" flat="РD"/>
+      <register street="Р°РґvРћРёjРЎjCС‹NР¶СЉР›С‚hРїР§С„Рі" house="С‡W" flat="Рїw"/>
+    </address>
+    <workPhone>+7-219-164-33-51</workPhone>
+    <surname value="Р¤AcgsHZРЄРєp"/>
+    <workPhone>+7-359-831-31-82</workPhone>
+    <charm value="РїlJРҐС‘sСЉРЎAРЁ"/>
+    <mobilePhone>+7-286-148-26-75 РІРЅ. 3136</mobilePhone>
+  </client>
+ </cia>

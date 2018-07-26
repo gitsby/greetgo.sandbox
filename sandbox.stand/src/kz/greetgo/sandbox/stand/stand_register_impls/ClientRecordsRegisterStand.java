@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.BinResponse;
+import kz.greetgo.sandbox.controller.errors.InvalidParams;
 import kz.greetgo.sandbox.controller.errors.InvalidClientData;
 import kz.greetgo.sandbox.controller.errors.NoCharmError;
 import kz.greetgo.sandbox.controller.errors.NoClient;
@@ -222,6 +223,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         ReportClientRecordsView reportClientRecordsView;
 
         // TODO: высвободить ресурсы
+        // DONE
         OutputStream out;
 
         Date date = new Date();
@@ -229,6 +231,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         String filename =client+"_"+date.getTime();
 
         // TODO: null safe
+        // DONE
         if("PDF".equals(reportType)){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
@@ -239,8 +242,9 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
             reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
         }else {
 
-          // TODO: правильно передавай статусы запросов !
-            return "-1";
+            // TODO: правильно передавай статусы запросов !
+            // DONE
+            throw new InvalidParams();
         }
 
         ClientRecordsToSend clientRecordsToSend;
@@ -256,8 +260,11 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         }
 
         reportClientRecordsView.finish();
+        out.close();
         return filename;
+
     }
+
 
     @Override
     public void downloadReport(String filename, BinResponse response)
