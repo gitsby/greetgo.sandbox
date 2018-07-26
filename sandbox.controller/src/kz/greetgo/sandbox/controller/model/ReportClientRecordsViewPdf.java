@@ -1,6 +1,8 @@
 package kz.greetgo.sandbox.controller.model;
 
-import com.itextpdf.text.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -48,7 +50,7 @@ public class ReportClientRecordsViewPdf implements ReportClientRecordsView {
         document.add(row);
     }
 
-
+    // TODO: на больших объёмах сломается. Посмотри как в itext как работать с большими данными
     @Override
     public void append(ClientRecord clientRecord, int index)throws Exception{
         PdfPTable row = new PdfPTable(7);

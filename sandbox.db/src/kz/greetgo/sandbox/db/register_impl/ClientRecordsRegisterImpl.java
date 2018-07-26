@@ -235,6 +235,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     return size;
   }
 
+  // TODO: протестировать генерацию отчетов на 100 000, 1М, 10М запиясях
   @Override
   public String makeReport(String sortDirection, String sortType, String filterType,
                            String filterText,String client, String reportType) throws Exception{
