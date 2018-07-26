@@ -2,97 +2,93 @@ package kz.greetgo.sandbox.controller.model;
 
 import kz.greetgo.sandbox.controller.model.dbmodels.*;
 import kz.greetgo.util.RND;
-import sun.security.pkcs11.Secmod;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class DbModelConverter {
 
 
-    public User convertToUser(DbClient dbUser, DbCharm dbCharm, DbClientPhone[] dbPhones, DbClientAddress dbAddressFactual, DbClientAddress dbAddressRegistered){
-        User user = new User();
-        user.id = dbUser.id;
-        user.name = dbUser.name;
-        user.surname = dbUser.surname;
-        user.patronymic = dbUser.patronymic;
-        user.genderType = GenderType.valueOf(dbUser.gender);
-        user.charm = dbCharm.name;
-        user.phones = new Phone[dbPhones.length];
+    public Client convertToClient(DbClient dbClient, DbClientPhone[] dbPhones, DbClientAddress dbAddressFactual, DbClientAddress dbAddressRegistered){
+        Client client = new Client();
+        client.id = dbClient.id;
+        client.name = dbClient.name;
+        client.surname = dbClient.surname;
+        client.patronymic = dbClient.patronymic;
+        client.genderType = GenderType.valueOf(dbClient.gender);
+        client.charmId = dbClient.charm;
+        client.phones = new Phone[dbPhones.length];
         for (int i = 0; i <dbPhones.length ; i++) {
             Phone phone = new Phone();
             DbClientPhone dbClientPhone = dbPhones[i];
             phone.phoneType = PhoneType.valueOf(dbClientPhone.type);
             phone.number = dbClientPhone.number;
             phone.validity = dbClientPhone.validity;
-            user.phones[i]=phone;
+            client.phones[i]=phone;
         }
-        user.factualAddress = new Address();
-        user.factualAddress.house = dbAddressFactual.house;
-        user.factualAddress.flat = dbAddressFactual.flat;
-        user.factualAddress.street = dbAddressFactual.street;
-        user.registeredAddress = new Address();
-        user.registeredAddress.house = dbAddressRegistered.house;
-        user.registeredAddress.flat = dbAddressRegistered.flat;
-        user.registeredAddress.street = dbAddressRegistered.street;
-        user.validity = dbUser.validity;
-        user.birthDate = dbUser.birthDate.getTime();
-        return user;
+        client.factualAddress = new Address();
+        client.factualAddress.house = dbAddressFactual.house;
+        client.factualAddress.flat = dbAddressFactual.flat;
+        client.factualAddress.street = dbAddressFactual.street;
+        client.registeredAddress = new Address();
+        client.registeredAddress.house = dbAddressRegistered.house;
+        client.registeredAddress.flat = dbAddressRegistered.flat;
+        client.registeredAddress.street = dbAddressRegistered.street;
+        client.validity = dbClient.validity;
+        client.birthDate = dbClient.birthDate.getTime();
+        return client;
     }
-    public DbClient convertToDbClient(User user, int charmId){
+    public DbClient convertToDbClient(Client client){
         DbClient dbClient = new DbClient();
-        dbClient.id = user.id;
-        dbClient.name = user.name;
-        dbClient.surname = user.surname;
-        dbClient.patronymic = user.patronymic;
-        dbClient.gender = user.genderType.toString();
-        dbClient.charm = charmId;
-        dbClient.birthDate = new Date(user.birthDate);
-        dbClient.validity = user.validity;
+        dbClient.id = client.id;
+        dbClient.name = client.name;
+        dbClient.surname = client.surname;
+        dbClient.patronymic = client.patronymic;
+        dbClient.gender = client.genderType.toString();
+        dbClient.charm = client.charmId;
+        dbClient.birthDate = new Date(client.birthDate);
+        dbClient.validity = client.validity;
         return dbClient;
     }
 
-    public DbClientAddress convertToDbClientAddressRegistered(User user){
+    public DbClientAddress convertToDbClientAddressRegistered(Client client){
         DbClientAddress dbClientAddress = new DbClientAddress();
-        dbClientAddress.client = user.id;
-        dbClientAddress.flat = user.registeredAddress.flat;
-        dbClientAddress.house = user.registeredAddress.house;
-        dbClientAddress.street = user.registeredAddress.street;
+        dbClientAddress.client = client.id;
+        dbClientAddress.flat = client.registeredAddress.flat;
+        dbClientAddress.house = client.registeredAddress.house;
+        dbClientAddress.street = client.registeredAddress.street;
         dbClientAddress.type = AddressType.REG.toString();
         return dbClientAddress;
     }
 
-    public DbClientAddress convertToDbClientAddressFactual(User user){
+    public DbClientAddress convertToDbClientAddressFactual(Client client){
         DbClientAddress dbClientAddress = new DbClientAddress();
-        dbClientAddress.client = user.id;
-        dbClientAddress.flat = user.factualAddress.flat;
-        dbClientAddress.house = user.factualAddress.house;
-        dbClientAddress.street = user.factualAddress.street;
+        dbClientAddress.client = client.id;
+        dbClientAddress.flat = client.factualAddress.flat;
+        dbClientAddress.house = client.factualAddress.house;
+        dbClientAddress.street = client.factualAddress.street;
         dbClientAddress.type = AddressType.FACT.toString();
         return dbClientAddress;
     }
 
 
-    public DbClientPhone[] convertToDbClientPhones(User user){
-        DbClientPhone[] dbClientPhones = new DbClientPhone[user.phones.length];
+    public DbClientPhone[] convertToDbClientPhones(Client client){
+        DbClientPhone[] dbClientPhones = new DbClientPhone[client.phones.length];
         for (int i = 0; i < dbClientPhones.length; i++) {
             DbClientPhone dbClientPhone = new DbClientPhone();
-            dbClientPhone.type = user.phones[i].phoneType.toString();
-            dbClientPhone.number = user.phones[i].number ;
-            dbClientPhone.validity = user.phones[i].validity ;
-            dbClientPhone.client = user.id;
+            dbClientPhone.type = client.phones[i].phoneType.toString();
+            dbClientPhone.number = client.phones[i].number ;
+            dbClientPhone.validity = client.phones[i].validity ;
+            dbClientPhone.client = client.id;
             dbClientPhones[i]=dbClientPhone;
         }
 
         return dbClientPhones;
     }
 
-    public DbClientAccount convertToDbClientAccount(User user){
+    public DbClientAccount convertToDbClientAccount(Client client){
         DbClientAccount dbClientAccount = new DbClientAccount();
-        dbClientAccount.client=user.id;
+        dbClientAccount.client= client.id;
         dbClientAccount.number=RND.str(20);
         dbClientAccount.money=0;
         dbClientAccount.registered_at = new Date();
@@ -100,22 +96,22 @@ public class DbModelConverter {
         return  dbClientAccount;
     }
 
-    public TableToSend convertToTableToSend(DbTableModel[] dbTableModels, int size){
-        TableToSend tableToSend = new TableToSend();
-        tableToSend.size = size;
-        tableToSend.table = (ArrayList<TableModel>) Arrays.stream(dbTableModels).map(
-                dbTableModel -> {
-                    TableModel tableModel = new TableModel();
-                    tableModel.id = dbTableModel.id;
-                    tableModel.fullName = dbTableModel.fullName;
-                    tableModel.age = dbTableModel.age.getTime();
-                    tableModel.maxBalance = dbTableModel.maxBalance;
-                    tableModel.minBalance = dbTableModel.minBalance;
-                    tableModel.totalBalance = dbTableModel.totalBalance;
-                    return tableModel;
+    public ClientRecordsToSend convertToClientRecordsToSend(DbClientRecords[] dbClientRecordss, int size){
+        ClientRecordsToSend clientRecordsToSend = new ClientRecordsToSend();
+        clientRecordsToSend.size = size;
+        clientRecordsToSend.table = (ArrayList<ClientRecord>) Arrays.stream(dbClientRecordss).map(
+                dbClientRecords -> {
+                    ClientRecord clientRecord = new ClientRecord();
+                    clientRecord.id = dbClientRecords.id;
+                    clientRecord.fullName = dbClientRecords.fullName;
+                    clientRecord.age = dbClientRecords.age.getTime();
+                    clientRecord.maxBalance = dbClientRecords.maxBalance;
+                    clientRecord.minBalance = dbClientRecords.minBalance;
+                    clientRecord.totalBalance = dbClientRecords.totalBalance;
+                    return clientRecord;
                 }
         ).collect(Collectors.toCollection(ArrayList::new));
-        return tableToSend;
+        return clientRecordsToSend;
     }
 
 

@@ -3,14 +3,14 @@ package kz.greetgo.sandbox.controller.model;
 
 public class Account {
   public int id;
-  public int userID;
+  public int clientId;
   public double moneyNumber;
   public long registeredAt;
 
 
   @Override
   public String toString(){
-    return Integer.toString(id)+" "+userID+" "+Double.toString(moneyNumber)+" "+registeredAt;
+    return Integer.toString(id)+" "+clientId+" "+Double.toString(moneyNumber)+" "+registeredAt;
   }
 
 

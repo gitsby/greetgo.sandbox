@@ -1,21 +1,15 @@
-import {Component, EventEmitter, OnDestroy, Output, ViewChild} from "@angular/core";
+import { Component, EventEmitter, OnDestroy, Output, ViewChild} from "@angular/core";
 import { UserInfo } from "../../models/UserInfo";
 import { HttpService } from "../../services/HttpService";
-import { PhoneType } from "../../models/PhoneType";
-import { User } from "../../models/User";
-import { Phone } from "../../models/Phone";
-import { Address } from "../../models/Address";
-import { CharmType } from "../../models/CharmType";
 import { MatDialogRef,MatDialog, MatDialogConfig } from '@angular/material';
-import { UserDialogComponent } from './user-dialog/user-dialog.component';
-import {UsersTableComponent} from "./users-table/users-table.component";
-import {Subscription} from "rxjs/";
-import {UsersTableCustomDatasource} from "./users-table/users-table-custom-datasource";
-import {Http} from "@angular/http";
-// import Subscription = Rx.Subscription;
+import { ClientDialogComponent } from './client-dialog/client-dialog.component';
+import { ClientRecordsComponent } from "./client-records/client-records.component";
+import { Subscription } from "rxjs/";
+import {CharmService} from "../../services/CharmService";
 
 @Component({
   selector: 'main-form-component',
+  // providers: [charmService]
   templateUrl: './main-form.component.html',
 })
 export class MainFormComponent implements OnDestroy{
@@ -24,49 +18,54 @@ export class MainFormComponent implements OnDestroy{
   subscription: Subscription;
 
   userInfo: UserInfo | null = null;
-  loadUserInfoButtonEnabled: boolean = true;
-  loadUserInfoError: string | null;
+  loadClientInfoButtonEnabled: boolean = true;
+  loadClientInfoError: string | null;
   mockRequest: string | null = null;
-  // userIsLoading: boolean = false;
-  selectedUserID: string = '-1';
-  // selectedUser: User = this.generateNewUser();
+  // clientIsLoading: boolean = false;
+  selectedClientId: number = -1;
+  // selectedClient: Client = this.generateNewClient();
   // isThereData: boolean = true;
   typeOfDialogCall: string | null = null;
-  userDialogRef: MatDialogRef<UserDialogComponent>;
+  clientDialogRef: MatDialogRef<ClientDialogComponent>;
   // http: Http;
-  @ViewChild(UsersTableComponent) private usersTableComponent: UsersTableComponent;
+  @ViewChild(ClientRecordsComponent) private clientRecordsComponent: ClientRecordsComponent;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog) {}
+  constructor(private httpService: HttpService, private dialog: MatDialog,
+              private charmService: CharmService) {}
 
-  selectedUserIDChange(changedUser) {
-    // this.isThereData = true;
-    this.selectedUserID = changedUser;
+  ngOnInit(){
+    this.charmService.getCharms();
   }
 
-  openDialog(id:string = null) {
+  selectedClientIdChange(changedClient) {
+    this.selectedClientId = changedClient;
+    //console.log(this.selectedClientId);
+  }
 
-      this.userDialogRef = this.dialog.open(UserDialogComponent, {
+  openDialog(id = null) {
+      this.clientDialogRef = this.dialog.open(ClientDialogComponent, {
         hasBackdrop: true,
         minWidth: 400,
         disableClose: true,
         data: {
-          // TODO: должен передаваться только ID либо null (При добавлении нового клиента) /
+          // TODO: должен передаваться только Id либо null (При добавлении нового клиента) /
           // DONE
           id:id
         }
       });
 
-      this.userDialogRef.afterClosed().subscribe((data:object)=> {
-        console.log(typeof data);
-        console.log(data);
-        console.log(data["user"]);
+      this.clientDialogRef.afterClosed().subscribe((data:object)=> {
+        //console.log(typeof data);
+        //console.log(data);
+        //console.log(data["client"]);
         if (data["state"]===true) {
-          let user = data["user"];
+          let client = data["client"];
           if (id === null) {
-            this.selectedUserID = user.id;
-            this.usersTableComponent.addOneRow(user);
+
+            this.selectedClientId = parseInt(client.id);
+            this.clientRecordsComponent.addOneRow(client,data["charm"]);
           } else {
-            this.usersTableComponent.updateOneRow(user);
+            this.clientRecordsComponent.updateOneRow(client,data["charm"]);
           }
         }
 
@@ -76,50 +75,20 @@ export class MainFormComponent implements OnDestroy{
 
 
   deleteButtonClicked(): void {
-    // this.userIsLoading=true;
-    this.httpService.post("/table/delete-user", {"userID": this.selectedUserID}).toPromise().then(res => {
-      // this.userIsLoading=false;
-      this.usersTableComponent.loadTablePage();
+    this.httpService.post("/client-records/delete-client", {"clientId": this.selectedClientId}).toPromise().then(res => {
+      //console.log(res.json());
+      this.clientRecordsComponent.loadClientRecordsPage();
     });
   }
 
   updateButtonClicked(): void {
-    // this.userIsLoading=true;
-    this.openDialog(this.selectedUserID);
+    this.openDialog(this.selectedClientId);
   }
 
   createButtonClicked(): void {
-    this.openDialog();
+    this.openDialog(null);
   }
 
-  // TODO: по наименованию не понятно, что этот метод делает на самом деле.
-  // Кажется, что он должен вывести мне только пользователя и всё.
-  // TODO: назови правильно.
-  // getSelectedUser(callback) {
-  //   return (this.httpService.get('/table/get-exact-user', {'userID': this.selectedUserID}).toPromise().then(
-  //     res => {
-  //       this.selectedUser = User.copy(res.json());
-  //       // this.isThereData = false;
-  //       callback(this.selectedUser);
-  //       this.userIsLoading=false;
-  //     }
-  //   ));
-  // }
-
-
-  // generateNewUser(): User {
-  //   let user = new User();
-  //   user.phones = [new Phone('', PhoneType.MOBILE)];
-  //   user.name = "";
-  //   user.surname = "";
-  //   user.patronymic = "";
-  //   user.charm = CharmType.BOI;
-  //   user.birthDate = 0;
-  //   user.factualAddress = new Address();
-  //   user.registeredAddress = new Address();
-  //   user.id = '-1';
-  //   return user
-  // }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();

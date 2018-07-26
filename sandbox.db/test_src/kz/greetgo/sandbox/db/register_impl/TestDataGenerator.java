@@ -8,18 +8,18 @@ import java.util.Random;
 
 
 public class TestDataGenerator {
-    User generateUser(){
-        User user = new User();
-        user.id = -1;
-        user.name= RND.str(10);
-        user.surname= RND.str(10);
-        user.patronymic= RND.str(10);
-        user.birthDate=RND.plusLong((long) Math.pow(10,14));
-        user.genderType= GenderType.values()[new Random().nextInt(GenderType.values().length)];
-        user.charm=RND.str(10);
-        user.registeredAddress= generateRandomAddress();
-        user.factualAddress= generateRandomAddress();
-        user.validity=true;
+    Client generateClient(){
+        Client client = new Client();
+        client.id = -1;
+        client.name= RND.str(10);
+        client.surname= RND.str(10);
+        client.patronymic= RND.str(10);
+        client.birthDate=RND.plusLong((long) Math.pow(10,14));
+        client.genderType= GenderType.values()[new Random().nextInt(GenderType.values().length)];
+        client.charm=RND.str(10);
+        client.registeredAddress= generateRandomAddress();
+        client.factualAddress= generateRandomAddress();
+        client.validity=true;
         int pl=1+RND.plusInt(4);
         Phone[] notFixedArray = new Phone[pl];
         notFixedArray[0]=generateRandomPhone();
@@ -28,8 +28,8 @@ public class TestDataGenerator {
             notFixedArray[i]=generateRandomPhone(RND.someEnum(PhoneType.values()));
             notFixedArray[i].validity=true;
         }
-        user.phones=notFixedArray;
-        return user;
+        client.phones=notFixedArray;
+        return client;
     }
     Address generateRandomAddress(){
         Address address= new Address();

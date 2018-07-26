@@ -5,15 +5,15 @@
 
     <button mat-stroked-button (click)="createButtonClicked()" color="basic" style="margin: 10px">Create</button>
 
-    <button mat-stroked-button [disabled]="selectedUserID==='-1'" (click)="updateButtonClicked()" color="primary" style="margin: 10px">Update</button>
+    <button mat-stroked-button [disabled]="selectedClientId==='-1'" (click)="updateButtonClicked()" color="primary" style="margin: 10px">Update</button>
 
     <button mat-stroked-button (click)="deleteButtonClicked()" color="warn" style="margin: 10px">Delete</button>
 
     <button mat-stroked-button (click)="exit.emit()" style="margin: 10px">Выход</button>
 
   </div>
-  <mat-dialog-content *ngIf="userIsLoading"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
-  <users-table style="width: 80%" (selectedUserID)="selectedUserIDChange($event)"></users-table>
+  <mat-dialog-content *ngIf="clientIsLoading"><mat-progress-bar mode="buffer"></mat-progress-bar></mat-dialog-content>
+  <client-records style="width: 80%" (selectedClientId)="selectedClientIdChange($event)"></client-records>
 
 </div>
 
