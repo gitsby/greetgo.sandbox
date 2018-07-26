@@ -1,5 +1,7 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.errors.InvalidClientData;
 import kz.greetgo.sandbox.controller.errors.NoCharmError;
@@ -7,8 +9,6 @@ import kz.greetgo.sandbox.controller.errors.NoClient;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
-import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.stand.beans.StandJsonDb;
 
 import java.io.File;
@@ -26,6 +26,8 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
 
     public BeanGetter<StandJsonDb> db;
     public BeanGetter<AuthRegister> authRegister;
+
+    // TODO: relative path!
     public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
 
     public enum SortType{
@@ -218,10 +220,14 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     public String makeReport(String sortDirection, String sortType, String filterType,
                              String filterText,String client, String reportType) throws Exception{
         ReportClientRecordsView reportClientRecordsView;
+
+        // TODO: высвободить ресурсы
         OutputStream out;
         Date date = new Date();
         client = authRegister.get().getUserInfo(client).accountName;
         String filename =client+"_"+date.getTime();
+
+        // TODO: null safe
         if(reportType.equals("PDF")){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
@@ -231,6 +237,8 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
             out = new FileOutputStream(new File(reportsPath+filename));
             reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
         }else {
+
+          // TODO: правильно передавай статусы запросов !
             return "-1";
         }
 

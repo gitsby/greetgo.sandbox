@@ -34,6 +34,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
   public DbModelConverter dbModelConverter = new DbModelConverter();
 
+  // TODO: relative path!
   private String reportsPath = "D:/greetgonstuff/greetgo.sandbox/reports/";
 
   @Override
@@ -252,6 +253,8 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
         out = new FileOutputStream(new File(reportsPath+filename));
         reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
       }else {
+
+        // TODO: неверное уведомление об ошибки!
         return "-1";
       }
       ClientRecordsToSend clientRecordsToSend;
