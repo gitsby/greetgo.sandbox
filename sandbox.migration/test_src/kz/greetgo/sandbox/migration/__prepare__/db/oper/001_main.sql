@@ -1,4 +1,4 @@
-create table client (
+ create table client (
   id bigint not null primary key,
 
   surname varchar(300) not null,

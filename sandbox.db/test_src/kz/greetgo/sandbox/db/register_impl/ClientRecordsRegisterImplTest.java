@@ -39,7 +39,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
             sentClients[i]=testDataGenerator.generateClient();
             int id = tableRegister.get().createClient(sentClients[i]);
             sentClients[i].id=id;
-            gotClients[i]=tableRegister.get().getExactClient(id);
+            gotClients[i]=tableRegister.get().getClientDetails(id);
         }
 
         for(int i=0; i<10; i++){
@@ -60,7 +60,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
             } else if(option.equals("gender")){
                 client.genderType = null;
             } else if(option.equals("charm")){
-                client.charm = null;
+                client.charmId = null;
             } else if(option.equals("registeredAddress")){
                 client.registeredAddress = null;
             } else if(option.equals("birthDate")){
@@ -78,7 +78,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
             } else if(option.equals("gender")){
                 client.genderType = null;
             } else if(option.equals("charm")){
-                client.charm = "";
+                client.charmId = 0;
             } else if(option.equals("registeredAddress")){
                 client.registeredAddress.house = "";
                 client.registeredAddress.flat = "";
@@ -117,16 +117,16 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
 
 
     @Test
-    public void getExactClientTest(){
+    public void getClientDetailsTest(){
         deleteAllData();
 
         Client client = testDataGenerator.generateClient();
 
-        DbCharm dbCharm = testDataGenerator.generateRandomCharm(client.charm);
+        DbCharm dbCharm = testDataGenerator.generateRandomCharm(RND.str(5));
         tableTestDao.get().insertCharm(dbCharm);
         dbCharm.id = tableTestDao.get().getCharmId(dbCharm.name);
 
-        DbClient dbClient = dbModelConverter.convertToDbClient(client,dbCharm.id);
+        DbClient dbClient = dbModelConverter.convertToDbClient(client);
         tableTestDao.get().insertClient(dbClient);
         Integer clientId=tableTestDao.get().getLastClientId();
         client.id=clientId;
@@ -138,14 +138,14 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         for (DbClientPhone dbClientPhone: dbClientPhones) {
             tableTestDao.get().insertPhone(dbClientPhone);
         }
-        Client gotClient =tableRegister.get().getExactClient(clientId);
+        Client gotClient =tableRegister.get().getClientDetails(clientId);
         assertThat(client.equals(gotClient));
     }
 
     @Test
     void getNullClientTest() {
         deleteAllData();
-        Client gotClient =tableRegister.get().getExactClient(0);
+        Client gotClient =tableRegister.get().getClientDetails(0);
         Client client = new Client();
         assertThat(client.equals(gotClient));
     }
@@ -156,7 +156,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         deleteAllData();
         Client client = testDataGenerator.generateClient();
         client.id = tableRegister.get().createClient(client);
-        Client gotClient = tableRegister.get().getExactClient(client.id);
+        Client gotClient = tableRegister.get().getClientDetails(client.id);
         assertThat(client.equals(gotClient));
     }
 
@@ -169,7 +169,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         client.id = clientId;
         tableRegister.get().changeClient(client);
 
-        Client gotClient = tableRegister.get().getExactClient(clientId);
+        Client gotClient = tableRegister.get().getClientDetails(clientId);
         assertThat(gotClient.equals(client));
     }
 
@@ -179,7 +179,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         Client client = testDataGenerator.generateClient();
         int clientId = tableRegister.get().createClient(client);
         tableRegister.get().deleteClient(clientId);
-        client = tableRegister.get().getExactClient(clientId);
+        client = tableRegister.get().getClientDetails(clientId);
         assertThat(client.id==-1);
     }
 
@@ -212,7 +212,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         Client client = testDataGenerator.generateClient();
         client.id=clientId;
         tableRegister.get().changeClient(client);
-        Client updatedClient = tableRegister.get().getExactClient(clientId);
+        Client updatedClient = tableRegister.get().getClientDetails(clientId);
         assertThat(updatedClient.id==-1);
     }
 
@@ -294,8 +294,6 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
                         switch (enumSortType) {
                             case FULLNAME:
                                 return "DESC".equals(sortDirection)?-o1.fullName.compareTo(o2.fullName):o1.fullName.compareTo(o2.fullName);
-                            case CHARM:
-                                return "DESC".equals(sortDirection)?-o1.charm.compareTo(o2.charm):o1.charm.compareTo(o2.charm);
                             case AGE:
                                 return "DESC".equals(sortDirection)?-Long.compare(o1.age,o2.age):Long.compare(o1.age,o2.age);
                             case TOTALBALANCE:
@@ -430,7 +428,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         clientRecord.minBalance=1;
         clientRecord.age=9;
         clientRecord.maxBalance=112;
-        clientRecord.charm="badboi";
+        clientRecord.charm="BOI";
         tableRegister.get().reportTest(clientRecord,0,view);
         assertThat(view.rowList.get(0).equals(clientRecord));
     }

@@ -18,10 +18,19 @@ public class LiquibaseManagerImpl implements LiquibaseManager {
 
   public BeanGetter<DbConfig> dbConfig;
 
+  public BeanGetter<DbConfig> dbConfig2;
+
   @Override
   public void apply() throws Exception {
 
     Class.forName("org.postgresql.Driver");
+
+    System.out.println("==================================");
+    System.out.println(dbConfig2.get().url());
+    System.out.println(dbConfig2.get().username());
+    System.out.println(dbConfig2.get().password());
+    System.out.println("==================================");
+
 
     try (Connection connection = DriverManager.getConnection(
       dbConfig.get().url(),

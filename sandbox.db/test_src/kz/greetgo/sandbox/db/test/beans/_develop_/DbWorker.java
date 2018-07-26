@@ -30,6 +30,7 @@ public class DbWorker {
   public BeanGetter<DbConfig> postgresDbConfig;
   public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
   public BeanGetter<LiquibaseManager> liquibaseManager;
+  private final java.util.Set<String> alreadyRecreatedUsers = new HashSet<>();
 
   public void recreateAll() throws Exception {
     prepareDbConfig();
@@ -39,7 +40,6 @@ public class DbWorker {
     App.do_not_run_liquibase_on_deploy_war().createNewFile();
   }
 
-  private final java.util.Set<String> alreadyRecreatedUsers = new HashSet<>();
 
   private void recreateDb() throws Exception {
 
@@ -92,7 +92,6 @@ public class DbWorker {
       }
     }
   }
-
 
   public void cleanConfigsForTeamcity() {
     if (System.getProperty("user.name").startsWith("teamcity")) {

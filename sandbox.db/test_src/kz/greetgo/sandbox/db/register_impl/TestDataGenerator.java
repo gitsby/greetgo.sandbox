@@ -16,7 +16,7 @@ public class TestDataGenerator {
         client.patronymic= RND.str(10);
         client.birthDate=RND.plusLong((long) Math.pow(10,14));
         client.genderType= GenderType.values()[new Random().nextInt(GenderType.values().length)];
-        client.charm=RND.str(10);
+        client.charmId=0;
         client.registeredAddress= generateRandomAddress();
         client.factualAddress= generateRandomAddress();
         client.validity=true;

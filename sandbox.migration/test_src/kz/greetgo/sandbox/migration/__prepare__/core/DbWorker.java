@@ -17,6 +17,7 @@ public class DbWorker {
   public void prepareConfigFiles() throws IOException {
     prepareConfigDbFile(ConfigFiles.operDb(), "learn_migration");
     prepareConfigDbFile(ConfigFiles.ciaDb(), "learn_migration_source");
+
   }
 
   private void prepareConfigDbFile(File configFile, String db) throws IOException {
