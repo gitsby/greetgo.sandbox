@@ -168,7 +168,8 @@ public class Migration implements Closeable {
     see.start();
 
     try (PreparedStatement ciaPS = ciaConnection.prepareStatement(
-      "select * from transition_client where status='JUST_INSERTED' order by number limit ?")) {
+
+            "select * from transition_client where status='JUST_INSERTED' order by number limit ?")) {
 
       info("Prepared statement for : select * from transition_client");
 
