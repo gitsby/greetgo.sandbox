@@ -24,9 +24,6 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.NoSuchElementException;
 
-// TODO: war не собирается, исправь ошибку.
-// TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
-// DONE
 @Bean
 public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
@@ -215,6 +212,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressRegistered(client));
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressFactual(client));
 
+    // TODO: исправь, я говорил об этом!
     return "1";
   }
 
@@ -226,6 +224,8 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     clientRecordsDao.get().deleteClient(clientId);
     clientRecordsDao.get().deletePhone(clientId);
     clientRecordsDao.get().deleteAccount(clientId);
+
+    // TODO: исправь, я говорил об этом!
     return "1";
   }
 

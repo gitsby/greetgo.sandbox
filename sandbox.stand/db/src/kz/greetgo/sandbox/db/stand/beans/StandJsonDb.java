@@ -28,13 +28,8 @@ public class StandJsonDb implements HasAfterInject{
 
     public  Gson gson  = new Gson();
 //    PathGetter pathGetter =  new PathGetter();
-    // TODO: Cool!
-    // TODO: But you should think about your other teammates. Don't use the absolute path, change it to relative.
-    // TODO: Cause you're not alone on the project.
-    // TODO: But the main reason is the project itself becomes inflexible
-    // TODO: Make commit and push these files too.
-    // TODO: + change the source package. Directory "beans" is for beans only.
-    // DONE;
+    // TODO: + change the source package. Directory "beans" is for beans only !!!
+    // !!! DONE;
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
     public String clientsPath=getClass().getResource("StandDbJsonData.json").getPath();

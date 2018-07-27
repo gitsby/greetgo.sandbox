@@ -176,11 +176,6 @@ export class ClientDialogComponent implements OnInit {
     }
   }
 
-  // TODO: по наименованию не понятно, что этот метод делает на самом деле.
-  // Кажется, что он должен вывести мне только пользователя и всё.
-  // TODO: назови правильно.
-  // DONE
-
   charmsResolve(err){
     // console.log(err._body);
     this.gettingOrSendingDataToServer = false;

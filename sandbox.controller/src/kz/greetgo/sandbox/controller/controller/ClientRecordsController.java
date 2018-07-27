@@ -12,28 +12,22 @@ import kz.greetgo.sandbox.controller.util.Controller;
 
 import static kz.greetgo.mvc.core.RequestMethod.*;
 
-// TODO: Все переменные и названия любых классох, директорий должны быть понятными !!!
-// DONE
 @Bean
-// TODO: маппинг сделать понятным. О каком table идёт речь и что он делает
-// DONE
+// TODO: Это не контроллер, который отвечает только за ClientRecord. Он еще делает много чего другого.
+// назови и контроллер, и маппинг так, чтобы было обобщенно и понятно.
 @Mapping("/client-records")
-// TODO: контроль соответственно назвать так, чтобы было понятно
-// DONE
 public class ClientRecordsController implements Controller{
 
-
-    // TODO: переменную и класс регистра тоже переименуй
-    // DONE
     public BeanGetter<ClientRecordsRegister> clientRecordsRegister;
+
+    // TODO: убери, если не используешь
     private String clientId;
 
+    // TODO: не везде такое можно писать. Что - то должно оставаться приватным. Убери там, где лишнее.
     @NoSecurity
     @ToJson
     @Mapping("/get-client-records")
-    // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Record для данного случая.
-    // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
-    // DONE
+    // TODO: 2.03.1. Входные параметры должны быть в одном классе-аргументе;
     public ClientRecordsToSend getClientRecords(@Par("skipNumber") int skipNumber, @Par("limit") int limit,
                                             @Par("sortDirection") String sortDirection, @Par("sortType") String sortType,
                                             @Par("filterType") String  filterType, @Par("filterText") String filterText) {
@@ -44,9 +38,7 @@ public class ClientRecordsController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-charms")
-    // TODO: неверный вывод ответа для данного случая. Нельзя выдавать просто массив строк для характера.
-    // TODO: и где реализация для RegisterImpl ?
-    // DONE
+    // TODO: Зачем List оборачиваешь целым классом. Не надо такой путанницы. Сделай вывод просто List<Charm>
     public Charms getCharms(){
         return clientRecordsRegister.get().getCharms();
     }
@@ -67,11 +59,9 @@ public class ClientRecordsController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/create-client")
-    // TODO: Почему статус ошибки возвращаешь в виде integer?
-    // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    // TODO: при добавлении надо возвращать ClientRecord
+    // TODO: при добавлении надо возвращать ClientRecord !!!
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
-    // DONE
+    // !!! DONE
     public Integer createClient(@Par("client") @Json Client client) {
         return clientRecordsRegister.get().createClient(client);
     }
@@ -82,11 +72,9 @@ public class ClientRecordsController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/change-client")
-    // TODO: Почему статусы возвращаешь в виде строки?
-    // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    // TODO: при редактирование надо возвращать ClientRecord
+    // TODO: при редактирование надо возвращать ClientRecord !!!
     // поинтересуйся у меня, если возникут вопросы по этому поводу.
-    // DONE
+    // !!! DONE
     public String changeClient(@Par("client") @Json Client client) {
         return clientRecordsRegister.get().changeClient(client);
     }
@@ -96,9 +84,6 @@ public class ClientRecordsController implements Controller{
     @ToJson
     @MethodFilter(POST)
     @Mapping("/delete-client")
-    // TODO: Почему статусы возвращаешь в виде строки?
-    // TODO: Нельзя так делать, для этого есть специальные классы и методы. переделай!
-    // DONE
     public String deleteClient(@Par("clientId") Integer clientId){
         return clientRecordsRegister.get().deleteClient(clientId);
     }
@@ -123,6 +108,8 @@ public class ClientRecordsController implements Controller{
         clientRecordsRegister.get().downloadReport(filename,response);
     }
 
+    // TODO: для чего этот метод?
+    // Лишнее удаляй
     @ToJson
     @NoSecurity
     @Mapping("/error-handling")
@@ -130,7 +117,4 @@ public class ClientRecordsController implements Controller{
         System.err.println("\nHEEEEYYYYAAAA\n");
         throw new NoCharmError();
     }
-
-
-
 }
