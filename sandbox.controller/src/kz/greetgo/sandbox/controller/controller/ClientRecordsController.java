@@ -47,9 +47,9 @@ public class ClientRecordsController implements Controller{
     @NoSecurity
     @ToJson
     @Mapping("/get-client-details")
-    // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Details для данного случая.
+    // TODO: я ведь показывал правильное наименование. Должен использоваться суффикс ...Details для данного случая. !!!
     // Если забыл, подойди и спроси. Я покажу, не кусаюсь.
-    // DONE
+    // !!! DONE
     public Client getClientDetails(@Par("clientId") Integer clientId){
         return clientRecordsRegister.get().getClientDetails(clientId);
     }
