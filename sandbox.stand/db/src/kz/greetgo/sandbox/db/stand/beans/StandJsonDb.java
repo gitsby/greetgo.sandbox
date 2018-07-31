@@ -37,6 +37,7 @@ public class StandJsonDb implements HasAfterInject{
     // DONE;
     /* I know that it doesn't look good, but it was the fastest and dumbest way to do it ^_^
     * */
+
     public String clientsPath=getClass().getResource("StandDbJsonData.json").getPath();
     public String accountsPath = getClass().getResource("StandAccountsDb.json").getPath();
     public String charmsPath = getClass().getResource("StandDbCharms.json").getPath();

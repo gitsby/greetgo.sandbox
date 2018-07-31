@@ -29,7 +29,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     public BeanGetter<AuthRegister> authRegister;
 
     // TODO: relative path!
-    public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
+    public String reportsPath=getClass()"/reports/";
 
     public enum SortType{
         FULLNAME,
@@ -284,6 +284,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         }
         fileInputStream.close();
         response.flushBuffers();
+        response.out().close();
     }
 
     @Override

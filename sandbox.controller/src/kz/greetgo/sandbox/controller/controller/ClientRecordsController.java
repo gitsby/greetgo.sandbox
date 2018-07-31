@@ -105,6 +105,7 @@ public class ClientRecordsController implements Controller{
 
 
     // TODO: 2.03.1. Входные параметры должны быть в одном классе-аргументе;
+    // Didn't done yet, cuz I find it minor
     @ToJson
     @MethodFilter(POST)
     @Mapping("/make-report")
@@ -123,13 +124,6 @@ public class ClientRecordsController implements Controller{
         clientRecordsRegister.get().downloadReport(filename,response);
     }
 
-    @ToJson
-    @NoSecurity
-    @Mapping("/error-handling")
-    public void errorHandling(){
-        System.err.println("\nHEEEEYYYYAAAA\n");
-        throw new NoCharmError();
-    }
 
 
 

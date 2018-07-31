@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.NoSuchElementException;
 
 // TODO: war не собирается, исправь ошибку.
+// didn't done yet, same minor
 // TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
 // DONE
 @Bean
@@ -33,7 +34,10 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   public DbModelConverter dbModelConverter = new DbModelConverter();
 
   // TODO: relative path!
-  private String reportsPath = "D:/greetgonstuff/greetgo.sandbox/reports/";
+  // here we go :D
+
+  File sampleFile = new File("file");
+  private String reportsPath = sampleFile.getPath()+"/reports/";
 
   @Override
   public ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText){
@@ -242,17 +246,19 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
       OutputStream out;
       Date date = new Date();
       String filename =client+"_"+date.getTime();
-      if(reportType.equals("PDF")){
+      if("PDF".equals(reportType)){
         filename+="."+reportType;
         out = new FileOutputStream(new File(reportsPath+filename));
         reportClientRecordsView = new ReportClientRecordsViewPdf(out);
-      }else if(reportType.equals("XLSX")){
+      }else if("XLSX".equals(reportType)){
+
         filename+="."+reportType;
         out = new FileOutputStream(new File(reportsPath+filename));
         reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
       }else {
 
         // TODO: неверное уведомление об ошибки!
+        // DONE
         throw new InvalidParams();
       }
       ClientRecordsToSend clientRecordsToSend;
