@@ -5,12 +5,14 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.mvc.interfaces.BinResponse;
 import kz.greetgo.sandbox.controller.errors.NoCharmError;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.Charms;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientRecordsToSend;
 import kz.greetgo.sandbox.controller.register.ClientRecordsRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
-import static kz.greetgo.mvc.core.RequestMethod.*;
+import static kz.greetgo.mvc.core.RequestMethod.POST;
 
 @Bean
 // TODO: Это не контроллер, который отвечает только за ClientRecord. Он еще делает много чего другого.

@@ -387,7 +387,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
   }
 
 
-
+  // TODO: вынеси отдельно
   private static class TestView implements ReportClientRecordsView {
 
     String contractNumber;
