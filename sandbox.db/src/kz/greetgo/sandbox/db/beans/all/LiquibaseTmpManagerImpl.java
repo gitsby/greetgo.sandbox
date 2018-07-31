@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.beans.all;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.DbTmpConfig;
 import kz.greetgo.sandbox.db.util.LiquibaseTmpManager;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -16,17 +17,18 @@ import java.sql.DriverManager;
 @Bean
 public class LiquibaseTmpManagerImpl implements LiquibaseTmpManager {
 
-    public BeanGetter<DbConfig> dbConfig;
+    public BeanGetter<DbTmpConfig> dbTmpConfig;
 
     @Override
     public void apply() throws Exception {
 
         Class.forName("org.postgresql.Driver");
 
+//        dbTmpConfig.get().url();
         try (Connection connection = DriverManager.getConnection(
-                dbConfig.get().url(),
-                dbConfig.get().username(),
-                dbConfig.get().password()
+                dbTmpConfig.get().url(),
+                dbTmpConfig.get().username(),
+                dbTmpConfig.get().password()
         )) {
             Database database = new PostgresDatabase();
 
@@ -34,10 +36,15 @@ public class LiquibaseTmpManagerImpl implements LiquibaseTmpManager {
 
             {
                 new Liquibase(
-                        "liquibase/postgres/changelog-master.xml",
+                        "liquibase/postgres/migration.xml",
                         new ClassLoaderResourceAccessor(), database
                 ).update("");
             }
         }
+    }
+
+    static public void main(String[] args) throws Exception {
+        LiquibaseTmpManager lbtm = new LiquibaseTmpManagerImpl();
+        lbtm.apply();
     }
 }

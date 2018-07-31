@@ -36,6 +36,7 @@ public class ClientRecord extends SaxHandler {
       surname = attributes.getValue("surname");
       name = attributes.getValue("name");
       patronymic = attributes.getValue("patronymic");
+
       return;
     }
   }

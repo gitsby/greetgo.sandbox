@@ -84,7 +84,7 @@ public class ReportClientRecordsViewXlsx implements ReportClientRecordsView {
 
         // TODO: relative path!
         // TODO: close resources
-        OutputStream outf = new FileOutputStream(new File("D:/greetgonstuff/greetgo.sandbox/reports/test.xlsx"));
+        OutputStream outf = new FileOutputStream(new File("test.xlsx"));
         ReportClientRecordsViewXlsx x = new ReportClientRecordsViewXlsx(outf);
         x.start("badboi", new Date());
         for (int i = 0; i <5 ; i++) {

@@ -11,6 +11,7 @@ public class DaoImplFactory extends AbstractMybatisDaoImplFactory {
 
   public BeanGetter<DbSessionFactory> dbSessionFactory;
 
+
   @Override
   protected SqlSession getSqlSession() {
     return dbSessionFactory.get().sqlSession();

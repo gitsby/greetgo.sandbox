@@ -76,7 +76,7 @@ public class ReportClientRecordsViewPdf implements ReportClientRecordsView {
         OutputStream outf = new FileOutputStream(new File("D:/greetgonstuff/greetgo.sandbox/reports/test.pdf"));
         ReportClientRecordsViewPdf x = new ReportClientRecordsViewPdf(outf);
         x.start("badboi", new Date());
-        for (int i = 0; i <5 ; i++) {
+        for (int i = 0; i <1000000 ; i++) {
             ClientRecord clientRecord =new ClientRecord();
             clientRecord.fullName="asd";
             clientRecord.charm="asd";

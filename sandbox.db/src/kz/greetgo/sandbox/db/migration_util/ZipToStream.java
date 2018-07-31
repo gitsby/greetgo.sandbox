@@ -1,41 +1,48 @@
-package kz.greetgo.sandbox.migration.util;
+package kz.greetgo.sandbox.db.migration_util;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.io.IOUtils;
-//import kz.greetgo.mvc.interfaces.RequestTunnel;
+import sun.misc.IOUtils;
 
 import java.io.*;
 
+//import kz.greetgo.mvc.interfaces.RequestTunnel;
 
 
 public class ZipToStream {
 
 
 
-    public BufferedReader getUnzipped(InputStream in) throws IOException {
-        System.out.println(in.available());
-        BufferedInputStream bis = new BufferedInputStream(in);
-        BZip2CompressorInputStream b2cis = new BZip2CompressorInputStream(bis);
-        ArchiveInputStream tis = new TarArchiveInputStream(b2cis);
-        ArchiveEntry archiveEntry = null;
+    public BufferedReader getUnzipped(InputStream is) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(is);
+        try
+        {
+            BZip2CompressorInputStream b2cis = new BZip2CompressorInputStream(bis);
+            ArchiveInputStream tis = new TarArchiveInputStream(b2cis);
+            ArchiveEntry archiveEntry = null;
 
-        while((archiveEntry=tis.getNextEntry())!=null){
-            if (archiveEntry.isDirectory()) continue;
+            while((archiveEntry=tis.getNextEntry())!=null){
+                if (archiveEntry.isDirectory()) continue;
 
-            InputStream tmpIn = new SizeLimitInputStream(tis, archiveEntry.getSize());
+                InputStream tmpIn = new SizeLimitInputStream(tis, archiveEntry.getSize());
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(tmpIn));
+                BufferedReader br = new BufferedReader(new InputStreamReader(tmpIn));
 
-            return br;
+                return br;
 
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
 
         return null;
     }
+
+
 
     public static void main(String[] args) throws IOException, CompressorException {
         File file = new File("D:\\greetgonstuff\\learn.migration\\src\\myzip.tar.bz2");

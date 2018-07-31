@@ -4,10 +4,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.BinResponse;
-import kz.greetgo.sandbox.controller.errors.InvalidClientData;
-import kz.greetgo.sandbox.controller.errors.InvalidParams;
-import kz.greetgo.sandbox.controller.errors.NoCharmError;
-import kz.greetgo.sandbox.controller.errors.NoClient;
+import kz.greetgo.sandbox.controller.errors.*;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbCharm;
 import kz.greetgo.sandbox.controller.model.dbmodels.DbClient;
@@ -21,9 +18,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.nio.file.NoSuchFileException;
 import java.util.Date;
 import java.util.NoSuchElementException;
 
+// TODO: war не собирается, исправь ошибку.
+// didn't done yet, same minor
+// TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
+// DONE
 @Bean
 public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
@@ -32,7 +34,10 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   public DbModelConverter dbModelConverter = new DbModelConverter();
 
   // TODO: relative path!
-  private String reportsPath = "D:/greetgonstuff/greetgo.sandbox/reports/";
+  // here we go :D
+
+  File sampleFile = new File("file");
+  private String reportsPath = sampleFile.getPath()+"/reports/";
 
   @Override
   public ClientRecordsToSend getClientRecords(int skipNumber, int limit, String sortDirection, String sortType, String filterType, String filterText){
@@ -245,18 +250,20 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
       OutputStream out;
       Date date = new Date();
       String filename =client+"_"+date.getTime();
-      if(reportType.equals("PDF")){
+      if("PDF".equals(reportType)){
         filename+="."+reportType;
         out = new FileOutputStream(new File(reportsPath+filename));
         reportClientRecordsView = new ReportClientRecordsViewPdf(out);
-      }else if(reportType.equals("XLSX")){
+      }else if("XLSX".equals(reportType)){
+
         filename+="."+reportType;
         out = new FileOutputStream(new File(reportsPath+filename));
         reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
       }else {
 
         // TODO: неверное уведомление об ошибки!
-        return "-1";
+        // DONE
+        throw new InvalidParams();
       }
       ClientRecordsToSend clientRecordsToSend;
 
@@ -283,7 +290,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   @Override
   public void downloadReport(String filename, BinResponse response) throws Exception{
       if(!(new File(reportsPath+filename)).exists()){
-        return;
+        throw new NoSuchFileException("No such file!");
       }
       String urlEncodedFileName = URLEncoder.encode(filename, "UTF-8");
       response.setContentType("application/octet-stream");

@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.BinResponse;
+import kz.greetgo.sandbox.controller.errors.InvalidParams;
 import kz.greetgo.sandbox.controller.errors.InvalidClientData;
 import kz.greetgo.sandbox.controller.errors.NoCharmError;
 import kz.greetgo.sandbox.controller.errors.NoClient;
@@ -28,7 +29,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
     public BeanGetter<AuthRegister> authRegister;
 
     // TODO: relative path!
-    public String reportsPath="D:/greetgonstuff/greetgo.sandbox/reports/";
+    public String reportsPath=getClass()"/reports/";
 
     public enum SortType{
         FULLNAME,
@@ -222,24 +223,28 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         ReportClientRecordsView reportClientRecordsView;
 
         // TODO: высвободить ресурсы
+        // DONE
         OutputStream out;
+
         Date date = new Date();
         client = authRegister.get().getUserInfo(client).accountName;
         String filename =client+"_"+date.getTime();
 
         // TODO: null safe
-        if(reportType.equals("PDF")){
+        // DONE
+        if("PDF".equals(reportType)){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportClientRecordsView = new ReportClientRecordsViewPdf(out);
-        }else if(reportType.equals("XLSX")){
+        }else if("XLSX".equals(reportType)){
             filename+="."+reportType;
             out = new FileOutputStream(new File(reportsPath+filename));
             reportClientRecordsView = new ReportClientRecordsViewXlsx(out);
         }else {
 
-          // TODO: правильно передавай статусы запросов !
-            return "-1";
+            // TODO: правильно передавай статусы запросов !
+            // DONE
+            throw new InvalidParams();
         }
 
         ClientRecordsToSend clientRecordsToSend;
@@ -255,8 +260,11 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         }
 
         reportClientRecordsView.finish();
+        out.close();
         return filename;
+
     }
+
 
     @Override
     public void downloadReport(String filename, BinResponse response)
@@ -276,6 +284,7 @@ public class ClientRecordsRegisterStand implements ClientRecordsRegister {
         }
         fileInputStream.close();
         response.flushBuffers();
+        response.out().close();
     }
 
     @Override

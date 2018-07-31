@@ -16,7 +16,6 @@ import javax.sql.DataSource;
 public class DbSessionFactory extends LocalSessionFactory {
 
   public BeanGetter<DbConfig> dbConfig;
-  public BeanGetter<DbTmpConfig> dbTmpConfig;
 
 
   @Override

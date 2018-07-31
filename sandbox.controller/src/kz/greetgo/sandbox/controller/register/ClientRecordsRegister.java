@@ -22,7 +22,4 @@ public interface ClientRecordsRegister {
 
     void downloadReport(String filename,BinResponse response) throws Exception;
 
-    // TODO: тестовые реализации не должны быть в интерфейсах регистров
-    void reportTest(ClientRecord clientRecord, int i, ReportClientRecordsView view) throws Exception ;
-
 }

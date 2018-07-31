@@ -7,5 +7,5 @@ public enum PhoneType {
   WORK,
   MOBILE,
   EMBEDDED,
-  ;
+
 }

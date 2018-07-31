@@ -4,9 +4,10 @@ import kz.greetgo.conf.SysParams;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
-import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.DbTmpConfig;
 import kz.greetgo.sandbox.db.util.App;
 import kz.greetgo.sandbox.db.util.LiquibaseManager;
+import kz.greetgo.sandbox.db.util.LiquibaseTmpManager;
 import kz.greetgo.util.ServerUtil;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
@@ -27,37 +28,33 @@ import static kz.greetgo.sandbox.db.test.util.DbUrlUtils.extractDbName;
 public class MigrationWorker {
     final Logger logger = Logger.getLogger(getClass());
 
-    public BeanGetter<DbConfig> realDbConfig;
-    public BeanGetter<DbConfig> tmpDbConfig;
+    public BeanGetter<DbTmpConfig> realDbTmpConfig;
+    public BeanGetter<DbTmpConfig> tmpDbTmpConfig;
 
     public BeanGetter<AllConfigFactory> allPostgresConfigFactory;
 
-    public BeanGetter<LiquibaseManager> liquibaseManager;
+    public BeanGetter<LiquibaseTmpManager> liquibaseManager;
 
 
     private final java.util.Set<String> alreadyRecreatedUsers = new HashSet<>();
+    public Connection connection;
 
     public void recreateAll() throws Exception {
-        prepareDbConfig();
+        prepareDbTmpConfig();
         recreateDb();
 
         liquibaseManager.get().apply();
         App.do_not_run_liquibase_on_deploy_war().createNewFile();
     }
 
-
-    private void recreateTmpDb() throws Exception{
-
-    }
-    private void prepareTmpDbConfig() throws Exception{
-
-    }
     
     private void recreateDb() throws Exception {
 
-        final String dbName = extractDbName(realDbConfig.get().url());
-        final String username = realDbConfig.get().username();
-        final String password = realDbConfig.get().password();
+        final String dbName = extractDbName(realDbTmpConfig.get().url());
+        final String username = realDbTmpConfig.get().username();
+        final String password = realDbTmpConfig.get().password();
+
+
 
         try (Connection con = getPostgresAdminConnection()) {
 
@@ -111,24 +108,36 @@ public class MigrationWorker {
         }
     }
 
-    private void prepareDbConfig() throws Exception {
-        File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);
+    private void prepareDbTmpConfig() throws Exception {
+        File file = allPostgresConfigFactory.get().storageFileFor(DbTmpConfig.class);
 
         if (!file.exists()) {
             file.getParentFile().mkdirs();
-            writeDbConfigFile();
-        } else if ("null".equals(realDbConfig.get().url())) {
-            writeDbConfigFile();
+            writeDbTmpConfigFile();
+        } else if ("null".equals(realDbTmpConfig.get().url())) {
+            writeDbTmpConfigFile();
             allPostgresConfigFactory.get().reset();
         }
     }
 
-    private void writeDbConfigFile() throws Exception {
-        File file = allPostgresConfigFactory.get().storageFileFor(DbConfig.class);
-        try (PrintStream out = new PrintStream(file, "UTF-8")) {
+    public Connection getTmpDbConnection() throws Exception {
+        Class.forName("org.postgresql.Driver");
 
-            out.println("url=" + changeUrlDbName(SysParams.pgAdminUrl(), System.getProperty("user.name") + "_sandbox"));
-            out.println("username=" + System.getProperty("user.name") + "_sandbox");
+        this.connection = DriverManager.getConnection(
+                realDbTmpConfig.get().url(),
+                realDbTmpConfig.get().username(),
+                realDbTmpConfig.get().password()
+        );
+        return  this.connection;
+
+    }
+
+
+    private void writeDbTmpConfigFile() throws Exception {
+        File file = allPostgresConfigFactory.get().storageFileFor(DbTmpConfig.class);
+        try (PrintStream out = new PrintStream(file, "UTF-8")) {
+            out.println("url=" + changeUrlDbName(SysParams.pgAdminUrl(), System.getProperty("user.name") + "_migration_sandbox"));
+            out.println("username=" + System.getProperty("user.name") + "_migration_sandbox");
             out.println("password=111");
 
         }
@@ -136,10 +145,19 @@ public class MigrationWorker {
 
     public static Connection getPostgresAdminConnection() throws Exception {
         Class.forName("org.postgresql.Driver");
+
         return DriverManager.getConnection(
                 SysParams.pgAdminUrl(),
                 SysParams.pgAdminUserid(),
                 SysParams.pgAdminPassword()
         );
+    }
+
+    public void commit() throws SQLException {
+        this.connection.commit();
+    }
+
+    public void setAutoCommit(boolean b) throws SQLException {
+        this.connection.setAutoCommit(b);
     }
 }
