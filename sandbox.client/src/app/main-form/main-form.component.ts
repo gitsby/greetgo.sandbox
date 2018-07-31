@@ -48,8 +48,6 @@ export class MainFormComponent implements OnDestroy{
         minWidth: 400,
         disableClose: true,
         data: {
-          // TODO: должен передаваться только Id либо null (При добавлении нового клиента) /
-          // DONE
           id:id
         }
       });

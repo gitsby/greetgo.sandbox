@@ -22,73 +22,25 @@ import static org.testng.Assert.assertEquals;
 
 
 public class ClientRecordsRegisterImplTest extends ParentTestNg{
-    public BeanGetter<ClientRecordsRegister> tableRegister;
-    public BeanGetter<ClientRecordsTestDao> tableTestDao;
-    public BeanGetter<ClientRecordsDao> tableDao;
+  public BeanGetter<ClientRecordsRegister> tableRegister;
+  public BeanGetter<ClientRecordsTestDao> tableTestDao;
+  public BeanGetter<ClientRecordsDao> tableDao;
 
-    TestDataGenerator testDataGenerator = new TestDataGenerator();
-    DbModelConverter dbModelConverter = new DbModelConverter();
+  TestDataGenerator testDataGenerator = new TestDataGenerator();
+  DbModelConverter dbModelConverter = new DbModelConverter();
 
-    @Test
-    public void insertClientX10Test(){
-        deleteAllData();
-        Client[] sentClients = new Client[10];
-        Client[] gotClients = new Client[10];
+  @Test
+  public void insertClientX10Test(){
+    deleteAllData();
+    Client[] sentClients = new Client[10];
+    Client[] gotClients = new Client[10];
 
-        for(int i=0; i<10; i++) {
-            sentClients[i]=testDataGenerator.generateClient();
-            int id = tableRegister.get().createClient(sentClients[i]);
-            sentClients[i].id=id;
-            gotClients[i]=tableRegister.get().getClientDetails(id);
-        }
-
-        for(int i=0; i<10; i++){
-            assertThat(sentClients[i].equals(gotClients[i]));
-        }
+    for(int i=0; i<10; i++) {
+      sentClients[i]=testDataGenerator.generateClient();
+      int id = tableRegister.get().createClient(sentClients[i]);
+      sentClients[i].id=id;
+      gotClients[i]=tableRegister.get().getClientDetails(id);
     }
-
-    @Test
-    public void insertClientsWithNullParsTest(){
-        deleteAllData();
-        String[] move  = {"name","surname","gender","charm","registeredAddress","birthDate"};
-        for(String option: move) {
-            Client client = testDataGenerator.generateClient();
-            if(option.equals("name")){
-                client.name=null;
-            } else if(option.equals("surname")){
-                client.surname=null;
-            } else if(option.equals("gender")){
-                client.genderType = null;
-            } else if(option.equals("charm")){
-                client.charmId = null;
-            } else if(option.equals("registeredAddress")){
-                client.registeredAddress = null;
-            } else if(option.equals("birthDate")){
-                client.birthDate = null;
-            }
-            Integer id = tableRegister.get().createClient(client);
-            assertThat(id==-1);
-        }
-        for(String option: move) {
-            Client client =testDataGenerator.generateClient();
-            if(option.equals("name")){
-                client.name="";
-            } else if(option.equals("surname")){
-                client.surname="";
-            } else if(option.equals("gender")){
-                client.genderType = null;
-            } else if(option.equals("charm")){
-                client.charmId = 0;
-            } else if(option.equals("registeredAddress")){
-                client.registeredAddress.house = "";
-                client.registeredAddress.flat = "";
-                client.registeredAddress.street = "";
-            } else if(option.equals("birthDate")){
-                client.birthDate = null;
-            }
-            Integer id = tableRegister.get().createClient(client);
-            assertThat(id==-1);
-        }
 
         String[] moveByType = {"NOMOBILE","LESSTHAN11","LETTERS"};
 
@@ -142,36 +94,85 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         assertThat(client.equals(gotClient));
     }
 
-    @Test
-    void getNullClientTest() {
-        deleteAllData();
-        Client gotClient =tableRegister.get().getClientDetails(0);
-        Client client = new Client();
-        assertThat(client.equals(gotClient));
+  }
+
+
+    DbClient dbClient = dbModelConverter.convertToDbClient(client);
+    tableTestDao.get().insertClient(dbClient);
+    Integer clientId=tableTestDao.get().getLastClientId();
+    client.id=clientId;
+    DbClientPhone[] dbClientPhones = dbModelConverter.convertToDbClientPhones(client);
+    DbClientAddress dbClientAddressFactual = dbModelConverter.convertToDbClientAddressFactual(client);
+    DbClientAddress dbClientAddressRegistered = dbModelConverter.convertToDbClientAddressRegistered(client);
+    tableTestDao.get().insertAddress(dbClientAddressFactual);
+    tableTestDao.get().insertAddress(dbClientAddressRegistered);
+    for (DbClientPhone dbClientPhone: dbClientPhones) {
+      tableTestDao.get().insertPhone(dbClientPhone);
     }
+    Client gotClient =tableRegister.get().getClientDetails(clientId);
+    assertThat(client.equals(gotClient));
+  }
+
+  @Test
+  void getNullClientTest() {
+    deleteAllData();
+    Client gotClient =tableRegister.get().getClientDetails(0);
+    Client client = new Client();
+    assertThat(client.equals(gotClient));
+  }
 
 
-    @Test
-    void insertClientTest() {
-        deleteAllData();
-        Client client = testDataGenerator.generateClient();
-        client.id = tableRegister.get().createClient(client);
-        Client gotClient = tableRegister.get().getClientDetails(client.id);
-        assertThat(client.equals(gotClient));
-    }
+  @Test
+  void insertClientTest() {
+    deleteAllData();
+    Client client = testDataGenerator.generateClient();
+    client.id = tableRegister.get().createClient(client);
+    Client gotClient = tableRegister.get().getClientDetails(client.id);
+    assertThat(client.equals(gotClient));
+  }
 
-    @Test
-    public void updateClientTest() throws Exception {
-        deleteAllData();
-        Client client = testDataGenerator.generateClient();
-        int clientId = tableRegister.get().createClient(client);
-        client = testDataGenerator.generateClient();
-        client.id = clientId;
-        tableRegister.get().changeClient(client);
+  @Test
+  public void updateClientTest() throws Exception {
+    deleteAllData();
+    Client client = testDataGenerator.generateClient();
+    int clientId = tableRegister.get().createClient(client);
+    client = testDataGenerator.generateClient();
+    client.id = clientId;
+    tableRegister.get().changeClient(client);
 
-        Client gotClient = tableRegister.get().getClientDetails(clientId);
-        assertThat(gotClient.equals(client));
-    }
+    Client gotClient = tableRegister.get().getClientDetails(clientId);
+    assertThat(gotClient.equals(client));
+  }
+
+  @Test
+  public void deleteClientTest() {
+    deleteAllData();
+    Client client = testDataGenerator.generateClient();
+    int clientId = tableRegister.get().createClient(client);
+    tableRegister.get().deleteClient(clientId);
+    client = tableRegister.get().getClientDetails(clientId);
+    assertThat(client.id==-1);
+  }
+
+
+  public void deleteAllData(){
+    tableTestDao.get().deleteCharms();
+    tableTestDao.get().deleteClientAccounts();
+    tableTestDao.get().deleteClientAddrs();
+    tableTestDao.get().deleteClients();
+    tableTestDao.get().deletePhones();
+    tableTestDao.get().charmSerialToStart();
+    tableTestDao.get().clientAccountSerialToStart();
+    tableTestDao.get().clientSerialToStart();
+  }
+
+
+  @Test
+  public void deleteNullClientTest() throws Exception {
+    deleteAllData();
+    String ans = tableRegister.get().deleteClient(1);
+    assertThat(("-1").equals(ans));
+  }
 
     @Test
     public void deleteClientTest() {
@@ -202,7 +203,6 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         String ans = tableRegister.get().deleteClient(1);
         assertThat(("-1").equals(ans));
     }
-
 
 
     @Test
@@ -343,6 +343,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
                     .skip(0).limit(100).collect(Collectors.toCollection(ArrayList::new));
 
 
+
             assertEquals(queriedLocally.table.size(),gotTable.table.size());
             for(int i=0; i<queriedLocally.size; i++){
                 assertEquals(queriedLocally.table.get(i).fullName,gotTable.table.get(i).fullName);
@@ -353,7 +354,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
             ClientRecordsToSend gotTable = tableRegister.get()
                     .getClientRecords(0,100,"ASC","FULLNAME","PATRONYMIC",filterPatronymic);
             ClientRecordsToSend queriedLocally = new ClientRecordsToSend();
-
+          
             queriedLocally.table = myTable.table.stream()
                     .filter((o1) -> filterPatronymic.toUpperCase()
                             .equals(o1.fullName.split(" ")[o1.fullName.split(" ").length-1].toUpperCase()))
@@ -406,13 +407,10 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
             rowList.add(row);
         };
 
-
         @Override
         public void finish()throws Exception{
 
         };
-
-
 
         public final List<ClientRecord> rowList = Lists.newArrayList();
 
@@ -432,11 +430,7 @@ public class ClientRecordsRegisterImplTest extends ParentTestNg{
         tableRegister.get().reportTest(clientRecord,0,view);
         assertThat(view.rowList.get(0).equals(clientRecord));
     }
-
-    @Test
-    public void relativePath(){
-
-    }
+  }
 
 
 }

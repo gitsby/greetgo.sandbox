@@ -217,6 +217,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressRegistered(client));
     clientRecordsDao.get().updateAddress(dbModelConverter.convertToDbClientAddressFactual(client));
 
+    // TODO: исправь, я говорил об этом!
     return "1";
   }
 
@@ -228,6 +229,8 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     clientRecordsDao.get().deleteClient(clientId);
     clientRecordsDao.get().deletePhone(clientId);
     clientRecordsDao.get().deleteAccount(clientId);
+
+    // TODO: исправь, я говорил об этом!
     return "1";
   }
 
@@ -237,6 +240,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
     return size;
   }
 
+  // TODO: протестировать генерацию отчетов на 100 000, 1М, 10М запиясях
   @Override
   public String makeReport(String sortDirection, String sortType, String filterType,
                            String filterText,String client, String reportType) throws Exception{
