@@ -93,6 +93,7 @@ public class ClientRecordsController implements Controller{
 
     // TODO: 2.03.1. Входные параметры должны быть в одном классе-аргументе;
     // Didn't done yet, cuz I find it minor
+    // TODO: это всё важно
     @ToJson
     @MethodFilter(POST)
     @Mapping("/make-report")

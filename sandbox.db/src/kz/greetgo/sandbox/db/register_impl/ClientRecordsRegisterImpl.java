@@ -24,8 +24,7 @@ import java.util.NoSuchElementException;
 
 // TODO: war не собирается, исправь ошибку.
 // didn't done yet, same minor
-// TODO: убери папки /front & /myFront. Не храни в проекте ничего лишнего
-// DONE
+// TODO: каждое замечание важное. Надо их сразу исправлять!
 @Bean
 public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
@@ -33,8 +32,6 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
 
   public DbModelConverter dbModelConverter = new DbModelConverter();
 
-  // TODO: relative path!
-  // here we go :D
 
   File sampleFile = new File("file");
   private String reportsPath = sampleFile.getPath()+"/reports/";
@@ -307,7 +304,7 @@ public class ClientRecordsRegisterImpl implements ClientRecordsRegister {
   }
 
 
-
+  // TODO: Исправь ошибку!
   @Override
     public void reportTest(ClientRecord clientRecord, int i, ReportClientRecordsView view) throws Exception {
       view.start("client", (new Date()));
