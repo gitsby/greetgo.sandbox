@@ -10,41 +10,43 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Vector;
 
 
 public class ConnectToSshAndOutputFileViaStream {
     public static void main(String[] args) throws Exception {
-    JSch jsch = new JSch();
-    Session session = jsch.getSession("pigeon","localhost", 2222);
-    session.setPassword("greetgo");
-    Properties config = new Properties();
-    config.put("StrictHostKeyChecking", "no");
-    session.setConfig(config);
-    session.connect();
-    ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
-    channelSftp.connect();
+        JSch jsch = new JSch();
+        Session session = jsch.getSession("pigeon","localhost", 2222);
+        session.setPassword("greetgo");
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        session.setConfig(config);
+        session.connect();
+        ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
+        channelSftp.connect();
 
-    String[] dirs = {"1_000_000","100_000"};
+        String[] dirs = {"1_000_000","100_000"};
 
-    channelSftp.cd("1_000_000");
-    printContents(channelSftp,"from_cia_2018-02-21-154955-5-1000000.xml.tar.bz2");
-//    for (String dir: dirs) {
-//        channelSftp.cd(dir);
-//        prettyPrint(dir);
-//        Vector<ChannelSftp.LsEntry> list = channelSftp.ls("*.bz2");
-//        for(ChannelSftp.LsEntry entry : list) {
-//            String fileName = entry.getFilename();
-//            String chars[] = fileName.split("\\.");
-//            if(chars[0].contains("from_cia")){
-//                prettyPrint("from_cia||xml");
-//                printContents(channelSftp,fileName);
-//            }else if(chars[0].contains("from_frs")){
-//                prettyPrint("from_frs||json");
-//                printContents(channelSftp,fileName);
-//            }
-//        }
-//        channelSftp.cd("../");
-//    }
+//        channelSftp.cd("100_000");
+//        printContents(channelSftp,"from_cia_2018-02-21-154532-1-300.xml.tar.bz2");
+
+    for (String dir: dirs) {
+        channelSftp.cd(dir);
+        prettyPrint(dir);
+        Vector<ChannelSftp.LsEntry> list = channelSftp.ls("*.bz2");
+        for(ChannelSftp.LsEntry entry : list) {
+            String fileName = entry.getFilename();
+            String chars[] = fileName.split("\\.");
+            if(chars[0].contains("from_cia")){
+                prettyPrint("from_cia||xml");
+                printContents(channelSftp,fileName);
+            }else if(chars[0].contains("from_frs")){
+                prettyPrint("from_frs||json");
+                printContents(channelSftp,fileName);
+            }
+        }
+        channelSftp.cd("../");
+    }
 
 }
 
@@ -58,7 +60,7 @@ public class ConnectToSshAndOutputFileViaStream {
         ZipToStream  z2s = new ZipToStream();
         InputStream stream = channelSftp.get(fileName);
 
-        try {
+//        try {
             BufferedReader br = new BufferedReader(z2s.getUnzipped(stream));
             int nums = 0;
 //            DONE:
@@ -71,9 +73,9 @@ public class ConnectToSshAndOutputFileViaStream {
 //                }
 
             }
-        }finally {
-            stream.close();
-        }
+//        }finally {
+//            stream.close();
+//        }
         Scanner scan=new Scanner(System.in);
         scan.nextLine();
 

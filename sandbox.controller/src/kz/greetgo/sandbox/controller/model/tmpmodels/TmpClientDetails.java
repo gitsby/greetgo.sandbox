@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class TmpClientDetails {
 
-    public String ciaId;
+    public String number;
     public String id;
     public String name;
     public String patronymic;
@@ -12,8 +12,8 @@ public class TmpClientDetails {
     public String gender;
     public String birthDate;
     public ArrayList<TmpPhone> tmpPhones;
-    public TmpFacAddress tmpFacAddress;
-    public TmpRegAddress tmpRegAddress;
+    public TmpAddress tmpFacAddress;
+    public TmpAddress tmpRegAddress;
 
     @Override
     public String toString() {
@@ -23,7 +23,7 @@ public class TmpClientDetails {
                 ", surname='" + surname + '\'' +
                 ", patronymic='" + patronymic + '\'' +
                 ", birthDate='" + birthDate + '\'' +
-                ", ciaId='" + ciaId + '\'' +
+                ", ciaId='" + number + '\'' +
                 ", gender='" + gender + '\'' +
                 ", TmpPhones=" + tmpPhones +
                 ", tmpFacAddress=" + tmpFacAddress +

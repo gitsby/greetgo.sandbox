@@ -16,7 +16,6 @@ import javax.sql.DataSource;
 @ReplaceWithAnn(InTransaction.class)
 public class DbTmpSessionFactory extends LocalTmpSessionFactory {
 
-    public BeanGetter<DbConfig> dbConfig;
     public BeanGetter<DbTmpConfig> dbTmpConfig;
 
 
@@ -25,9 +24,9 @@ public class DbTmpSessionFactory extends LocalTmpSessionFactory {
         BasicDataSource pool = new BasicDataSource();
 
         pool.setDriverClassName("org.postgresql.Driver");
-        pool.setUrl(dbConfig.get().url());
-        pool.setUsername(dbConfig.get().username());
-        pool.setPassword(dbConfig.get().password());
+        pool.setUrl(dbTmpConfig.get().url());
+        pool.setUsername(dbTmpConfig.get().username());
+        pool.setPassword(dbTmpConfig.get().password());
 
         pool.setInitialSize(0);
 

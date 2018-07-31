@@ -127,7 +127,8 @@ public class GenerateCiaData {
 
     try {
 
-      try (PreparedStatement ps = connection.prepareStatement("insert into transition_client (record_data) values (?)")) {
+      try (PreparedStatement ps = connection.prepareStatement(
+              "insert into transition_client (record_data) values (?)")) {
 
         int batchSize = 0, inserts = 0;
         long startedAt = System.nanoTime();
